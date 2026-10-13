@@ -11,6 +11,8 @@ ship — with a storyboard image as the evidence.
 <img alt="python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
 </p>
 
+<p align="center"><img src="docs/assets/hero-3d.png" width="320" alt="A trefoil knot, raymarched — a closed loop, the shape every gxkit check is about"></p>
+
 ![gxkit: one shared core, nine inspect tools](docs/assets/architecture.svg)
 
 ## The loop
@@ -43,7 +45,9 @@ Every tool has the same contract, so an agent learns it once:
 | `docgx` | pages / slides | text that overflows the canvas |
 | `shadergx` | fragment shaders | a uniform that never reaches the output |
 
-Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`.
+Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`; the
+repository root has [`SKILL.md`](SKILL.md), the family skill that routes to them
+all.
 
 ## See it catch something
 
@@ -102,10 +106,12 @@ uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
 python scripts/prepublish_check.py      # no credentials or machine paths
 python scripts/make_readme_figure.py    # regenerate the architecture figure
 python scripts/make_math_figure.py      # regenerate the 3D soft-lock figure
+uv run python scripts/make_hero3d.py    # regenerate the 3D hero (needs a GL context)
 ```
 
 ## Documentation
 
+- [`SKILL.md`](SKILL.md) — the family agent skill; routes to each tool's skill.
 - [`docs/BUILDING.md`](docs/BUILDING.md) — how to add a tool: the checklist, the
   contract, the extraction rule, the pitfalls.
 - [`docs/PLAN.md`](docs/PLAN.md) — goals and roadmap.
