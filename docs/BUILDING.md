@@ -149,7 +149,8 @@ this family makes network requests; say so, so the boundary is explicit.
 figure, generated deterministically from the code by a repo-owned script (no
 hosted service, no CLI to install). Regenerate it and look at the rendered image
 before committing — the same "look at the picture" rule as the storyboard.
-(See the `readme-visual-design` skill for hierarchy and restraint.)
+(Producing it: `doc-figures`; front-page prose and scan order: `write-readme`;
+hierarchy and restraint: `readme-visual-design`.)
 
 Pair it with **one concrete worked example** — a real catch with the command and
 its output — so the reader sees value rather than a claim. A second figure earns
