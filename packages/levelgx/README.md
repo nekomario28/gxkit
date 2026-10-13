@@ -9,7 +9,7 @@ but never leave with the goal still reachable.
 One of the [`gxkit`](../../README.md) tools, built on [`gxcore`](../gxcore).
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
 # local:  uvx --from ../../packages/levelgx levelgx inspect level.py
 ```
 

@@ -10,7 +10,7 @@ codes, storyboard) is shared with every other tool in the family.
 ## Set it up
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/chartgx" chartgx --help
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx --help
 # or, from a clone:
 uv tool install ./packages/chartgx    # puts `chartgx` on PATH
 ```

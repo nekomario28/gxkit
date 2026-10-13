@@ -10,7 +10,7 @@ storyboard) is shared with every other tool in the family.
 ## Set it up
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx --help
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx --help
 # or, from a clone:
 uv tool install ./packages/levelgx
 ```

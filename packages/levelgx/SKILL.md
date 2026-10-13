@@ -10,7 +10,7 @@ Part of the `gxkit` family; the review contract is shared with every `*gx` tool.
 ## Install
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx --help
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx --help
 uv tool install ./packages/levelgx
 ```
 

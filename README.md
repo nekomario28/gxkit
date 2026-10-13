@@ -72,7 +72,7 @@ uv run levelgx inspect packages/levelgx/examples/broken_level.py
 ```sh
 uvx --from ./packages/chartgx chartgx inspect chart.py
 # or from GitHub:
-# uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
+# uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 ```
 
 MIT licensed.

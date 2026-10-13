@@ -8,7 +8,7 @@ code, and writes a storyboard image with the problems outlined.
 One of the [`gxkit`](../../README.md) tools, built on [`gxcore`](../gxcore).
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 # local:  uvx --from ../../packages/chartgx chartgx inspect chart.py
 ```
 

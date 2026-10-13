@@ -9,7 +9,7 @@ solvable, finds stranded items, and catches soft-locks caused by one-way tiles.
 ## Install
 
 ```sh
-uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx --help
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx --help
 uv tool install ./packages/levelgx      # from a clone
 ```
 
