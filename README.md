@@ -1,9 +1,9 @@
 # gxkit
 
-**Agent-native review loops for creative artifacts.** Give an agent a tool that
-checks its own work: write the artifact as code, `inspect` it, get problems with
-stable codes and an exit code, fix them, and ship — with a storyboard image as
-the evidence.
+**Agent-native review loops for creative artifacts.** Its job is simple: let an
+AI check its own work *before* you have to. Write the artifact as code,
+`inspect` it, get problems with stable codes and an exit code, fix them, and
+ship — with a storyboard image as the evidence.
 
 <p>
 <a href="https://github.com/nekomario28/gxkit/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/nekomario28/gxkit/actions/workflows/ci.yml/badge.svg"></a>
@@ -45,6 +45,27 @@ Every tool has the same contract, so an agent learns it once:
 
 Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`.
 
+## See it catch something
+
+Here is a level an agent wrote. Every cell is reachable, so a naive check
+passes — but a one-way tile drops the player into a dead end. `levelgx` walks
+the *directed* graph and finds it (the picture below is generated from the same
+data):
+
+![A soft-lock drawn in 3D: reachable from the start, but the goal is not reachable from there](docs/assets/softlock-3d.png)
+
+```sh
+$ levelgx inspect softlock.py
+inspect: 1 problem (1 error)
+  [1] error cell r2c3  soft-lock: 2 reachable cells cannot get back to the goal
+                        (e.g. cell r2c3) — a one-way tile makes a dead end
+$ echo $?
+1
+```
+
+The text says which cell; the storyboard image boxes it. That is the whole
+idea, repeated for nine domains.
+
 ## One core, thin tools
 
 The expensive part of a review loop is the contract, not the checks. `gxcore`
@@ -79,7 +100,8 @@ uv sync --all-packages
 uv run pytest
 uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
 python scripts/prepublish_check.py      # no credentials or machine paths
-python scripts/make_readme_figure.py    # regenerate the figure above
+python scripts/make_readme_figure.py    # regenerate the architecture figure
+python scripts/make_math_figure.py      # regenerate the 3D soft-lock figure
 ```
 
 ## Documentation
