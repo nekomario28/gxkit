@@ -1,0 +1,47 @@
+# chartgx
+
+> Inspect matplotlib figures for misleading or broken charts. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+chartgx is one of the `gxkit` agent-native review tools. An agent writes a chart
+as a Python file that builds a matplotlib figure; `chartgx inspect` reads the
+figure's artist tree, reports every problem, writes a storyboard image with the
+problems outlined, and exits non-zero when there is an error.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/chartgx" chartgx --help
+uv tool install ./packages/chartgx          # from a clone
+```
+
+Needs Python 3.10+, matplotlib, numpy and Pillow.
+
+## Use
+
+```sh
+chartgx inspect chart.py            # report + storyboard, exit 1 on any error
+chartgx inspect chart.py --json     # machine-readable report
+chartgx inspect chart.py --no-storyboard
+chartgx render  chart.py -o out.png
+```
+
+A chart file defines a figure — a module-level `fig`, a `build()` returning one,
+or whatever `matplotlib.pyplot` has open.
+
+## The loop
+
+1. Write the chart as a Python file.
+2. `chartgx inspect chart.py`; read the problems (each has a stable `code`).
+3. Fix the `error` and `warn` problems; inspect again.
+4. Look at `<name>.storyboard.png` — each numbered box proves a problem.
+5. `chartgx render chart.py -o chart.png` for the final still.
+
+## Checks
+
+error: `truncated-baseline`, `clipped-text`, `text-overlap`, `log-nonpositive`,
+`empty-chart`.
+warn: `no-title`, `no-xlabel`, `no-ylabel`, `dual-axis`, `too-many-series`,
+`pie-slices`, `constant-series`, `clipped-data`, `legend-covers`.
+info: `small-text`, `no-units`, `cut-value-axis`.
+
+Full documentation is in `README.md`.

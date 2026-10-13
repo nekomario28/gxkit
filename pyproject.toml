@@ -1,0 +1,20 @@
+[project]
+name = "gxkit"
+version = "0.0.0"
+description = "Agent-native review loops for creative artifacts: inspect, exit codes, storyboards."
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[dependency-groups]
+dev = ["pytest>=7"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages"]
+addopts = "-q"

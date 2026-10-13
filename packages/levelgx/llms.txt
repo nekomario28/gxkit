@@ -1,0 +1,41 @@
+# levelgx
+
+> Inspect game levels for reachability, solvability and soft-locks. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+levelgx is one of the `gxkit` agent-native review tools. A level is a grid of
+characters; `levelgx inspect` flood-fills from the spawn, proves the goal is
+solvable, finds stranded items, and catches soft-locks caused by one-way tiles.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx --help
+uv tool install ./packages/levelgx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+levelgx inspect level.py            # report + storyboard, exit 1 on any error
+levelgx inspect level.py --json
+levelgx inspect level.py --no-storyboard
+levelgx render  level.py -o level.png
+```
+
+A level file defines `rows` (a list of strings), `LEVEL`, `level` (a `Level`),
+or a `build()` returning one.
+
+## The legend
+
+`#` wall · `.` floor · `S` spawn · `G` goal · `X` item · `!` hazard ·
+`>` `<` `^` `v` one-way tiles.
+
+## Checks
+
+error: `no-spawn`, `no-goal`, `goal-unreachable`, `soft-lock`, `stranded-item`.
+warn: `hazard-cuts-off`.
+info: `unreachable-area`, `no-items`.
+
+Full documentation is in `README.md`.

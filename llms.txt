@@ -1,0 +1,54 @@
+# gxkit
+
+> Agent-native review loops for creative artifacts. Write the artifact as code, `inspect` it, get problems with stable codes and exit codes, fix them, and ship — with a storyboard image as evidence.
+
+gxkit is a shared engine (`gxcore`) plus the domain tools built on it. Each tool
+owns one domain; the review loop is written once.
+
+## Tools
+
+- **chartgx** — matplotlib charts: truncated bar baselines, clipped or
+  overlapping text, missing titles/labels/units, dual axes, unreadable pies,
+  constant or clipped data. `packages/chartgx`
+- **levelgx** — game levels: no spawn/goal, unreachable goal, soft-lock from a
+  one-way tile, stranded items, hazards that cut the only route.
+  `packages/levelgx`
+- planned: `shadergx` (shader/GPU output), `docgx` (document/slide layout).
+
+## The contract every tool shares
+
+```sh
+<tool> inspect artifact.py     # problems + storyboard, exit 1 on any error
+<tool> inspect artifact.py --json
+<tool> render  artifact.py -o out.png
+```
+
+- **Exit code 1** when any `error`-severity problem is found. `warn` and `info`
+  never fail the build.
+- **A storyboard image** with each located problem boxed and numbered.
+- **Stable codes** (`truncated-baseline`, `soft-lock`, …) an agent branches on,
+  never on prose.
+
+## Install a tool
+
+```sh
+uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
+uvx --from "git+https://github.com/<user>/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
+```
+
+Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.
+
+## Develop
+
+```sh
+uv sync --all-packages
+uv run pytest
+uv run chartgx inspect packages/chartgx/examples/bad_chart.py     # exit 1
+uv run levelgx inspect packages/levelgx/examples/softlock_level.py # exit 1
+```
+
+See [`docs/PLAN.md`](docs/PLAN.md) for goals and the roadmap, and
+[`docs/agent-native-landscape.md`](docs/agent-native-landscape.md) for which
+domains are still empty.
+
+MIT licensed.
