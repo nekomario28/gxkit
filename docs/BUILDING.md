@@ -151,6 +151,11 @@ hosted service, no CLI to install). Regenerate it and look at the rendered image
 before committing — the same "look at the picture" rule as the storyboard.
 (See the `readme-visual-design` skill for hierarchy and restraint.)
 
+Pair it with **one concrete worked example** — a real catch with the command and
+its output — so the reader sees value rather than a claim. A second figure earns
+its place only if it carries distinct information; an image that only decorates
+is clutter.
+
 The license must travel with the package: declare an SPDX expression
 (`license = "MIT"`) **and** a `LICENSE` file so the wheel carries it
 (`license-files`); the deprecated free-text `License: MIT` ships no file.
