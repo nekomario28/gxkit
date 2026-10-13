@@ -145,6 +145,12 @@ this family makes network requests; say so, so the boundary is explicit.
 `uvx --from "<repo>#subdirectory=packages/<tool>" <tool> …` install path; and a
 `payload = [(clean example), (every-fault example)]` under `examples/`.
 
+**A figure, not decoration.** A README's first useful thing is one architecture
+figure, generated deterministically from the code by a repo-owned script (no
+hosted service, no CLI to install). Regenerate it and look at the rendered image
+before committing — the same "look at the picture" rule as the storyboard.
+(See the `readme-visual-design` skill for hierarchy and restraint.)
+
 The license must travel with the package: declare an SPDX expression
 (`license = "MIT"`) **and** a `LICENSE` file so the wheel carries it
 (`license-files`); the deprecated free-text `License: MIT` ships no file.
