@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the pre-publication check scans `git log -p --all`, and
+          # a shallow clone would silently see only one commit.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
 
       # Fail on credentials or machine paths in tracked files before anything
