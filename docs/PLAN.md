@@ -1,6 +1,9 @@
 # Plan — an agent-native review loop, and the tools built on it
 
-Status: P0 in progress. This file is the durable plan; update it as phases land.
+Status: P0–P2.7 landed. This file is the durable plan; update it as phases land.
+
+How to add a tool (the checklist, the contract, the extraction rule) is in
+[`BUILDING.md`](BUILDING.md).
 
 ## North star
 

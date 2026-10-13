@@ -61,8 +61,10 @@ checks        artifact -> [Problem]
 renderer      artifact -> PNG
 ```
 
-…and inherits the rest. See [`docs/PLAN.md`](docs/PLAN.md) for goals, the
-efficiency model, and the roadmap; [`docs/agent-native-landscape.md`](docs/agent-native-landscape.md)
+…and inherits the rest. See [`docs/BUILDING.md`](docs/BUILDING.md) for how to
+add a tool (the checklist, the contract, the extraction rule),
+[`docs/PLAN.md`](docs/PLAN.md) for goals, the efficiency model, and the
+roadmap, and [`docs/agent-native-landscape.md`](docs/agent-native-landscape.md)
 for which domains are still empty.
 
 ## Layout
