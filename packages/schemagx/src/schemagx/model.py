@@ -22,7 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.graph import find_cycle, reverse
+from gxcore.graph import find_cycle
 
 
 @dataclass

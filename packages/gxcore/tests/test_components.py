@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from gxcore import ERROR, INFO
 from gxcore.graph import (
     can_reach,
     distances,
     find_cycle,
     reachable,
     reverse,
+    shortest_path,
     terminals,
     traps,
+    unreachable,
     weak_components,
 )
+from gxcore.geometry import canvas_box
 from gxcore.layout import TextBox, check as check_layout
 from gxcore.loading import load_from_file, load_module, resolve
 
@@ -55,6 +57,22 @@ def test_find_cycle():
     assert find_cycle({"a": ["b"], "b": ["a"]}) is not None
     assert find_cycle({"a": ["b"], "b": ["c"], "c": []}) is None
     assert find_cycle({"a": ["a"]}) == ["a", "a"]
+
+
+def test_shortest_path():
+    g = {"a": ["b"], "b": ["c"], "c": []}
+    assert shortest_path(g, "a", "c") == ["a", "b", "c"]
+    assert shortest_path(g, "a", "a") == ["a"]
+    assert shortest_path(g, "c", "a") is None
+
+
+def test_unreachable():
+    g = {"a": ["b"], "b": [], "x": []}
+    assert unreachable(g, ["a"], ["a", "b", "x"]) == {"x"}
+
+
+def test_canvas_box():
+    assert canvas_box(4, 3) == (0.0, 0.0, 4.0, 3.0)
 
 
 # --------------------------------------------------------------------------- #

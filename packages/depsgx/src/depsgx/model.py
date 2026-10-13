@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from gxcore.graph import reachable, reverse
+from gxcore.graph import reachable
 
 
 @dataclass

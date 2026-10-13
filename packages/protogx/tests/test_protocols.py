@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from gxcore import ERROR, INFO, WARN
-from gxcore.testing import assert_fires, assert_quiet
+from gxcore.testing import assert_fires
 from protogx import Protocol, inspect_protocol, load_protocol
 
 GOOD = Protocol(

@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Render a fragment shader and inspect the pixels — black, constant, NaN output, unused uniforms — with codes, exit codes and a storyboard."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "gxcore",
     "moderngl>=5.10",

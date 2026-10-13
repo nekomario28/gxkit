@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Sequence
 
-from .model import BBox, Problem, sort_key
+from .model import Problem, sort_key
 
 # Box outline colours by severity.
 _COLORS = {

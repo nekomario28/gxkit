@@ -416,33 +416,38 @@ def inspect_figure(fig: Any, name: str = "figure") -> Report:
         renderer = None
 
     out: list[Problem] = []
-    _guard(lambda: _check_title(fig, axes_list, out))
+    _guard(_check_title, fig, axes_list, out)
 
     for i, ax in enumerate(axes_list):
         kind = _classify(ax)
         if _check_empty(ax, i, kind, out):
             continue
         secondary = any((s in axes_list) and axes_list.index(s) < i for s in _twins(ax))
-        _guard(lambda: _check_axis_labels(ax, i, kind, secondary, out))
-        _guard(lambda: _check_units_note(ax, i, kind, out))
-        _guard(lambda: _check_bar_baseline(ax, i, kind, out))
-        _guard(lambda: _check_line_baseline(ax, i, kind, out))
-        _guard(lambda: _check_constant(ax, i, out))
-        _guard(lambda: _check_clipped_data(ax, i, out))
-        _guard(lambda: _check_log(ax, i, out))
-        _guard(lambda: _check_dual_axis(ax, i, not secondary, out))
-        _guard(lambda: _check_series_colors(ax, i, kind, out))
-        _guard(lambda: _check_pie(ax, i, kind, out))
+        _guard(_check_axis_labels, ax, i, kind, secondary, out)
+        _guard(_check_units_note, ax, i, kind, out)
+        _guard(_check_bar_baseline, ax, i, kind, out)
+        _guard(_check_line_baseline, ax, i, kind, out)
+        _guard(_check_constant, ax, i, out)
+        _guard(_check_clipped_data, ax, i, out)
+        _guard(_check_log, ax, i, out)
+        _guard(_check_dual_axis, ax, i, not secondary, out)
+        _guard(_check_series_colors, ax, i, kind, out)
+        _guard(_check_pie, ax, i, kind, out)
         if renderer is not None:
-            _guard(lambda: _check_text(fig, ax, i, renderer, out))
-            _guard(lambda: _check_legend_covers(ax, i, renderer, out))
+            _guard(_check_text, fig, ax, i, renderer, out)
+            _guard(_check_legend_covers, ax, i, renderer, out)
 
     report.problems = out
     _locate_structural(report, axes_list, renderer)
     return report
 
 
-def _guard(fn: Any) -> None:
+def _guard(fn: Any, *args: Any) -> None:
+    """Run one check; a check that throws must never hide the others."""
+    try:
+        fn(*args)
+    except Exception:
+        return
     try:
         fn()
     except Exception:

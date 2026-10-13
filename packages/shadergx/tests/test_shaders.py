@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from gxcore import ERROR, INFO, WARN
+from gxcore import ERROR, WARN
 from gxcore.testing import assert_fires, assert_quiet
 
 pytest.importorskip("moderngl")

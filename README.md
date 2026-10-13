@@ -19,7 +19,6 @@ domain; the review loop is written once.
 | **`docgx`** | pages / slides: text that overflows the canvas, blocks that overlap, tiny text, out-of-order blocks | working |
 | **`protogx`** | protocol state machines: deadlocks, unhandled messages, missing responses, unreachable states | working |
 | **`shadergx`** | fragment shaders: compile errors, black / constant / NaN output, unused uniforms | working |
-| `docgx` | document / slide layout | planned |
 
 ## The loop
 
@@ -112,4 +111,9 @@ uvx --from ./packages/flowgx  flowgx  inspect machine.py
 # uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 ```
 
-MIT licensed.
+MIT licensed. Every package declares `License-Expression: MIT` (SPDX) and ships
+its `LICENSE` in the wheel. The reasoning (and why not Apache-2.0) is in
+[`docs/LICENSING.md`](docs/LICENSING.md).
+
+The `inspect` pattern is a generalisation of ManimGX's `inspect` command; see
+the acknowledgements in that file.

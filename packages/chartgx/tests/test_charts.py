@@ -11,11 +11,10 @@ import matplotlib
 matplotlib.use("Agg", force=True)
 
 import matplotlib.pyplot as plt
-import pytest
 
 from chartgx import inspect_figure
 from gxcore import ERROR, INFO, WARN
-from gxcore.testing import assert_fires, assert_quiet, codes, has
+from gxcore.testing import assert_fires, assert_quiet, codes
 
 
 def fresh():

@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Inspect a module dependency graph for cycles, layer violations and dead code — codes, exit codes, storyboards."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "gxcore",
     "Pillow>=9",

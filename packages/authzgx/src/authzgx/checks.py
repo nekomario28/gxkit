@@ -92,7 +92,6 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
 
     reachable_all = model.reachable_from_principals()
     granted_perms = {perm for _, perm in model.grants}
-    roles_granting = {role for role, _ in model.grants}
 
     for role in model.roles:
         if model.rid(role) not in reachable_all:

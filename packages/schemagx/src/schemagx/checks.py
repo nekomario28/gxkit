@@ -11,7 +11,7 @@ from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.graph import reverse
 
 from .model import Schema
-from .render import compute_layout, image_size, node_box
+from .render import compute_layout, node_box
 
 
 def inspect_schema(schema: Schema, name: str | None = None) -> Report:
