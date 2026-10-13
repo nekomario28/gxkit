@@ -92,14 +92,19 @@ A check that cannot fail is decoration. For **every** check, write:
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
 
-## 5. Two disciplines that caught real bugs
+## 5. Disciplines that catch real bugs
 
 - **Look at the storyboard image.** Every rendering bug in this project — a
   vertically flipped origin, a numbering that disagreed with the report,
   co-located problems whose boxes hid each other — was invisible in the text
   report and obvious in the picture. When you can view images, view them.
 - **Measure exit codes correctly.** `tool … | tail; echo $?` prints `tail`'s
-  code, not the tool's. Capture `$?` immediately after the tool runs.
+  code; `echo "$(cmd): $?"` runs the substitution first, so `$?` is *its* code.
+  Capture `rc=$?` on its own line, immediately after the tool runs.
+- **Reproduce before you report a hole.** A failing check may be the
+  environment, not the code: "12 collection errors on Python 3.10" turned out to
+  be a venv built for another interpreter. Re-run in a clean, authoritative
+  environment before you believe a defect.
 
 ## 6. Pitfalls learned from the family
 
@@ -109,6 +114,23 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Legitimate self-loops.** A self-referential edge (a `manager_id` tree, a
   retry loop) is not a cycle. Exclude self-edges before `find_cycle`, or you
   report trees as faults *and* hide the real cycle behind them.
+- **One defect, one code.** When a specialized check owns a case, exclude it
+  from the general one. A self-edge is `self-dependency`, not *also* `cycle`;
+  two codes for one fault make every count and every gate lie.
+- **The optional image must not kill the report.** Compute the report first;
+  draw the storyboard best-effort. If drawing fails (no GPU, no font), print the
+  report and return its exit code anyway, with a note on stderr.
+- **Do not recurse on agent-sized input.** Agent-generated graphs get deep; a
+  recursive DFS raises `RecursionError` on a chain of a few thousand. Traverse
+  iteratively.
+- **Bound what the author chooses.** Any size the artifact sets (canvas pixels,
+  iteration counts) needs a ceiling that fails clearly (`bad-size`) instead of an
+  OOM.
+- **One line per problem.** Collapse compiler logs and multi-line errors; a
+  report is a list, and a 40-line stack trace in one item breaks it.
+- **A test that always skips is not coverage.** If the hard tests need a
+  capability (a GPU, a display), give CI a software fallback (Mesa's software
+  GL) so they actually run.
 - **Stale core wheel.** In a multi-package workspace, installing one tool reuses
   a cached wheel of the shared core. When the core changes, bump its version, or
   the tool fails at import (`ModuleNotFoundError: gxcore.toolkit`).
@@ -122,6 +144,10 @@ this family makes network requests; say so, so the boundary is explicit.
 `README.md`, `AGENTS.md`, `llms.txt` (one-file agent setup), `SKILL.md`; a
 `uvx --from "<repo>#subdirectory=packages/<tool>" <tool> …` install path; and a
 `payload = [(clean example), (every-fault example)]` under `examples/`.
+
+The license must travel with the package: declare an SPDX expression
+(`license = "MIT"`) **and** a `LICENSE` file so the wheel carries it
+(`license-files`); the deprecated free-text `License: MIT` ships no file.
 
 ## 8. Workflow
 

@@ -49,7 +49,7 @@ only `main` (and any custom `uniform` declarations). Or module-level `FRAGMENT`
 
 ## Reading the report
 
-- `error` — the shader does not work: `compile-error`, `nan-output`,
+- `error` — the shader does not work: `compile-error`, `bad-size`, `nan-output`,
   `black-output`. Exit code 1.
 - `warn` — `constant-output` (ignores uv/inputs) or `uniform-unused` (a uniform
   you set changes nothing).

@@ -56,6 +56,7 @@ Or module-level `FRAGMENT` / `UNIFORMS` / `SIZE` / `TIME`.
 | code | severity | meaning |
 | --- | --- | --- |
 | `compile-error` | error | the shader failed to compile or link |
+| `bad-size` | error | the canvas is out of range (over 16M pixels) |
 | `nan-output` | error | some pixels are NaN or Inf |
 | `black-output` | error | a single fully-transparent/black frame |
 | `constant-output` | warn | one constant colour — ignores uv and inputs |

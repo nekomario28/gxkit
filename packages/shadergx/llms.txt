@@ -30,7 +30,7 @@ shader, `uv`, `u_resolution`, `u_time` and `fragColor`.
 
 ## Checks
 
-error: `compile-error`, `nan-output`, `black-output`.
+error: `compile-error`, `bad-size`, `nan-output`, `black-output`.
 warn: `constant-output`, `uniform-unused`.
 info: `nondeterministic`.
 
