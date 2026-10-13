@@ -1,0 +1,39 @@
+# authzgx
+
+> Inspect permission models for privilege-escalation paths, inheritance cycles and dead config. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+authzgx is one of the `gxkit` agent-native review tools. Declare principals,
+roles and permissions; `authzgx inspect` computes what each principal can reach
+and proves whether a low-privilege principal can reach a sensitive permission,
+returning the path.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/authzgx" authzgx --help
+uv tool install ./packages/authzgx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+authzgx inspect auth.py            # report + storyboard, exit 1 on any error
+authzgx inspect auth.py --json
+authzgx inspect auth.py --no-storyboard
+authzgx render  auth.py -o auth.png
+```
+
+A model file defines `model` (an `AuthModel`) or module-level `PRINCIPALS` /
+`ROLES` / `PERMISSIONS` / `GRANTS` / `INHERITS` / `ASSIGNED` / `SENSITIVE` /
+`LOW`.
+
+## Checks
+
+error: `escalation`, `cyclic-inheritance`, `dangling-grant`,
+`dangling-assignment`, `dangling-inherit`.
+info: `unreachable-role`, `orphan-permission`, `unreachable-permission`,
+`empty-role`, `no-sensitive`, `no-low`.
+
+Full documentation is in `README.md`.

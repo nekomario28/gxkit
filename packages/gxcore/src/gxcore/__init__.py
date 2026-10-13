@@ -13,7 +13,7 @@ from .model import ERROR, INFO, WARN, SEVERITIES, BBox, Problem, Report
 from .storyboard import annotate, safe_name, storyboard_path
 from .report import human, to_json
 from .cli import Tool, run
-from .graph import can_reach, distances, find_cycle, reachable, reverse, terminals, traps, unreachable, weak_components
+from .graph import can_reach, distances, find_cycle, reachable, reverse, shortest_path, terminals, traps, unreachable, weak_components
 from .layout import TextBox
 from .loading import load_from_file, load_module, resolve
 
@@ -36,6 +36,7 @@ __all__ = [
     "reverse",
     "can_reach",
     "distances",
+    "shortest_path",
     "traps",
     "unreachable",
     "terminals",
@@ -46,4 +47,4 @@ __all__ = [
     "load_module",
     "resolve",
 ]
-__version__ = "0.2.0"
+__version__ = "0.3.0"

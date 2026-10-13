@@ -6,6 +6,7 @@ import pytest
 from PIL import Image
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
+from gxcore.model import sort_key
 from gxcore.cli import Tool, run
 from gxcore.geometry import both_covered, clipped, covered, intersecting_pairs, overlap, union
 from gxcore.report import human, to_json
@@ -38,6 +39,16 @@ def test_sorted_puts_errors_first():
         Problem(WARN, "w", "m"),
     ])
     assert [p.severity for p in r.sorted()] == [ERROR, WARN, INFO]
+
+
+def test_report_and_storyboard_share_one_order():
+    # The invariant that makes box [n] in the image equal problem [n] in the text.
+    problems = [
+        Problem(INFO, "i", "m", target="zzz"),
+        Problem(ERROR, "e", "m", target="bbb"),
+        Problem(ERROR, "e2", "m", target="aaa"),
+    ]
+    assert Report("n", problems=problems).sorted() == sorted(problems, key=sort_key)
 
 
 def test_as_dict_is_stable_and_omits_empty_fields():
@@ -207,3 +218,25 @@ def test_cli_broken_file_reports_without_traceback(tmp_path, capsys):
     rc = run(tool, ["inspect", str(tmp_path / "x.py")])
     assert rc == 2
     assert "RuntimeError: nope" in capsys.readouterr().err
+
+
+def test_cli_storyboard_honours_top_left_origin(tmp_path):
+    from PIL import Image
+
+    def inspect(_):
+        return Report("R", problems=[Problem(ERROR, "e", "m", bbox=(10, 10, 40, 40))])
+
+    tool = Tool("t", "d", load=lambda p: None, inspect=inspect,
+                render=lambda a, o, d: o,
+                to_image=lambda _: Image.new("RGB", (100, 100), "white"),
+                origin="top-left")
+    src = tmp_path / "x.py"
+    src.write_text("")
+    out = tmp_path / "sb.png"
+    run(tool, ["inspect", str(src), "-o", str(out)])
+
+    img = Image.open(out).convert("RGB")
+    red = lambda p: p[0] > 200 and p[1] < 120 and p[2] < 120
+    top = sum(1 for x in range(100) for y in range(45) if red(img.getpixel((x, y))))
+    bottom = sum(1 for x in range(100) for y in range(55, 100) if red(img.getpixel((x, y))))
+    assert top > 0 and bottom == 0

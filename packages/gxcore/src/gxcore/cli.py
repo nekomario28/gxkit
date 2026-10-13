@@ -42,6 +42,7 @@ class Tool:
     render: Render
     to_image: ToImage | None = None
     version: str = "0.0.0"
+    origin: str = "bottom-left"
 
 
 def _build_parser(tool: Tool) -> argparse.ArgumentParser:
@@ -69,7 +70,7 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
     sb: Path | None = None
     if not args.no_storyboard and tool.to_image is not None:
         sb = storyboard_path(report.name, args.output)
-        annotate(tool.to_image(artifact), report.problems, sb)
+        annotate(tool.to_image(artifact), report.problems, sb, origin=tool.origin)
 
     if args.json:
         print(to_json(report, sb))

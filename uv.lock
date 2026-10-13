@@ -9,11 +9,27 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "authzgx",
     "chartgx",
     "flowgx",
     "gxcore",
     "gxkit",
     "levelgx",
+]
+
+[[package]]
+name = "authzgx"
+version = "0.1.0"
+source = { editable = "packages/authzgx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
 ]
 
 [[package]]
@@ -468,7 +484,7 @@ wheels = [
 
 [[package]]
 name = "gxcore"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/gxcore" }
 dependencies = [
     { name = "pillow" },

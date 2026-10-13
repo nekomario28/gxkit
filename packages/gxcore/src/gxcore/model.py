@@ -25,6 +25,15 @@ _RANK = {ERROR: 0, WARN: 1, INFO: 2}
 BBox = tuple[float, float, float, float]
 
 
+def sort_key(p: "Problem") -> tuple[int, str]:
+    """Canonical problem order: errors first, then by target.
+
+    The report and the storyboard both number problems in this order, so box
+    ``[3]`` in the image is problem ``[3]`` in the text.
+    """
+    return (_RANK[p.severity], p.target or "")
+
+
 @dataclass
 class Problem:
     """One finding about an artifact."""
@@ -67,7 +76,7 @@ class Report:
         return sum(1 for p in self.problems if p.severity == ERROR)
 
     def sorted(self) -> list[Problem]:
-        return sorted(self.problems, key=lambda p: (_RANK[p.severity], p.target or ""))
+        return sorted(self.problems, key=sort_key)
 
     def as_dict(self) -> dict[str, Any]:
         return {

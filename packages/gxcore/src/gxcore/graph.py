@@ -69,6 +69,27 @@ def distances(edges: Adjacency, start: Hashable) -> dict[Hashable, int]:
     return dist
 
 
+def shortest_path(edges: Adjacency, start: Hashable, target: Hashable) -> list[Hashable] | None:
+    """A shortest path ``start -> target`` as a list of nodes, or None."""
+    if start == target:
+        return [start]
+    e = _norm(edges)
+    parent: dict[Hashable, Hashable] = {start: start}
+    q = deque([start])
+    while q:
+        u = q.popleft()
+        for v in e.get(u, ()):
+            if v not in parent:
+                parent[v] = u
+                if v == target:
+                    path = [v]
+                    while path[-1] != start:
+                        path.append(parent[path[-1]])
+                    return list(reversed(path))
+                q.append(v)
+    return None
+
+
 def traps(
     edges: Adjacency,
     starts: Iterable[Hashable],

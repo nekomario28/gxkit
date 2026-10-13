@@ -16,10 +16,13 @@ owns one domain; the review loop is written once.
 - **flowgx** — state machines / flow charts: unreachable states, dead ends,
   states that can never finish, non-deterministic events.
   `packages/flowgx`
+- **authzgx** — permission models / RBAC: privilege-escalation paths, cyclic
+  inheritance, dangling references, dead config. `packages/authzgx`
 - planned: `shadergx` (shader/GPU output), `docgx` (document/slide layout).
 
 `gxcore` also shares the analysis the tools need: `graph` (reachability, traps,
-cycles), `layout` (text small/clipped/overlapping), and `loading`.
+shortest path, cycles), `layout` (text small/clipped/overlapping), `loading`,
+and `diagram` (a deterministic node-link renderer).
 
 ## The contract every tool shares
 
@@ -41,6 +44,7 @@ cycles), `layout` (text small/clipped/overlapping), and `loading`.
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/flowgx" flowgx inspect machine.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/authzgx" authzgx inspect auth.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.

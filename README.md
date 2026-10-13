@@ -13,6 +13,7 @@ domain; the review loop is written once.
 | **`chartgx`** | matplotlib charts: truncated baselines, clipped/overlapping text, missing titles/labels/units, dual axes, unreadable pies, constant or clipped data | working |
 | **`levelgx`** | game levels: reachability, solvability, stranded collectibles, no-exit and soft-lock | working |
 | **`flowgx`** | state machines / flow charts: unreachable states, dead ends, states that can never finish, non-deterministic events | working |
+| **`authzgx`** | permission models: privilege-escalation paths, inheritance cycles, dangling references, dead config | working |
 | `shadergx` | shader / GPU output | planned |
 | `docgx` | document / slide layout | planned |
 
@@ -45,6 +46,8 @@ severities, exit codes, the storyboard, the JSON, the CLI, the test convention.
 - **`gxcore.layout`** — text too small / clipped / overlapping. Used by
   `chartgx` *and* `flowgx`.
 - **`gxcore.loading`** — load an artifact from a Python file, one convention.
+- **`gxcore.diagram`** — a deterministic node-link renderer (circles + arrows).
+  Used by `flowgx`, `authzgx` and `depsgx`.
 
 A new tool is three things:
 
@@ -62,10 +65,11 @@ for which domains are still empty.
 
 ```
 packages/
-  gxcore/     the shared review loop + graph / layout / loading
+  gxcore/     the shared review loop + graph / layout / loading / diagram
   chartgx/    matplotlib charts
   levelgx/    game levels
   flowgx/     state machines / flow charts
+  authzgx/    permission models / RBAC
 docs/
 ```
 
@@ -77,6 +81,7 @@ uv run pytest
 uv run chartgx inspect packages/chartgx/examples/bad_chart.py       # exit 1
 uv run levelgx inspect packages/levelgx/examples/softlock_level.py # exit 1
 uv run flowgx  inspect packages/flowgx/examples/broken_machine.py  # exit 1
+uv run authzgx inspect packages/authzgx/examples/escalate_auth.py  # exit 1
 ```
 
 ## Use a tool on its own

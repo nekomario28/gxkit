@@ -52,6 +52,7 @@ is not identical stays in the tool.
 | `loading` | load an artifact from a Python file (attr → builder → fallback) | one discovery convention, not one per tool |
 | `graph` | forward/reverse reachability, traps (soft-locks), cycles, components, terminals | `levelgx` walks a grid, `flowgx` walks a state machine — same questions |
 | `layout` | text too small / clipped / overlapping, with messages | `chartgx` and `flowgx` label pixels the same way |
+| `diagram` | a deterministic circular node-link renderer (circles + arrows + labels) | `flowgx`, `authzgx` (and any graph tool) draw once |
 
 ## Efficiency model
 
@@ -87,6 +88,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P2 — extract `graph` / `loading` / `layout`; add `flowgx`.** The second and
   third tools revealed the shared analysis; `flowgx` proves it (a state machine
   is the workflow form of the same soft-lock). *done*
+- **P2.5 — extract `diagram`; add `authzgx`.** The graph renderer moved to
+  `gxcore.diagram`; `authzgx` answers "can a low principal reach a sensitive
+  permission?" with `gxcore.graph.shortest_path`. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.

@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Sequence
 
-from .model import BBox, Problem
+from .model import BBox, Problem, sort_key
 
 # Box outline colours by severity.
 _COLORS = {
@@ -64,7 +64,7 @@ def annotate(
         font = ImageFont.load_default()
 
     flip = origin == "bottom-left"
-    for n, p in enumerate(problems, start=1):
+    for n, p in enumerate(sorted(problems, key=sort_key), start=1):
         if p.bbox is None:
             continue
         x0, y0, x1, y1 = p.bbox
