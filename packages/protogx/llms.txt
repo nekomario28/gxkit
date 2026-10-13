@@ -1,0 +1,38 @@
+# protogx
+
+> Inspect a protocol state machine for deadlocks, unhandled messages and unreachable states. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+protogx is one of the `gxkit` agent-native review tools. Declare states,
+transitions and the messages that drive them; `protogx inspect` proves every
+state is reachable, that a terminal state is reachable from everywhere, and that
+no declared message or awaited response is unhandled.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/protogx" protogx --help
+uv tool install ./packages/protogx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+protogx inspect proto.py            # report + storyboard, exit 1 on any error
+protogx inspect proto.py --json
+protogx inspect proto.py --no-storyboard
+protogx render  proto.py -o proto.png
+```
+
+A protocol file defines `protocol` (a `Protocol`) or module-level `STATES` /
+`TRANSITIONS` / `START` / `TERMINAL` / `MESSAGES` / `REQUESTS` / `RESPONSES`.
+
+## Checks
+
+error: `no-start`, `unknown-state`, `unknown-message`, `unhandled-message`,
+`nondeterministic`, `deadlock`, `no-exit`, `unreachable-state`, `no-terminal`.
+warn: `missing-response`.
+info: `cycle`.
+
+Full documentation is in `README.md`.

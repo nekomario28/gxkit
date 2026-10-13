@@ -107,6 +107,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   budget, reading order. The second real consumer of `gxcore.layout` (after
   `chartgx`), which also exposed that the overlap metric ignored a small box
   nested inside a large one. *done*
+- **P3.5 — `protogx`.** Protocol state machines: deadlocks, unreachable states,
+  and the message-level checks a plain state machine cannot see — a declared
+  message nothing handles, a request whose reply never arrives. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.

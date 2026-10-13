@@ -24,7 +24,9 @@ owns one domain; the review loop is written once.
   foreign-key cycles, dead tables. `packages/schemagx`
 - **docgx** — pages / slides: text that overflows the canvas, blocks that
   overlap, text below the readable floor, out-of-order blocks. `packages/docgx`
-- planned: `shadergx` (shader/GPU output), `protogx` (protocol state machines).
+- **protogx** — protocol state machines: deadlocks, unhandled messages, missing
+  responses, unreachable states. `packages/protogx`
+- planned: `shadergx` (shader/GPU output).
 
 `gxcore` also shares the analysis and plumbing the tools need: `graph`
 (reachability, traps, shortest path, cycles), `layout` (text
@@ -55,6 +57,7 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/authz
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/depsgx" depsgx inspect deps.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/schemagx" schemagx inspect schema.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/docgx" docgx inspect page.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/protogx" protogx inspect proto.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.
