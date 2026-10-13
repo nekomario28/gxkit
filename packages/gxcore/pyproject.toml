@@ -1,7 +1,7 @@
 [project]
 name = "gxcore"
-version = "0.1.0"
-description = "The shared review loop behind the *gx agent-native tools: problems, severities, storyboards, CLI."
+version = "0.2.0"
+description = "The shared review loop behind the *gx agent-native tools: problems, severities, storyboards, CLI, graph and layout analysis."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

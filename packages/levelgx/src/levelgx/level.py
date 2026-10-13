@@ -16,11 +16,8 @@ soft-locks come from, and why plain reachability is not enough.
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 from dataclasses import dataclass
 from pathlib import Path
-from types import ModuleType
 
 WALL = "#"
 FLOOR = "."
@@ -106,56 +103,35 @@ class Level:
         return out
 
 
-def _module_from_path(path: Path) -> ModuleType:
-    name = f"levelgx_under_test_{abs(hash(str(path)))}"
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load a Python module from {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-def _as_rows(value) -> list[str] | None:
+def _as_rows(value: object) -> list[str] | None:
     if isinstance(value, (list, tuple)) and value and all(isinstance(r, str) for r in value):
         return [r.replace("\t", "  ") for r in value]
     return None
 
 
-def load_level(path: str | Path) -> tuple[Level, ModuleType]:
+def _as_level(value: object) -> "Level | None":
+    if isinstance(value, Level):
+        return value
+    rows = _as_rows(value)
+    if rows is not None:
+        return Level(rows)
+    return None
+
+
+def load_level(path: str | Path) -> tuple[Level, object]:
     """Return ``(level, module)`` for a level file.
 
     Accepts, in order: a module-level ``level`` (a `Level`), ``LEVEL``/``rows``
-    (a list of strings), or a ``build()`` returning any of those.
+    (a list of strings), or a builder returning any of those.
     """
-    path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(path)
-    module = _module_from_path(path)
+    from gxcore.loading import load_from_file
 
-    value = getattr(module, "level", None)
-    if isinstance(value, Level):
-        value.name = getattr(module, "NAME", path.stem)
-        return value, module
-
-    for attr in ("LEVEL", "rows", "MAP", "map"):
-        rows = _as_rows(getattr(module, attr, None))
-        if rows is not None:
-            return Level(rows, name=getattr(module, "NAME", path.stem)), module
-
-    for builder in ("build", "make_level", "level_from_rows"):
-        fn = getattr(module, builder, None)
-        if callable(fn):
-            value = fn()
-            if isinstance(value, Level):
-                value.name = getattr(module, "NAME", path.stem)
-                return value, module
-            rows = _as_rows(value)
-            if rows is not None:
-                return Level(rows, name=getattr(module, "NAME", path.stem)), module
-
-    raise ValueError(
-        f"{path}: no level found — define `level` (a Level), `LEVEL`/`rows` "
-        "(a list of strings), or a `build()` returning one"
+    level, module = load_from_file(
+        path,
+        attrs=("level", "LEVEL", "rows", "MAP", "map"),
+        builders=("build", "make_level", "level_from_rows", "make"),
+        convert=_as_level,
+        description="level",
     )
+    level.name = getattr(module, "NAME", Path(path).stem)
+    return level, module

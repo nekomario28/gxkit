@@ -8,11 +8,12 @@ the check that a screenshot review will never catch.
 
 from __future__ import annotations
 
-from collections import defaultdict, deque
-from typing import Any
-
 from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.geometry import union
+from gxcore.graph import can_reach as _can_reach
+from gxcore.graph import distances as _distances
+from gxcore.graph import reachable as _reachable
+from gxcore.graph import traps as _traps
 
 from .level import HAZARD, ONEWAY, WALL, Level
 from .render import cell_box
@@ -32,51 +33,18 @@ def _all_edges(level: Level, *, hazards_block: bool = True) -> dict[tuple[int, i
 
 
 def reachable(level: Level, start: tuple[int, int], *, hazards_block: bool = True) -> set[tuple[int, int]]:
-    edges = _all_edges(level, hazards_block=hazards_block)
-    if start not in edges:
+    if not level.passable(start[0], start[1], hazards_block=hazards_block):
         return set()
-    seen = {start}
-    q = deque([start])
-    while q:
-        u = q.popleft()
-        for v in edges.get(u, ()):
-            if v not in seen:
-                seen.add(v)
-                q.append(v)
-    return seen
+    return _reachable(_all_edges(level, hazards_block=hazards_block), [start])
 
 
 def can_reach(level: Level, targets: set[tuple[int, int]], *, hazards_block: bool = True) -> set[tuple[int, int]]:
     """Cells from which at least one target is reachable (reverse BFS)."""
-    edges = _all_edges(level, hazards_block=hazards_block)
-    radj: dict[tuple[int, int], list[tuple[int, int]]] = defaultdict(list)
-    for u, vs in edges.items():
-        for v in vs:
-            radj[v].append(u)
-    seen = set(targets)
-    q = deque(targets)
-    while q:
-        v = q.popleft()
-        for u in radj[v]:
-            if u not in seen:
-                seen.add(u)
-                q.append(u)
-    return seen
+    return _can_reach(_all_edges(level, hazards_block=hazards_block), targets)
 
 
 def distances(level: Level, start: tuple[int, int], *, hazards_block: bool = True) -> dict[tuple[int, int], int]:
-    edges = _all_edges(level, hazards_block=hazards_block)
-    if start not in edges:
-        return {}
-    dist = {start: 0}
-    q = deque([start])
-    while q:
-        u = q.popleft()
-        for v in edges.get(u, ()):
-            if v not in dist:
-                dist[v] = dist[u] + 1
-                q.append(v)
-    return dist
+    return _distances(_all_edges(level, hazards_block=hazards_block), start)
 
 
 # --------------------------------------------------------------------------- #
@@ -158,8 +126,7 @@ def inspect_level(level: Level, name: str | None = None) -> Report:
 
     # Soft-lock: reachable cells from which the goal is no longer reachable.
     if goal in seen:
-        safe = can_reach(level, {goal})
-        traps = seen - safe - {goal}
+        traps = _traps(_all_edges(level), [spawn], [goal])
         if traps:
             example = min(traps)
             out.append(Problem(

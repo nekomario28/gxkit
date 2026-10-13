@@ -12,6 +12,7 @@ domain; the review loop is written once.
 | --- | --- | --- |
 | **`chartgx`** | matplotlib charts: truncated baselines, clipped/overlapping text, missing titles/labels/units, dual axes, unreadable pies, constant or clipped data | working |
 | **`levelgx`** | game levels: reachability, solvability, stranded collectibles, no-exit and soft-lock | working |
+| **`flowgx`** | state machines / flow charts: unreachable states, dead ends, states that can never finish, non-deterministic events | working |
 | `shadergx` | shader / GPU output | planned |
 | `docgx` | document / slide layout | planned |
 
@@ -36,7 +37,16 @@ Every tool has the same contract:
 
 The expensive part of a review loop is not the checks — it is the contract:
 severities, exit codes, the storyboard, the JSON, the CLI, the test convention.
-`gxcore` owns all of it. A new tool is three things:
+`gxcore` owns all of it, plus the analysis the tools share:
+
+- **`gxcore.model` / `cli` / `storyboard` / `report`** — the loop itself.
+- **`gxcore.graph`** — directed reachability, reverse reachability, traps
+  (soft-locks), cycles, components. Used by `levelgx` *and* `flowgx`.
+- **`gxcore.layout`** — text too small / clipped / overlapping. Used by
+  `chartgx` *and* `flowgx`.
+- **`gxcore.loading`** — load an artifact from a Python file, one convention.
+
+A new tool is three things:
 
 ```
 loader        file -> artifact
@@ -52,9 +62,10 @@ for which domains are still empty.
 
 ```
 packages/
-  gxcore/     the shared review loop
+  gxcore/     the shared review loop + graph / layout / loading
   chartgx/    matplotlib charts
   levelgx/    game levels
+  flowgx/     state machines / flow charts
 docs/
 ```
 
@@ -63,14 +74,17 @@ docs/
 ```sh
 uv sync --all-packages
 uv run pytest
-uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
-uv run levelgx inspect packages/levelgx/examples/broken_level.py
+uv run chartgx inspect packages/chartgx/examples/bad_chart.py       # exit 1
+uv run levelgx inspect packages/levelgx/examples/softlock_level.py # exit 1
+uv run flowgx  inspect packages/flowgx/examples/broken_machine.py  # exit 1
 ```
 
 ## Use a tool on its own
 
 ```sh
 uvx --from ./packages/chartgx chartgx inspect chart.py
+uvx --from ./packages/levelgx levelgx inspect level.py
+uvx --from ./packages/flowgx  flowgx  inspect machine.py
 # or from GitHub:
 # uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 ```

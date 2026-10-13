@@ -49,6 +49,9 @@ is not identical stays in the tool.
 | `report` | human text + `--json` | agents must not parse prose differently per tool |
 | `cli` | `inspect` / `render`, `--json`, `--no-storyboard`, `-o`, exit codes, no tracebacks on a broken input | agent ergonomics for free |
 | `testing` | "a check must be proven to fire, and to stay quiet" helpers | stops decorative checks across the family |
+| `loading` | load an artifact from a Python file (attr → builder → fallback) | one discovery convention, not one per tool |
+| `graph` | forward/reverse reachability, traps (soft-locks), cycles, components, terminals | `levelgx` walks a grid, `flowgx` walks a state machine — same questions |
+| `layout` | text too small / clipped / overlapping, with messages | `chartgx` and `flowgx` label pixels the same way |
 
 ## Efficiency model
 
@@ -61,7 +64,10 @@ new tool = 1 loader        (file -> artifact)
 ```
 
 Everything else — CLI, JSON, exit codes, storyboard, test harness, skill,
-`llms.txt`, CI — is inherited. That is the whole point of the extraction.
+`llms.txt`, CI, and now the graph and layout analysis — is inherited. Measured
+so far: `gxcore` was unchanged when `flowgx` was added; `flowgx` reuses
+`gxcore.graph` for the same soft-lock question `levelgx` asks, and
+`gxcore.layout` for label checks `chartgx` already had.
 
 Secondary efficiencies:
 
@@ -70,34 +76,36 @@ Secondary efficiencies:
 - **One storyboard annotator.** A tool author never writes image code.
 - **One report format.** An agent that understands `chartgx --json` understands
   every future tool.
-- **Tests are near-free**: a check is one figure/level plus one assertion.
+- **Tests are near-free**: a check is one figure/level/machine plus one assertion.
 
 ## Roadmap
 
 Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 
-- **P0 — `gxcore` + migrate `chartgx`.** *this phase*
-- **P1 — `levelgx`.** Game / level design with an automated playtest: build a
-  grid level in Python, then flood-fill the reachable set and prove the goal is
-  solvable, no collectible is stranded, and no soft-lock exists. Pure Python,
-  no GPU. Empty quadrant. *this phase*
-- **P2 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
-  inspect for all-black / NaN (via float target), constant output, and expected
-  vs actual coverage. Needs a headless GL stack; budget for it.
-- **P3 — `docgx`.** Document / slide layout: build HTML or Typst, render, then
-  reuse the exact text-overlap / clipping / overflow checks from `chartgx`.
-  Mostly a new loader — the checks already exist.
-- **P4 — publish.** Names checked on PyPI/npm, core released, tools released,
+- **P0 — `gxcore` + migrate `chartgx`.** *done*
+- **P1 — `levelgx`.** Game / level design with an automated playtest. *done*
+- **P2 — extract `graph` / `loading` / `layout`; add `flowgx`.** The second and
+  third tools revealed the shared analysis; `flowgx` proves it (a state machine
+  is the workflow form of the same soft-lock). *done*
+- **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
+  inspect for all-black / NaN (via float target), constant output, expected vs
+  actual coverage. Needs a headless GL stack; budget for it.
+- **P4 — `docgx`.** Document / slide layout: build HTML or Typst, render, then
+  reuse the text-overlap / clipping / overflow checks from `gxcore.layout`.
+  Mostly a new loader + renderer.
+- **P5 — publish.** Names checked on PyPI/npm, core released, tools released,
   root `llms.txt` directory.
 
 ## Definition of done
 
-- `gxcore`: model, geometry, storyboard, report, cli, testing — each with tests.
+- `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,
+  layout — each with tests.
 - Every tool: `inspect` exits non-zero on error, writes a storyboard, prints
   `--json`, and has a test that proves each check can fail.
 - CI runs `uv sync --all-packages && uv run pytest` on push.
 - Each tool ships `README.md`, `AGENTS.md`, `llms.txt`, `SKILL.md`.
-- `uvx --from <repo>@<tool-subdir> <tool> --help` works from a clean cache.
+- `uvx --from <git-url>#subdirectory=packages/<tool> <tool> --help` works from a
+  clean cache.
 
 ## Naming
 

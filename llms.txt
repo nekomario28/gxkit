@@ -13,7 +13,13 @@ owns one domain; the review loop is written once.
 - **levelgx** — game levels: no spawn/goal, unreachable goal, soft-lock from a
   one-way tile, stranded items, hazards that cut the only route.
   `packages/levelgx`
+- **flowgx** — state machines / flow charts: unreachable states, dead ends,
+  states that can never finish, non-deterministic events.
+  `packages/flowgx`
 - planned: `shadergx` (shader/GPU output), `docgx` (document/slide layout).
+
+`gxcore` also shares the analysis the tools need: `graph` (reachability, traps,
+cycles), `layout` (text small/clipped/overlapping), and `loading`.
 
 ## The contract every tool shares
 
@@ -34,6 +40,7 @@ owns one domain; the review loop is written once.
 ```sh
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/flowgx" flowgx inspect machine.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.
@@ -43,8 +50,9 @@ Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.
 ```sh
 uv sync --all-packages
 uv run pytest
-uv run chartgx inspect packages/chartgx/examples/bad_chart.py     # exit 1
+uv run chartgx inspect packages/chartgx/examples/bad_chart.py      # exit 1
 uv run levelgx inspect packages/levelgx/examples/softlock_level.py # exit 1
+uv run flowgx  inspect packages/flowgx/examples/broken_machine.py  # exit 1
 ```
 
 See [`docs/PLAN.md`](docs/PLAN.md) for goals and the roadmap, and

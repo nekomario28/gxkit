@@ -5,14 +5,17 @@ and severities, an exit-code policy, a storyboard image, and a JSON form.
 
     from gxcore import Problem, Report, ERROR
 
-Domain tools (`chartgx`, `levelgx`, …) add only a loader, a checks module, and
-a renderer; the CLI, report and storyboard come from here.
+Domain tools (`chartgx`, `levelgx`, `flowgx`, …) add only a loader, a checks
+module, and a renderer; the CLI, report and storyboard come from here.
 """
 
 from .model import ERROR, INFO, WARN, SEVERITIES, BBox, Problem, Report
 from .storyboard import annotate, safe_name, storyboard_path
 from .report import human, to_json
 from .cli import Tool, run
+from .graph import can_reach, distances, find_cycle, reachable, reverse, terminals, traps, unreachable, weak_components
+from .layout import TextBox
+from .loading import load_from_file, load_module, resolve
 
 __all__ = [
     "ERROR",
@@ -29,5 +32,18 @@ __all__ = [
     "to_json",
     "Tool",
     "run",
+    "reachable",
+    "reverse",
+    "can_reach",
+    "distances",
+    "traps",
+    "unreachable",
+    "terminals",
+    "weak_components",
+    "find_cycle",
+    "TextBox",
+    "load_from_file",
+    "load_module",
+    "resolve",
 ]
-__version__ = "0.1.0"
+__version__ = "0.2.0"

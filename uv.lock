@@ -10,6 +10,7 @@ resolution-markers = [
 [manifest]
 members = [
     "chartgx",
+    "flowgx",
     "gxcore",
     "gxkit",
     "levelgx",
@@ -306,6 +307,21 @@ wheels = [
 ]
 
 [[package]]
+name = "flowgx"
+version = "0.1.0"
+source = { editable = "packages/flowgx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
+]
+
+[[package]]
 name = "fonttools"
 version = "4.65.0"
 source = { registry = "https://pypi.org/simple" }
@@ -452,7 +468,7 @@ wheels = [
 
 [[package]]
 name = "gxcore"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "packages/gxcore" }
 dependencies = [
     { name = "pillow" },

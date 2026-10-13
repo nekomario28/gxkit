@@ -9,7 +9,9 @@ from __future__ import annotations
 from typing import Any
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.geometry import area, both_covered, clipped, overlap
+from gxcore.geometry import area, overlap
+from gxcore.layout import TextBox
+from gxcore.layout import check as check_text_layout
 
 from .loader import load_figure  # noqa: F401  (re-exported for callers)
 
@@ -331,41 +333,22 @@ def _check_pie(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
                            "the small slices", target=f"ax[{i}]"))
 
 
-def _check_text(fig: Any, ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
-    items = []
+def _text_items(ax: Any, renderer: Any) -> list[TextBox]:
+    items: list[TextBox] = []
     for role, t in _texts(ax):
         b = _bbox(t, renderer)
-        if b is not None:
-            items.append((role, t.get_text(), b, t))
-
-    for role, txt, b, t in items:
-        try:
-            if t.get_fontsize() < 8:
-                out.append(Problem(INFO, "small-text",
-                                   f"{role} {txt!r} is {t.get_fontsize():g}pt — below the readable floor",
-                                   target=f"ax[{i}]", label=txt, bbox=b))
-        except Exception:
+        if b is None:
             continue
+        try:
+            size = float(t.get_fontsize())
+        except Exception:
+            size = None
+        items.append(TextBox(role, t.get_text(), b, size))
+    return items
 
-    fig_box = _figure_box(fig)
-    for role, txt, b, t in items:
-        if clipped(b, fig_box):
-            out.append(Problem(ERROR, "clipped-text",
-                               f"{role} {txt!r} is cut off at the figure edge",
-                               target=f"ax[{i}]", label=txt, bbox=b))
 
-    for a in range(len(items)):
-        for c in range(a + 1, len(items)):
-            ra, ta, ba, _ = items[a]
-            rc, tc, bc, _ = items[c]
-            if ta.strip() == tc.strip():
-                continue
-            if both_covered(ba, bc) > 0.35:
-                out.append(Problem(ERROR, "text-overlap",
-                                   f"{ra} {ta!r} and {rc} {tc!r} overlap",
-                                   target=f"ax[{i}]", label=ta,
-                                   bbox=(min(ba[0], bc[0]), min(ba[1], bc[1]),
-                                         max(ba[2], bc[2]), max(ba[3], bc[3]))))
+def _check_text(fig: Any, ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
+    out.extend(check_text_layout(_text_items(ax, renderer), _figure_box(fig), target=f"ax[{i}]"))
 
 
 def _check_legend_covers(ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:

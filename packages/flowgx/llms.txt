@@ -1,0 +1,38 @@
+# flowgx
+
+> Inspect state machines and flow charts for unreachable, stuck and non-deterministic states. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+flowgx is one of the `gxkit` agent-native review tools. Declare a state machine
+as data; `flowgx inspect` proves every state is reachable, every state can still
+reach an accepting state, and no event is ambiguous.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/flowgx" flowgx --help
+uv tool install ./packages/flowgx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+flowgx inspect machine.py            # report + storyboard, exit 1 on any error
+flowgx inspect machine.py --json
+flowgx inspect machine.py --no-storyboard
+flowgx render  machine.py -o machine.png
+```
+
+A machine file defines `machine` (a `flowgx.Machine`) or `STATES` /
+`TRANSITIONS` / `START` / `ACCEPT`. Transitions are `(source, target)` or
+`(source, target, event)`. With no `accept`, states with no outgoing transition
+are accepting.
+
+## Checks
+
+error: `no-start`, `no-accept`, `unknown-state`, `unreachable-state`, `dead-end`,
+`no-exit`, `ambiguous-transition`.
+info: `cycle`.
+
+Full documentation is in `README.md`.
