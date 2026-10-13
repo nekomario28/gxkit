@@ -1,0 +1,37 @@
+# shadergx
+
+> Render a fragment shader and inspect the pixels: black, constant, NaN output, unused uniforms. Reports problems with stable codes and exit codes, and writes the rendered image as evidence.
+
+shadergx is one of the `gxkit` agent-native review tools. An agent writes a
+fragment shader it cannot see; `shadergx inspect` renders it headlessly
+(moderngl + EGL) and reports what is wrong with the pixels.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/shadergx" shadergx --help
+uv tool install ./packages/shadergx      # from a clone
+```
+
+Needs Python 3.10+, moderngl, numpy, Pillow and a GL context (Mesa/EGL or a GPU).
+
+## Use
+
+```sh
+shadergx inspect shader.py            # render + report + storyboard, exit 1 on any error
+shadergx inspect shader.py --json
+shadergx inspect shader.py --no-storyboard
+shadergx render  shader.py -o shader.png
+```
+
+A shader file defines `shader` (a `Shader`) or module-level `FRAGMENT` /
+`UNIFORMS` / `SIZE` / `TIME`. The wrapper supplies `#version`, the vertex
+shader, `uv`, `u_resolution`, `u_time` and `fragColor`.
+
+## Checks
+
+error: `compile-error`, `nan-output`, `black-output`.
+warn: `constant-output`, `uniform-unused`.
+info: `nondeterministic`.
+
+Full documentation is in `README.md`.

@@ -1,6 +1,7 @@
 # Plan — an agent-native review loop, and the tools built on it
 
-Status: P0–P2.7 landed. This file is the durable plan; update it as phases land.
+Status: complete. All planned tools landed (P0–P4). This file is the durable
+plan; keep it current if new tools are added.
 
 How to add a tool (the checklist, the contract, the extraction rule) is in
 [`BUILDING.md`](BUILDING.md).
@@ -110,6 +111,11 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P3.5 — `protogx`.** Protocol state machines: deadlocks, unreachable states,
   and the message-level checks a plain state machine cannot see — a declared
   message nothing handles, a request whose reply never arrives. *done*
+- **P4 — `shadergx`.** Fragment shaders rendered headlessly through moderngl +
+  EGL: compile errors, a black / constant / NaN frame, and — because an agent
+  cannot see the pixels — a uniform that is set but never reaches the output
+  (grounded in the GLSL compiler removing unused uniforms). Tests skip where no
+  GL context exists. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.

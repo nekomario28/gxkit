@@ -18,7 +18,7 @@ domain; the review loop is written once.
 | **`schemagx`** | relational schemas: dangling keys, type mismatches, foreign-key cycles, dead tables | working |
 | **`docgx`** | pages / slides: text that overflows the canvas, blocks that overlap, tiny text, out-of-order blocks | working |
 | **`protogx`** | protocol state machines: deadlocks, unhandled messages, missing responses, unreachable states | working |
-| `shadergx` | shader / GPU output | planned |
+| **`shadergx`** | fragment shaders: compile errors, black / constant / NaN output, unused uniforms | working |
 | `docgx` | document / slide layout | planned |
 
 ## The loop
@@ -82,6 +82,7 @@ packages/
   schemagx/   relational schemas
   docgx/      pages / slides
   protogx/    protocol state machines
+  shadergx/   fragment shaders (GPU)
 docs/
 ```
 
@@ -98,6 +99,7 @@ uv run depsgx  inspect packages/depsgx/examples/broken_modules.py   # exit 1
 uv run schemagx inspect packages/schemagx/examples/broken_schema.py  # exit 1
 uv run docgx   inspect packages/docgx/examples/crowded_page.py      # exit 1
 uv run protogx inspect packages/protogx/examples/broken_protocol.py  # exit 1
+uv run shadergx inspect packages/shadergx/examples/broken_shader.py  # exit 1
 ```
 
 ## Use a tool on its own

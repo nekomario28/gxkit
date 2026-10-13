@@ -7,7 +7,7 @@ write artifact as code  →  inspect (codes + exit code + storyboard)  →  fix 
 ```
 
 The reference implementation is **gxkit** at `gxkit`
-(`gxcore` + `chartgx`, `levelgx`, `flowgx`, `authzgx`, `depsgx`, `schemagx`, `docgx`, `protogx`).
+(`gxcore` + `chartgx`, `levelgx`, `flowgx`, `authzgx`, `depsgx`, `schemagx`, `docgx`, `protogx`, `shadergx`).
 Read a tool whose artifact resembles yours before writing a new one — the
 patterns are small and copied often.
 

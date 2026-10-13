@@ -26,7 +26,10 @@ owns one domain; the review loop is written once.
   overlap, text below the readable floor, out-of-order blocks. `packages/docgx`
 - **protogx** — protocol state machines: deadlocks, unhandled messages, missing
   responses, unreachable states. `packages/protogx`
-- planned: `shadergx` (shader/GPU output).
+- **shadergx** — fragment shaders: a compile error, a black / constant / NaN
+  frame, and uniforms that never reach the output. `packages/shadergx`
+
+That is the whole planned set.
 
 `gxcore` also shares the analysis and plumbing the tools need: `graph`
 (reachability, traps, shortest path, cycles), `layout` (text
@@ -58,6 +61,7 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/depsg
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/schemagx" schemagx inspect schema.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/docgx" docgx inspect page.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/protogx" protogx inspect proto.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/shadergx" shadergx inspect shader.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.
