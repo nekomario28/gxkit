@@ -15,6 +15,7 @@ domain; the review loop is written once.
 | **`flowgx`** | state machines / flow charts: unreachable states, dead ends, states that can never finish, non-deterministic events | working |
 | **`authzgx`** | permission models: privilege-escalation paths, inheritance cycles, dangling references, dead config | working |
 | **`depsgx`** | module dependency graphs: cycles, layer violations, banned edges, dead code | working |
+| **`schemagx`** | relational schemas: dangling keys, type mismatches, foreign-key cycles, dead tables | working |
 | `shadergx` | shader / GPU output | planned |
 | `docgx` | document / slide layout | planned |
 
@@ -74,6 +75,7 @@ packages/
   flowgx/     state machines / flow charts
   authzgx/    permission models / RBAC
   depsgx/     module dependency graphs
+  schemagx/   relational schemas
 docs/
 ```
 
@@ -87,6 +89,7 @@ uv run levelgx inspect packages/levelgx/examples/softlock_level.py # exit 1
 uv run flowgx  inspect packages/flowgx/examples/broken_machine.py  # exit 1
 uv run authzgx inspect packages/authzgx/examples/escalate_auth.py  # exit 1
 uv run depsgx  inspect packages/depsgx/examples/broken_modules.py   # exit 1
+uv run schemagx inspect packages/schemagx/examples/broken_schema.py  # exit 1
 ```
 
 ## Use a tool on its own

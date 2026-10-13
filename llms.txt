@@ -20,6 +20,8 @@ owns one domain; the review loop is written once.
   inheritance, dangling references, dead config. `packages/authzgx`
 - **depsgx** — module dependency graphs: cycles, layer violations, banned
   edges, dead code. `packages/depsgx`
+- **schemagx** — relational schemas: dangling foreign keys, type mismatches,
+  foreign-key cycles, dead tables. `packages/schemagx`
 - planned: `shadergx` (shader/GPU output), `docgx` (document/slide layout).
 
 `gxcore` also shares the analysis and plumbing the tools need: `graph`
@@ -49,6 +51,7 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/level
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/flowgx" flowgx inspect machine.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/authzgx" authzgx inspect auth.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/depsgx" depsgx inspect deps.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/schemagx" schemagx inspect schema.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.

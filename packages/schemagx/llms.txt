@@ -1,0 +1,37 @@
+# schemagx
+
+> Inspect a relational schema for dangling keys, foreign-key cycles and dead tables. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+schemagx is one of the `gxkit` agent-native review tools. Declare tables,
+primary keys and foreign keys; `schemagx inspect` checks every reference
+resolves, finds foreign-key cycles, and points at dead tables.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/schemagx" schemagx --help
+uv tool install ./packages/schemagx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+schemagx inspect schema.py            # report + storyboard, exit 1 on any error
+schemagx inspect schema.py --json
+schemagx inspect schema.py --no-storyboard
+schemagx render  schema.py -o schema.png
+```
+
+A schema file defines `schema` (a `Schema`) or module-level `TABLES` /
+`PRIMARY_KEYS` / `FOREIGN_KEYS` / `ROOTS`. Foreign keys are `"table.column"`
+strings pointing child -> parent.
+
+## Checks
+
+error: `dangling-foreign-key`.
+warn: `fk-type-mismatch`, `fk-to-non-primary-key`, `cyclic-foreign-key`.
+info: `missing-primary-key`, `orphan-table`, `no-tables`.
+
+Full documentation is in `README.md`.

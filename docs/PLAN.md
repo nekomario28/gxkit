@@ -97,6 +97,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   inspects module dependency graphs for cycles, layer violations and dead code.
   Two storyboard bugs were found by looking at the pictures (a flipped origin
   and mismatched numbering) and fixed in the core. *done*
+- **P2.7 — `schemagx`.** Relational schemas: dangling foreign keys, type
+  mismatches, foreign-key cycles (excluding self-references, which are trees)
+  and dead tables. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.
