@@ -11,6 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
 
+      # Fail on credentials or machine paths in tracked files before anything
+      # else; a public repo cannot un-leak a secret.
+      - name: Pre-publication check
+        run: python3 scripts/prepublish_check.py
+
       # Best effort: give the runner Mesa's software GL so the shadergx tests
       # actually run instead of skipping. If this fails, they skip and CI stays
       # green.

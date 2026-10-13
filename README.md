@@ -119,6 +119,9 @@ give it (that is how it gets a `fig`, a `level`, a `machine`, …). Only run
 script. `shadergx` additionally compiles and runs GLSL on your GPU. No tool
 makes network requests.
 
+Before publishing, `python scripts/prepublish_check.py` fails on credentials or
+machine paths in the working tree (and on credentials anywhere in history).
+
 MIT licensed. Every package declares `License-Expression: MIT` (SPDX) and ships
 its `LICENSE` in the wheel. The reasoning (and why not Apache-2.0) is in
 [`docs/LICENSING.md`](docs/LICENSING.md).

@@ -6,8 +6,8 @@ Build the loop an agent can close on its own:
 write artifact as code  →  inspect (codes + exit code + storyboard)  →  fix  →  inspect  →  ship
 ```
 
-The reference implementation is **gxkit** at `gxkit`
-(`gxcore` + `chartgx`, `levelgx`, `flowgx`, `authzgx`, `depsgx`, `schemagx`, `docgx`, `protogx`, `shadergx`).
+The reference implementation is **gxkit** (this repository; `gxcore` plus the
+`*gx` tools).
 Read a tool whose artifact resembles yours before writing a new one — the
 patterns are small and copied often.
 
@@ -162,3 +162,12 @@ The license must travel with the package: declare an SPDX expression
    numbers match the report.
 9. Write `README` / `AGENTS` / `llms.txt` / `SKILL.md`.
 10. Only now, if a second tool wants the same code, move it into `gxcore`.
+
+## 9. Publishing
+
+`scripts/prepublish_check.py` is the gate. It fails on credentials or machine
+paths in tracked files (and on credentials anywhere in history), and prints the
+commit authors, trailers and submodules. It runs in CI, and it was proven to
+fail — on a real finding in this repository — before it was trusted. Run it
+before any release or visibility change; the checklist behind it is the
+`publish-readiness-audit` skill.
