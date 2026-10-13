@@ -16,6 +16,7 @@ domain; the review loop is written once.
 | **`authzgx`** | permission models: privilege-escalation paths, inheritance cycles, dangling references, dead config | working |
 | **`depsgx`** | module dependency graphs: cycles, layer violations, banned edges, dead code | working |
 | **`schemagx`** | relational schemas: dangling keys, type mismatches, foreign-key cycles, dead tables | working |
+| **`docgx`** | pages / slides: text that overflows the canvas, blocks that overlap, tiny text, out-of-order blocks | working |
 | `shadergx` | shader / GPU output | planned |
 | `docgx` | document / slide layout | planned |
 
@@ -78,6 +79,7 @@ packages/
   authzgx/    permission models / RBAC
   depsgx/     module dependency graphs
   schemagx/   relational schemas
+  docgx/      pages / slides
 docs/
 ```
 
@@ -92,6 +94,7 @@ uv run flowgx  inspect packages/flowgx/examples/broken_machine.py  # exit 1
 uv run authzgx inspect packages/authzgx/examples/escalate_auth.py  # exit 1
 uv run depsgx  inspect packages/depsgx/examples/broken_modules.py   # exit 1
 uv run schemagx inspect packages/schemagx/examples/broken_schema.py  # exit 1
+uv run docgx   inspect packages/docgx/examples/crowded_page.py      # exit 1
 ```
 
 ## Use a tool on its own

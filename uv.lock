@@ -12,6 +12,7 @@ members = [
     "authzgx",
     "chartgx",
     "depsgx",
+    "docgx",
     "flowgx",
     "gxcore",
     "gxkit",
@@ -316,6 +317,21 @@ wheels = [
 name = "depsgx"
 version = "0.1.0"
 source = { editable = "packages/depsgx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
+]
+
+[[package]]
+name = "docgx"
+version = "0.1.0"
+source = { editable = "packages/docgx" }
 dependencies = [
     { name = "gxcore" },
     { name = "pillow" },

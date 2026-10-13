@@ -1,0 +1,37 @@
+# docgx
+
+> Inspect a page / slide for overflowing, overlapping or unreadable text. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+docgx is one of the `gxkit` agent-native review tools. Declare a title and
+positioned text blocks; `docgx inspect` measures the rendered page and reports
+text that runs off it, covers other text, is too small, or exceeds the word
+budget.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/docgx" docgx --help
+uv tool install ./packages/docgx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+docgx inspect page.py            # report + storyboard, exit 1 on any error
+docgx inspect page.py --json
+docgx inspect page.py --no-storyboard
+docgx render  page.py -o page.png
+```
+
+A page file defines `page` (a `Page`) or module-level `TITLE` / `BLOCKS` /
+`WIDTH` / `HEIGHT` / `MAX_WORDS`. `x`/`y` are fractions of the page.
+
+## Checks
+
+error: `clipped-text`, `text-overlap`.
+warn: `no-title`, `too-much-text`.
+info: `small-text`, `reading-order`, `empty-page`.
+
+Full documentation is in `README.md`.

@@ -7,7 +7,7 @@ write artifact as code  →  inspect (codes + exit code + storyboard)  →  fix 
 ```
 
 The reference implementation is **gxkit** at `gxkit`
-(`gxcore` + `chartgx`, `levelgx`, `flowgx`, `authzgx`, `depsgx`, `schemagx`).
+(`gxcore` + `chartgx`, `levelgx`, `flowgx`, `authzgx`, `depsgx`, `schemagx`, `docgx`).
 Read a tool whose artifact resembles yours before writing a new one — the
 patterns are small and copied often.
 
@@ -101,13 +101,25 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Measure exit codes correctly.** `tool … | tail; echo $?` prints `tail`'s
   code, not the tool's. Capture `$?` immediately after the tool runs.
 
-## 6. What every tool ships
+## 6. Pitfalls learned from the family
+
+- **Nested boxes.** "Do these two collide?" must ask whether the *smaller* box
+  is mostly inside the other. Requiring *both* to be covered misses a small
+  label sitting on a large block.
+- **Legitimate self-loops.** A self-referential edge (a `manager_id` tree, a
+  retry loop) is not a cycle. Exclude self-edges before `find_cycle`, or you
+  report trees as faults *and* hide the real cycle behind them.
+- **Stale core wheel.** In a multi-package workspace, installing one tool reuses
+  a cached wheel of the shared core. When the core changes, bump its version, or
+  the tool fails at import (`ModuleNotFoundError: gxcore.toolkit`).
+
+## 7. What every tool ships
 
 `README.md`, `AGENTS.md`, `llms.txt` (one-file agent setup), `SKILL.md`; a
 `uvx --from "<repo>#subdirectory=packages/<tool>" <tool> …` install path; and a
 `payload = [(clean example), (every-fault example)]` under `examples/`.
 
-## 7. Workflow
+## 8. Workflow
 
 1. Name the artifact and the **objective property**; run the checklist.
 2. Model the artifact as **data** (declarative: tables, edges, grids, boxes).

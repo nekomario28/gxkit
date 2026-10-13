@@ -348,7 +348,8 @@ def _text_items(ax: Any, renderer: Any) -> list[TextBox]:
 
 
 def _check_text(fig: Any, ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
-    out.extend(check_text_layout(_text_items(ax, renderer), _figure_box(fig), target=f"ax[{i}]"))
+    out.extend(check_text_layout(_text_items(ax, renderer), _figure_box(fig),
+                                 target=f"ax[{i}]", surface="figure"))
 
 
 def _check_legend_covers(ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:

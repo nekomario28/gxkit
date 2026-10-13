@@ -103,6 +103,10 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P2.7 — `schemagx`.** Relational schemas: dangling foreign keys, type
   mismatches, foreign-key cycles (excluding self-references, which are trees)
   and dead tables. *done*
+- **P3 — `docgx`.** Pages / slides: text overflow, overlap, tiny text, word
+  budget, reading order. The second real consumer of `gxcore.layout` (after
+  `chartgx`), which also exposed that the overlap metric ignored a small box
+  nested inside a large one. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.
