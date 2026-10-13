@@ -142,6 +142,19 @@ def test_annotate_top_left_origin(tmp_path):
     assert annotate(img, [p], tmp_path / "s.png", origin="top-left").exists()
 
 
+def test_annotate_groups_colocated_problems(tmp_path):
+    # Two faults on the same node must not hide each other under one box.
+    img = Image.new("RGB", (120, 120), "white")
+    box = (20, 20, 80, 80)
+    problems = [
+        Problem(ERROR, "e", "m", bbox=box),
+        Problem(INFO, "i", "m", bbox=box),
+    ]
+    out = annotate(img, problems, tmp_path / "s.png", origin="top-left")
+    assert out.exists()
+    assert Image.open(out).size == (120, 120)
+
+
 # --------------------------------------------------------------------------- #
 # testing helpers
 # --------------------------------------------------------------------------- #

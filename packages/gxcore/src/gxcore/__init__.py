@@ -47,4 +47,4 @@ __all__ = [
     "load_module",
     "resolve",
 ]
-__version__ = "0.3.0"
+__version__ = "0.4.0"

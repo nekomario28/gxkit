@@ -52,7 +52,8 @@ is not identical stays in the tool.
 | `loading` | load an artifact from a Python file (attr → builder → fallback) | one discovery convention, not one per tool |
 | `graph` | forward/reverse reachability, traps (soft-locks), cycles, components, terminals | `levelgx` walks a grid, `flowgx` walks a state machine — same questions |
 | `layout` | text too small / clipped / overlapping, with messages | `chartgx` and `flowgx` label pixels the same way |
-| `diagram` | a deterministic circular node-link renderer (circles + arrows + labels) | `flowgx`, `authzgx` (and any graph tool) draw once |
+| `diagram` | a deterministic circular node-link renderer (circles + arrows + labels) | `flowgx`, `authzgx`, `depsgx` draw once |
+| `toolkit` | build a raster tool's `Tool` + `main` from `load`/`inspect`/`to_image` | four tools' `tool.py` became five lines each |
 
 ## Efficiency model
 
@@ -91,6 +92,11 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P2.5 — extract `diagram`; add `authzgx`.** The graph renderer moved to
   `gxcore.diagram`; `authzgx` answers "can a low principal reach a sensitive
   permission?" with `gxcore.graph.shortest_path`. *done*
+- **P2.6 — extract `toolkit`; add `depsgx`.** The tool scaffolding moved to
+  `gxcore.toolkit` (a tool's `tool.py` is now `scene_tool(...)`); `depsgx`
+  inspects module dependency graphs for cycles, layer violations and dead code.
+  Two storyboard bugs were found by looking at the pictures (a flipped origin
+  and mismatched numbering) and fixed in the core. *done*
 - **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
   inspect for all-black / NaN (via float target), constant output, expected vs
   actual coverage. Needs a headless GL stack; budget for it.

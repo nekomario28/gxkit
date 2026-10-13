@@ -18,11 +18,14 @@ owns one domain; the review loop is written once.
   `packages/flowgx`
 - **authzgx** — permission models / RBAC: privilege-escalation paths, cyclic
   inheritance, dangling references, dead config. `packages/authzgx`
+- **depsgx** — module dependency graphs: cycles, layer violations, banned
+  edges, dead code. `packages/depsgx`
 - planned: `shadergx` (shader/GPU output), `docgx` (document/slide layout).
 
-`gxcore` also shares the analysis the tools need: `graph` (reachability, traps,
-shortest path, cycles), `layout` (text small/clipped/overlapping), `loading`,
-and `diagram` (a deterministic node-link renderer).
+`gxcore` also shares the analysis and plumbing the tools need: `graph`
+(reachability, traps, shortest path, cycles), `layout` (text
+small/clipped/overlapping), `loading`, `diagram` (a deterministic node-link
+renderer) and `toolkit` (build a tool from three callables).
 
 ## The contract every tool shares
 
@@ -45,6 +48,7 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chart
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/levelgx" levelgx inspect level.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/flowgx" flowgx inspect machine.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/authzgx" authzgx inspect auth.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/depsgx" depsgx inspect deps.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.

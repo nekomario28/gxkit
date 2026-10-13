@@ -1,0 +1,38 @@
+# depsgx
+
+> Inspect a module dependency graph for cycles, layer violations and dead code. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+depsgx is one of the `gxkit` agent-native review tools. Declare modules and what
+they depend on; `depsgx inspect` proves the graph is acyclic, that no dependency
+points upward through the layers, and that nothing is unreachable from the entry
+points.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/depsgx" depsgx --help
+uv tool install ./packages/depsgx      # from a clone
+```
+
+Needs Python 3.10+ and Pillow.
+
+## Use
+
+```sh
+depsgx inspect deps.py            # report + storyboard, exit 1 on any error
+depsgx inspect deps.py --json
+depsgx inspect deps.py --no-storyboard
+depsgx render  deps.py -o deps.png
+```
+
+A graph file defines `graph` (a `ModuleGraph`) or module-level `MODULES` /
+`DEPENDS` / `ROOTS` / `FORBIDDEN` / `LAYERS`. `depends` points from a module to
+what it imports.
+
+## Checks
+
+error: `cycle`, `layer-violation`, `forbidden-dependency`, `self-dependency`,
+`dangling-dependency`.
+info: `unreachable-module`, `orphan-module`, `duplicate-dependency`, `no-roots`.
+
+Full documentation is in `README.md`.

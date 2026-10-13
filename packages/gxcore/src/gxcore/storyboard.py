@@ -64,10 +64,22 @@ def annotate(
         font = ImageFont.load_default()
 
     flip = origin == "bottom-left"
+
+    # Several problems can share one box (e.g. two faults on the same node).
+    # Group them so one rectangle carries every number instead of hiding the
+    # earlier boxes under the later ones.
+    groups: dict[tuple[float, float, float, float], list[int]] = {}
+    representative: dict[tuple[float, float, float, float], Problem] = {}
     for n, p in enumerate(sorted(problems, key=sort_key), start=1):
         if p.bbox is None:
             continue
-        x0, y0, x1, y1 = p.bbox
+        key = tuple(round(v) for v in p.bbox)
+        groups.setdefault(key, []).append(n)
+        representative.setdefault(key, p)
+
+    for key, numbers in groups.items():
+        p = representative[key]
+        x0, y0, x1, y1 = key
         if flip:
             top, bottom = H - y1, H - y0
         else:
@@ -76,7 +88,7 @@ def annotate(
         color = _COLORS.get(p.severity, (128, 128, 128))
         draw.rectangle(box, outline=color, width=max(2, int(H / 400)))
 
-        tag = f"{n}"
+        tag = ",".join(str(n) for n in numbers)
         tb = draw.textbbox((0, 0), tag, font=font)
         tw, th = tb[2] - tb[0], tb[3] - tb[1]
         ty = box[1] - th - 6
