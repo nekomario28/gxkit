@@ -15,6 +15,14 @@ from .gl import ShaderError, members, perturb, render_array
 from .model import Shader
 
 _EPS = 1e-4
+_MAX_PIXELS = 16_000_000
+
+
+def _compact(text: str) -> str:
+    """One readable line from a multi-line compiler log."""
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    pick = next((ln for ln in lines if "error" in ln.lower()), lines[0] if lines else "shader failed")
+    return pick[:300]
 
 
 def inspect_shader(shader: Shader, name: str | None = None) -> Report:
@@ -27,10 +35,16 @@ def inspect_shader(shader: Shader, name: str | None = None) -> Report:
     )
     out: list[Problem] = []
 
+    if width <= 0 or height <= 0 or width * height > _MAX_PIXELS:
+        out.append(Problem(ERROR, "bad-size",
+                           f"canvas {width}x{height} is out of range (1..{_MAX_PIXELS:,} pixels)"))
+        report.problems = out
+        return report
+
     try:
         base = render_array(shader)
     except ShaderError as exc:
-        out.append(Problem(ERROR, "compile-error", str(exc)))
+        out.append(Problem(ERROR, "compile-error", _compact(str(exc))))
         report.problems = out
         return report
 

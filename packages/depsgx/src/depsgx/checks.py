@@ -46,7 +46,13 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
             out.append(Problem(ERROR, "self-dependency",
                                f"module {src!r} depends on itself", target=src))
 
-    cycle = find_cycle(edges)
+    # Self-dependencies are their own finding; do not also report them as a cycle.
+    acyclic: dict[str, list[str]] = {m: [] for m in graph.modules}
+    for src, dst in graph.depends:
+        if src != dst:
+            acyclic.setdefault(src, []).append(dst)
+            acyclic.setdefault(dst, [])
+    cycle = find_cycle(acyclic)
     if cycle:
         out.append(Problem(ERROR, "cycle",
                            f"dependency cycle: {' → '.join(cycle)}", target=cycle[0]))

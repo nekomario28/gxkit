@@ -34,6 +34,8 @@ def test_dangling_dependency():
 def test_self_dependency():
     g = ModuleGraph(modules=["a", "b"], depends=[("a", "a"), ("a", "b")], roots=["a"], name="x")
     assert_fires(inspect_graph(g), "self-dependency", ERROR)
+    # ...and it is not also reported as a cycle (no double-counting).
+    assert_quiet(inspect_graph(g), "cycle")
 
 
 def test_forbidden_dependency():

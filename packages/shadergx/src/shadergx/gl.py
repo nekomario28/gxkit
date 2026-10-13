@@ -90,6 +90,8 @@ def render_array(shader: Shader, *, time: float | None = None, overrides: dict[s
     prog = program(shader)
     ctx = context()
     width, height = shader.size
+    if width <= 0 or height <= 0 or width * height > 16_000_000:
+        raise ShaderError(f"canvas {width}x{height} is out of range (1..16,000,000 pixels)")
 
     texture = ctx.texture((width, height), 4, dtype="f4")
     fbo = ctx.framebuffer(color_attachments=[texture])

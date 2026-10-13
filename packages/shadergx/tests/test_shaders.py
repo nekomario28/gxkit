@@ -73,6 +73,17 @@ def test_a_varying_shader_is_not_constant():
     assert_quiet(inspect_shader(s), "constant-output")
 
 
+def test_bad_size():
+    s = Shader(fragment="void main(){ fragColor = vec4(1.0); }", size=(100_000, 100_000))
+    assert_fires(inspect_shader(s), "bad-size", ERROR)
+
+
+def test_compile_error_message_is_one_line():
+    s = shader("void main(){ fragColor = nope; }")
+    msg = next(p.message for p in inspect_shader(s).problems if p.code == "compile-error")
+    assert "\n" not in msg
+
+
 def test_examples_load_and_are_diagnosed():
     examples = Path(__file__).resolve().parents[1] / "examples"
     good, _ = load_shader(examples / "good_shader.py")

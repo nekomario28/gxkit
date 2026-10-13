@@ -10,7 +10,7 @@ means.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from typing import Hashable, Iterable, Mapping
+from typing import Hashable, Iterable, Iterator, Mapping
 
 Adjacency = Mapping[Hashable, Iterable[Hashable]]
 
@@ -144,29 +144,34 @@ def weak_components(edges: Adjacency) -> list[set[Hashable]]:
 
 
 def find_cycle(edges: Adjacency) -> list[Hashable] | None:
-    """Any cycle in the graph, as a list of nodes, or None."""
+    """Any cycle, as a node list ending where it starts, or None.
+
+    Iterative on purpose: a deep chain (thousands of modules) must not hit the
+    recursion limit and crash the tool.
+    """
     e = _norm(edges)
     WHITE, GREY, BLACK = 0, 1, 2
     color: dict[Hashable, int] = defaultdict(int)
-    stack: list[Hashable] = []
-
-    def visit(u: Hashable) -> list[Hashable] | None:
-        color[u] = GREY
-        stack.append(u)
-        for v in e.get(u, ()):
-            if color[v] == GREY:
-                return stack[stack.index(v):] + [v]
-            if color[v] == WHITE:
-                found = visit(v)
-                if found:
-                    return found
-        stack.pop()
-        color[u] = BLACK
-        return None
-
-    for node in list(e):
-        if color[node] == WHITE:
-            found = visit(node)
-            if found:
-                return found
+    for start in list(e):
+        if color[start] != WHITE:
+            continue
+        color[start] = GREY
+        path: list[Hashable] = [start]
+        stack: list[tuple[Hashable, Iterator[Hashable]]] = [(start, iter(e.get(start, ())))]
+        while stack:
+            node, it = stack[-1]
+            advanced = False
+            for v in it:
+                if color[v] == GREY:
+                    return path[path.index(v):] + [v]
+                if color[v] == WHITE:
+                    color[v] = GREY
+                    path.append(v)
+                    stack.append((v, iter(e.get(v, ()))))
+                    advanced = True
+                    break
+            if not advanced:
+                color[node] = BLACK
+                stack.pop()
+                path.pop()
     return None

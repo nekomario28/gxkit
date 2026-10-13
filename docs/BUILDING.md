@@ -115,6 +115,10 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 
 ## 7. What every tool ships
 
+The loader **imports and runs** the artifact file — document this. A person
+running `inspect` on an untrusted file is running a Python script. No tool in
+this family makes network requests; say so, so the boundary is explicit.
+
 `README.md`, `AGENTS.md`, `llms.txt` (one-file agent setup), `SKILL.md`; a
 `uvx --from "<repo>#subdirectory=packages/<tool>" <tool> …` install path; and a
 `payload = [(clean example), (every-fault example)]` under `examples/`.

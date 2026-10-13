@@ -69,8 +69,14 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
 
     sb: Path | None = None
     if not args.no_storyboard and tool.to_image is not None:
-        sb = storyboard_path(report.name, args.output)
-        annotate(tool.to_image(artifact), report.problems, sb, origin=tool.origin)
+        # A storyboard the tool cannot draw (e.g. shadergx with no GL context)
+        # must not swallow the report that was already computed.
+        try:
+            sb = storyboard_path(report.name, args.output)
+            annotate(tool.to_image(artifact), report.problems, sb, origin=tool.origin)
+        except Exception as exc:
+            print(f"{tool.name}: storyboard skipped ({type(exc).__name__}: {exc})", file=sys.stderr)
+            sb = None
 
     if args.json:
         print(to_json(report, sb))

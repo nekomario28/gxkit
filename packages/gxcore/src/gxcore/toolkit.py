@@ -49,7 +49,11 @@ def scene_tool(
     def _render(scene: Scene, out: Path | None, dpi: float | None) -> Path:
         out = Path(out) if out else Path(f"{scene.path.stem}.png")
         out.parent.mkdir(parents=True, exist_ok=True)
-        to_image(scene.artifact).save(out)
+        image = to_image(scene.artifact)
+        if dpi:
+            image.save(out, dpi=(dpi, dpi))
+        else:
+            image.save(out)
         return out
 
     def _to_image(scene: Scene):

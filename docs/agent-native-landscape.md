@@ -55,7 +55,12 @@ Two ways this arrives:
    whether the chart is *honest*. The classic failure — a bar chart whose
    baseline is truncated, turning 8% into 300% — is mechanical to detect and
    nothing detects it. Only `FigureLint` exists, and it lints academic figures,
-   not correctness. → **prototyped here as `chartgx`.**
+   not correctness. → **built in `gxkit` as `chartgx`.**
+
+> **Status (v0.1.2):** `gxkit` now implements this pattern for nine domains —
+> charts, game levels, state machines, permissions, module graphs, schemas,
+> pages, protocols and fragment shaders — over one core (`gxcore`). See the
+> repository README for the current list.
 2. **Shader / GPU graphics.** No agent-first shader authoring loop with a
    pixel-verified `inspect`.
 3. **Game / level design.** No engine that lets an agent build a level and then

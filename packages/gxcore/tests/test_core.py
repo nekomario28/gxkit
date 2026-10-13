@@ -253,3 +253,23 @@ def test_cli_storyboard_honours_top_left_origin(tmp_path):
     top = sum(1 for x in range(100) for y in range(45) if red(img.getpixel((x, y))))
     bottom = sum(1 for x in range(100) for y in range(55, 100) if red(img.getpixel((x, y))))
     assert top > 0 and bottom == 0
+
+
+def test_cli_storyboard_failure_does_not_hide_the_report(tmp_path, capsys):
+    # shadergx with no GL context computes a report, then cannot draw it; the
+    # report must still be printed.
+    def inspect(_):
+        return Report("R", problems=[Problem(ERROR, "e", "boom")])
+
+    def to_image(_):
+        raise RuntimeError("no GL context")
+
+    tool = Tool("t", "d", load=lambda p: None, inspect=inspect,
+                render=lambda a, o, d: o, to_image=to_image)
+    src = tmp_path / "x.py"
+    src.write_text("")
+    rc = run(tool, ["inspect", str(src)])
+    captured = capsys.readouterr()
+    assert rc == 1                      # still gated on the report's error
+    assert "boom" in captured.out       # the report survived
+    assert "storyboard skipped" in captured.err
