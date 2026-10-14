@@ -76,11 +76,20 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
         if src != dst:
             acyclic.setdefault(src, []).append(dst)
             acyclic.setdefault(dst, [])
-    cycle: list[str] | None = find_cycle(acyclic)
-    if cycle:
-        out.append(
-            Problem(ERROR, "cycle", f"dependency cycle: {' → '.join(cycle)}", target=cycle[0])
-        )
+    # A global first-cycle search hides faults in other independent components.
+    # Report one witness per cyclic SCC, not exponentially many elementary circuits.
+    for component in strongly_connected_components(acyclic):
+        if len(component) < 2:
+            continue
+        members = set(component)
+        component_edges = {
+            node: [dst for dst in acyclic[node] if dst in members] for node in component
+        }
+        cycle = find_cycle(component_edges)
+        if cycle:
+            out.append(
+                Problem(ERROR, "cycle", f"dependency cycle: {' → '.join(cycle)}", target=cycle[0])
+            )
 
     forbidden = {(f[0], f[1]) for f in graph.forbidden}
     for src, dst in graph.depends:
