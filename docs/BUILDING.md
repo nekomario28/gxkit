@@ -157,6 +157,18 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
   targets beside a single-target flag.
 - **CI must be pinned to the lock** (`uv sync --locked`), or CI silently drifts
   from what developers run.
+- **A substring is not a directive.** `"#version" in src` matched a comment and
+  dropped the shader's generated preamble. Anchor it (`^\s*#version`); the same
+  goes for shebangs, `import`/`BEGIN` markers, and any sentinel.
+- **Cross-check the maths, not only the graph.** The collision, clipping and
+  coverage routines that decide verdicts get a reference library (Shapely) on
+  random inputs — not a second copy of the same formula.
+- **Pin the input language with a valid + invalid corpus.** The constructs an
+  author will write must parse; malformed ones must be rejected. A false
+  rejection is the tool lying about what it supports.
+- **Keep strictness in the repo's config.** `strict = true` for mypy and the
+  lint/format rules belong in `pyproject.toml`, not only in a CI command line, so
+  the gate cannot quietly weaken; gate `ruff format --check` too.
 
 ## 7. What every tool ships
 
