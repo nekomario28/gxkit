@@ -16,6 +16,7 @@ from gxcore.graph import (
     find_cycle,
     reachable,
     shortest_path,
+    topological_sort,
     traps,
     weak_components,
 )
@@ -111,3 +112,28 @@ def test_traps_match_networkx():
         reached = reachable(edges, starts)
         want = {n for n in reached - targets if not any(nx.has_path(g, n, t) for t in targets)}
         assert traps(edges, starts, targets) == want
+
+
+def test_topological_sort_matches_networkx():
+    rng = random.Random(101)
+    for _ in range(300):
+        edges = _random_edges(rng)
+        g = _digraph(edges)
+        got = topological_sort(edges)
+        if nx.is_directed_acyclic_graph(g):
+            assert got is not None
+            assert set(got) == set(edges)
+            position = {node: i for i, node in enumerate(got)}
+            for u, v in g.edges():
+                assert position[u] < position[v], f"{u} must come before {v}"
+        else:
+            assert got is None
+
+
+def test_topological_sort_includes_nodes_you_pass_in():
+    edges = {1: [2], 3: []}
+    order = topological_sort(edges, nodes=[3, 4])
+    assert set(order) == {1, 2, 3, 4}
+    position = {node: i for i, node in enumerate(order)}
+    assert position[1] < position[2]
+    assert topological_sort({1: [1]}) is None

@@ -8,7 +8,7 @@ that needs deferred constraints, and tables nothing points at. Cycles come from
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.graph import reverse
+from gxcore.graph import reverse, topological_sort
 
 from .model import Schema
 from .render import compute_layout, node_box
@@ -27,6 +27,9 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
             "roots: " + (", ".join(schema.roots) or "none"),
         ],
     )
+    order = topological_sort(edges)
+    if order is not None and len(order) > 1:
+        report.details.append("create order: " + " → ".join(reversed(order)))
     out: list[Problem] = []
 
     for child, parent in schema.foreign_keys:

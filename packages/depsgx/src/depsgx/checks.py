@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections import Counter
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import find_cycle, reverse
+from gxcore.graph import find_cycle, reverse, topological_sort
 
 from .model import ModuleGraph
 from .render import compute_layout, node_box
@@ -34,6 +34,10 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
         report.details.append(
             "layers (top→bottom): " + " | ".join(",".join(g) for g in graph.layers)
         )
+    order = topological_sort(edges)
+    if order is not None and len(order) > 1:
+        # ``edges`` points the way a dependency does; a build order is its reverse.
+        report.details.append("build order: " + " → ".join(reversed(order)))
 
     out: list[Problem] = []
 

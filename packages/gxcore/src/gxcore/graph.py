@@ -178,3 +178,44 @@ def find_cycle(edges: Adjacency[_H]) -> list[_H] | None:
                 stack.pop()
                 path.pop()
     return None
+
+
+def topological_sort(edges: Adjacency[_H], nodes: Iterable[_H] | None = None) -> list[_H] | None:
+    """An order where every node comes before the nodes it points to, or
+    ``None`` if the graph has a cycle.
+
+    Deterministic: ties break in the order nodes first appear in ``edges`` (and
+    then ``nodes``). Kahn's algorithm, iterative like the rest of this module.
+    """
+    e = _norm(edges)
+    ordered: list[_H] = []
+    seen: set[_H] = set()
+
+    def remember(n: _H) -> None:
+        if n not in seen:
+            seen.add(n)
+            ordered.append(n)
+
+    if nodes is not None:
+        for n in nodes:
+            remember(n)
+    for u, vs in e.items():
+        remember(u)
+        for v in vs:
+            remember(v)
+
+    indegree: dict[_H, int] = dict.fromkeys(ordered, 0)
+    for vs in e.values():
+        for v in vs:
+            indegree[v] += 1
+
+    queue = deque(n for n in ordered if indegree[n] == 0)
+    out: list[_H] = []
+    while queue:
+        u = queue.popleft()
+        out.append(u)
+        for v in e.get(u, ()):
+            indegree[v] -= 1
+            if indegree[v] == 0:
+                queue.append(v)
+    return out if len(out) == len(ordered) else None

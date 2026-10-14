@@ -10,6 +10,11 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.3).
 
 ### Added
+- `gxcore.graph.topological_sort` — a build order (cross-checked against
+  NetworkX); `depsgx` reports a **build order** and `schemagx` a **create order**
+  when the graph is acyclic.
+- `scripts/release.py` prints the publish plan in dependency order (`gxcore`
+  first, `gxkit-cli` last), pinned by a test.
 - `gxkit` umbrella: `gxkit inspect <file>` (detect and route), `gxkit tools`,
   `gxkit codes`.
 - `.gxkit.toml` config: ignore a code or change its severity.
@@ -18,6 +23,8 @@ See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.
 - `scripts/check.sh` — one command that runs every gate CI runs.
 - `docs/TRACE.md` — a generated table mapping each tool to its module, codes and
   examples (pinned to `scripts/make_trace.py`; it cannot drift).
+- `.gitattributes` — text is LF in the repository, binary assets are never
+  converted, so a checkout is reproducible across platforms.
 - **Baselines** (`inspect --baseline` / `--write-baseline`): a stored report makes
   a run a diff (new / fixed / unchanged) that fails only on new errors.
 
@@ -34,6 +41,9 @@ See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.
   artifact fails), so the action cannot rot untested.
 
 ### Tests
+- **Repository hygiene**: the files a host and a contributor expect exist, the
+  `SECURITY.md` states a reporting path and supported versions, every `<img>` in
+  the README has `alt` text, and `.gitattributes` pins text to LF.
 - **Docs are reachable and linked**: every released version in the `CHANGELOG`
   has a release link, `docs/PLAN.md` names every tool, every `docs/*.md` is
   referenced from somewhere, every internal `#heading` link resolves, and every
