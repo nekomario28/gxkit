@@ -136,6 +136,10 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   method with no authentication, a path outside the versioned base. Added after
   the ten-tool snapshot. *done*
 
+- **P10 — `netgx`.** Network topologies: an edge to an unknown node, a public
+  entry that reaches sensitive data, a self-loop. The least-privilege question,
+  on the same reachability core. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

@@ -20,3 +20,4 @@ that the docs agree) live in `packages/gxkit/tests/`.
 | `protogx` | protocols | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py` |
 | `flowgx` | state machines | `flowgx.tool` | 11 | `broken_machine.py`, `good_machine.py` |
 | `apigx` | HTTP API contracts | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |
+| `netgx` | network topologies | `netgx.tool` | 6 | `broken_network.py`, `good_network.py` |

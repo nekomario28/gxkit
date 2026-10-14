@@ -29,6 +29,7 @@ EXAMPLES = {
     "shadergx": ("good_shader.py", "broken_shader.py"),
     "framegx": ("good_clip.py", "frozen_clip.py"),
     "apigx": ("good_api.py", "broken_api.py"),
+    "netgx": ("good_network.py", "broken_network.py"),
 }
 
 

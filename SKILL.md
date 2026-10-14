@@ -53,6 +53,7 @@ can ignore a code or change its severity; `--no-config` skips it.
 | GLSL fragment shader | `shadergx` | a uniform that never reaches the output |
 | a rendered animation | `framegx` | a frozen or black render |
 | an HTTP API contract | `apigx` | a mutating route with no authentication |
+| a network topology | `netgx` | a public entry that reaches sensitive data |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

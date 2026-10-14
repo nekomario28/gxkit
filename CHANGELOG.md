@@ -3,7 +3,23 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.5.0] — netgx, the twelfth tool
+
+See the [v0.5.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.5.0).
+
+### Added
+- `netgx` — inspect a network topology: an edge to an unknown node, a public
+  entry that reaches sensitive data, a self-loop, a duplicate edge, an isolated
+  node, or no public entry.
+
+### Changed
+- `SECURITY.md` states a concrete supported-versions policy (the latest release
+  of `gxcore`, every `*gx` tool and `gxkit-cli`; Python 3.10–3.13).
+
+### Tests
+- Every tool's `AGENTS.md` must name the tool, mention `inspect` and state the
+  exit code; every `SKILL.md` must name at least one of its own codes; the
+  `SECURITY.md` policy must name the distributions and the Python range.
 
 ### Added
 - `chartgx`: `inverted-axis` (warn) — a value axis that grows the wrong way

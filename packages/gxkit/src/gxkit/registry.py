@@ -100,6 +100,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("API",),
         ("ENDPOINTS", "BASE"),
     ),
+    ToolSpec(
+        "netgx",
+        "network topologies",
+        "netgx.tool",
+        ("network", "NETWORK", "net", "topology"),
+        ("Network",),
+        ("NODES", "EDGES", "SENSITIVE"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

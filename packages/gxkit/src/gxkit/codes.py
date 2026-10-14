@@ -143,6 +143,14 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "deprecated-endpoint": "info",
         "no-endpoints": "info",
     },
+    "netgx": {
+        "dangling-edge": "error",
+        "public-reaches-sensitive": "error",
+        "self-loop": "warn",
+        "duplicate-edge": "info",
+        "isolated-node": "info",
+        "no-public": "info",
+    },
 }
 
 

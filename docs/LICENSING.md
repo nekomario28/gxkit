@@ -33,7 +33,7 @@ licensed. Anyone may implement it; the MIT code is a reference.
 
 | dependency | license | used by |
 | --- | --- | --- |
-| Pillow | HPND (permissive) | gxcore, chartgx, levelgx, flowgx, authzgx, depsgx, schemagx, docgx, protogx, shadergx, framegx, apigx |
+| Pillow | HPND (permissive) | gxcore, chartgx, levelgx, flowgx, authzgx, depsgx, schemagx, docgx, protogx, shadergx, framegx, apigx, netgx |
 | matplotlib | PSF-based (BSD-compatible) | chartgx |
 | numpy | BSD-3-Clause | shadergx, framegx |
 | moderngl | MIT | shadergx |

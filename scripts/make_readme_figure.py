@@ -37,6 +37,7 @@ TOOLS = [
     ("shadergx", "shaders", "black-output"),
     ("framegx", "animations", "frozen"),
     ("apigx", "apis", "unauthenticated-mutation"),
+    ("netgx", "networks", "public-reaches-sensitive"),
 ]
 
 

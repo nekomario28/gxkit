@@ -285,6 +285,7 @@ DOCUMENTED_EXAMPLES = {
     "shadergx": "broken_shader.py",
     "framegx": "frozen_clip.py",
     "apigx": "broken_api.py",
+    "netgx": "broken_network.py",
 }
 
 
