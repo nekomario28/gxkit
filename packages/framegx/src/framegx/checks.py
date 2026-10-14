@@ -108,7 +108,7 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
     means = frames.reshape(n, -1).mean(axis=1)
     per_frame_ptp = frames.reshape(n, -1).max(axis=1) - frames.reshape(n, -1).min(axis=1)
 
-    if means.max() < _BLACK_LEVEL:
+    if float(np.max(means)) < _BLACK_LEVEL:
         out.append(Problem(ERROR, "all-black",
                            "every sampled frame is black — nothing was drawn"))
     elif np.all(per_frame_ptp < _IDENTICAL):
@@ -128,7 +128,7 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
                                label=f"frames {start}-{start + length}", bbox=bbox))
 
     motion = float(np.abs(frames[-1].astype(int) - frames[0].astype(int)).mean())
-    if motion < _MOTION and float(per_frame_ptp.max()) > _IDENTICAL and means.max() >= _BLACK_LEVEL:
+    if motion < _MOTION and float(np.max(per_frame_ptp)) > _IDENTICAL and float(np.max(means)) >= _BLACK_LEVEL:
         out.append(Problem(WARN, "no-motion",
                            "the first and last sampled frames are the same — the clip barely changes"))
 

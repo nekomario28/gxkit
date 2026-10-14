@@ -165,7 +165,8 @@ is clutter.
 **One entry point, once there are several tools.** A `tools` list and an
 `inspect <file>` that detects the artifact and routes to the right tool (the
 routing table as code — see `packages/gxkit`). Name the tool explicitly as the
-escape hatch.
+escape hatch, and accept a directory: run every artifact under it and fail if
+any does.
 
 **Expose the codes as data, ship a config, wire a CI gate.** A `codes` command
 whose entries a test cross-checks against the source (so it cannot drift); a
@@ -203,3 +204,8 @@ commit authors, trailers and submodules. It runs in CI, and it was proven to
 fail — on a real finding in this repository — before it was trusted. Run it
 before any release or visibility change; the checklist behind it is the
 `publish-readiness-audit` skill.
+
+A release also wants: PyPI metadata (authors, keywords, classifiers, URLs), a
+**dependency pin**, a type check if you ship `py.typed`, repository metadata
+(description, topics, homepage), and dependency updates (Dependabot). See
+[`RELEASING.md`](RELEASING.md).
