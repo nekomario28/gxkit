@@ -143,6 +143,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P11 — `envgx`.** Environment / config drift: an undeclared reference, a
   secret with a default, an unknown type, an unused declaration. *done*
 
+- **P12 — `pipegx`.** Build pipelines: a `needs` that names no step, a cycle, a
+  duplicate artifact, a goal nothing produces. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

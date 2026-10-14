@@ -1,0 +1,11 @@
+# pipegx
+
+pipegx inspects a build pipeline DAG for unknown steps, cycles, duplicate
+artifacts and unproduced goals. Part of gxkit; the inspect contract (stable
+codes, exit codes, a storyboard) is shared.
+
+- Install/run: uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/pipegx" pipegx inspect pipe.py
+- Write: a Python file building pipegx.Pipeline(steps=[pipegx.Step("build", produces=["app"])], goals=["app"]); or STEPS / GOALS / NAME.
+- A step is Step(name, needs=[...], produces=[...]).
+- pipegx inspect pipe.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
+- Codes: unknown-step (error), cycle (error), duplicate-step (error), duplicate-artifact (error), goal-not-produced (error), no-steps (info), no-goals (info).

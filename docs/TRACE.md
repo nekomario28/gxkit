@@ -22,3 +22,4 @@ that the docs agree) live in `packages/gxkit/tests/`.
 | `apigx` | HTTP API contracts | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |
 | `netgx` | network topologies | `netgx.tool` | 6 | `broken_network.py`, `good_network.py` |
 | `envgx` | environment / config | `envgx.tool` | 8 | `broken_env.py`, `good_env.py` |
+| `pipegx` | build pipelines | `pipegx.tool` | 7 | `broken_pipeline.py`, `good_pipeline.py` |

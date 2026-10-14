@@ -55,6 +55,7 @@ can ignore a code or change its severity; `--no-config` skips it.
 | an HTTP API contract | `apigx` | a mutating route with no authentication |
 | a network topology | `netgx` | a public entry that reaches sensitive data |
 | an environment / config | `envgx` | a secret that carries a default |
+| a build pipeline | `pipegx` | a `needs` that names no step |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

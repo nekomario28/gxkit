@@ -40,7 +40,7 @@ published tool does not resolve an unrelated `gxcore`.
 ## Check the names
 
 ```sh
-for p in gxcore chartgx levelgx flowgx protogx authzgx depsgx schemagx docgx shadergx framegx apigx netgx envgx gxkit-cli; do
+for p in gxcore chartgx levelgx flowgx protogx authzgx depsgx schemagx docgx shadergx framegx apigx netgx envgx pipegx gxkit-cli; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/$p/json")
   echo "$p -> $code (404 = free)"
 done

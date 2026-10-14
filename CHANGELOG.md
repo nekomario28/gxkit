@@ -3,6 +3,15 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.0] — pipegx, the fourteenth tool
+
+See the [v0.7.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.7.0).
+
+### Added
+- `pipegx` — inspect a build pipeline DAG: a `needs` that names no step, a
+  cycle, a duplicate step or artifact, a goal nothing produces; prints the build
+  order when the graph is a DAG.
+
 ## [0.6.0] — envgx, the thirteenth tool
 
 See the [v0.6.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.6.0).

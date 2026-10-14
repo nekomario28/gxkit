@@ -2,7 +2,7 @@
 
 > Agent-native review loops for creative artifacts. Write the artifact as code, `inspect` it, get problems with stable codes and exit codes, fix them, and ship — with a storyboard image as evidence.
 
-gxkit is a shared engine (`gxcore`) plus thirteen domain tools. An artifact goes in;
+gxkit is a shared engine (`gxcore`) plus fourteen domain tools. An artifact goes in;
 the one that fits is chosen and run.
 
 ## Install
@@ -64,6 +64,8 @@ CI with the repository's reusable action (`uses: nekomario28/gxkit@vX.Y.Z`).
   `packages/netgx`
 - **envgx** — environment / config: an undeclared reference, a secret with a
   default, an unknown type, a declaration nothing reads. `packages/envgx`
+- **pipegx** — build pipelines: a `needs` that names no step, a cycle, a
+  duplicate step or artifact, a goal nothing produces. `packages/pipegx`
 - **gxkit** — the umbrella: `gxkit inspect <file>` detects the artifact's tool
   and runs it. `packages/gxkit`
 

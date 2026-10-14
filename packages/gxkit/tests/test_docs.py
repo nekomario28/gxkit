@@ -287,6 +287,7 @@ DOCUMENTED_EXAMPLES = {
     "apigx": "broken_api.py",
     "netgx": "broken_network.py",
     "envgx": "broken_env.py",
+    "pipegx": "broken_pipeline.py",
 }
 
 

@@ -116,6 +116,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("Environment",),
         ("VARIABLES", "REFERENCES"),
     ),
+    ToolSpec(
+        "pipegx",
+        "build pipelines",
+        "pipegx.tool",
+        ("pipeline", "PIPELINE", "dag"),
+        ("Pipeline",),
+        ("STEPS", "GOALS"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

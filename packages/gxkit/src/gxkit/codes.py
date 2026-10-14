@@ -161,6 +161,15 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "unused-variable": "info",
         "no-variables": "info",
     },
+    "pipegx": {
+        "unknown-step": "error",
+        "cycle": "error",
+        "duplicate-step": "error",
+        "duplicate-artifact": "error",
+        "goal-not-produced": "error",
+        "no-steps": "info",
+        "no-goals": "info",
+    },
 }
 
 
