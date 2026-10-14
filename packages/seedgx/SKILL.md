@@ -5,8 +5,9 @@ description: Use when an agent has written a run whose randomness must be reprod
 
 # seedgx
 
-`seedgx` reads a random-seed manifest written as data and reports what would make
-the run non-reproducible, before it runs.
+`seedgx` checks declarations in a seed manifest, not actual RNG initialization,
+algorithms or runtime reproducibility. Do not treat a clean manifest as runtime
+proof. Shared seeds only imply matching sequences with matching RNG semantics.
 
 ## Use it
 
@@ -37,8 +38,9 @@ Or module-level `STREAMS` (a list of `(name, seed)` pairs) / `DETERMINISTIC` /
 | --- | --- | --- |
 | `missing-seed` | error | a stream with no seed |
 | `seed-out-of-range` | error | a seed outside `0..2**32-1` |
+| `invalid-seed` | error | a noninteger seed (booleans are not seeds) |
 | `duplicate-stream` | error | the same stream name declared twice |
-| `duplicate-seed` | warn | two streams share a seed (correlated randomness) |
+| `duplicate-seed` | warn | shared seeds; matching RNGs may repeat sequences |
 | `non-deterministic` | info | the manifest is marked non-deterministic |
 | `no-streams` | info | the manifest declares no streams |
 

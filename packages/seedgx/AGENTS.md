@@ -1,7 +1,7 @@
 # seedgx, for AI agents
 
-A person pointed you here. `seedgx` checks that a run is reproducible before it
-runs: declare one seed per randomness stream, then `seedgx inspect` finds a stream
+A person pointed you here. `seedgx` checks seed declarations, not actual runtime
+reproducibility: declare one seed per stream, then `seedgx inspect` finds a stream
 with no seed, a seed outside the 32-bit range, a duplicate stream, a seed shared
 between two streams, and a manifest marked non-deterministic — plus a storyboard.
 
@@ -28,7 +28,7 @@ uv tool install ./packages/seedgx    # puts `seedgx` on PATH
 
 ## Reading the report
 
-- `error` — `missing-seed`, `seed-out-of-range`, `duplicate-stream`.
+- `error` — `missing-seed`, `invalid-seed`, `seed-out-of-range`, `duplicate-stream`.
 - `warn` — `duplicate-seed`.
 - `info` — `non-deterministic`, `no-streams`.
 

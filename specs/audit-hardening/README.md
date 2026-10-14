@@ -9,19 +9,18 @@ consumer run. A green coverage percentage is supplemental evidence, not the goal
 
 ## Next Agent Prompt
 
-You are implementing this hardening plan on `fix/audit-gates`, based on `3f89316`.
-Resume at [consumer and CI verification](slices/04-verification.md), then proceed through the checklist
-without stopping at intermediate commits. Update this prompt and the evidence
-ledger after each checkpoint. Do not add tools or release tags. Preserve clean
-inputs, stable existing codes, optional storyboards and the 100% statement floor.
+Implementation and verification are complete on `fix/audit-gates`, based on
+`3f89316`. Review [PR #3](https://github.com/nekomario28/gxkit/pull/3); do not extend
+the scope, add tools or create a release. Preserve the repaired gates and their
+mutation proofs. Main is unchanged until the PR is merged.
 
-Status: shared gates, inputs and mutation proofs implemented; final verification pending. No blockers. Baseline v1 will be rejected;
-users explicitly recreate accepted debt using `--write-baseline` (no migration).
+Status: all four goals verified. Baseline v1 is rejected; users explicitly
+recreate accepted debt using `--write-baseline` (no migration).
 
 - [x] [1. Shared gates](slices/01-gates.md): A01, A02, A03.
 - [x] [2. Strict inputs and boundaries](slices/02-inputs.md): A04–A09, A11.
 - [x] [3. Behavioral guards](slices/03-guards.md): A10 and mutation proofs.
-- [ ] [4. Consumer and CI verification](slices/04-verification.md).
+- [x] [4. Consumer and CI verification](slices/04-verification.md).
 
 ## Ownership and contracts
 
@@ -69,5 +68,18 @@ Independent final review reproduced inherited future flags in the source loader;
 the annotation regression went red before disabling inheritance. The added
 mutation pins this execution-semantics boundary too.
 
-Record named red/green regression results here, not full terminal transcripts.
+Verification snapshot at `4d1868f7477b1ad3d195c442eefc96fcad257820`:
+strict full local gates pass (1393 tests, 100% statements, 28 rejected mutants,
+strict types/lint/security and all wheel/sdist validations). Isolated tool/cache
+installs from local Git and public Git both verify that exact SHA and pass the
+consumer exit/baseline scenarios. [PR CI](https://github.com/nekomario28/gxkit/actions/runs/38609898548)
+passes every job, including Windows/macOS, the Ubuntu Python matrix, mutation
+proofs and the isolated Git consumer. Independent review's two findings were
+reproduced, repaired and guarded. No reviewer-suite success is claimed: its
+read-only sandbox lacked a writable temporary directory.
+
+No visual redesign or exhaustive all-domain correctness proof is claimed. The
+seed skill's declaration/runtime boundary is clarified; clean-context skill-model
+evaluation is NOT RUN. Publication/release and merge remain separate actions.
+
 Full logs belong outside the repository. Decisions belong in [choices](choices.md).
