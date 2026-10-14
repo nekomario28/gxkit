@@ -140,6 +140,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   entry that reaches sensitive data, a self-loop. The least-privilege question,
   on the same reachability core. *done*
 
+- **P11 — `envgx`.** Environment / config drift: an undeclared reference, a
+  secret with a default, an unknown type, an unused declaration. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

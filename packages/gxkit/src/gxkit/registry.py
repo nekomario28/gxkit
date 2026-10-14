@@ -108,6 +108,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("Network",),
         ("NODES", "EDGES", "SENSITIVE"),
     ),
+    ToolSpec(
+        "envgx",
+        "environment / config",
+        "envgx.tool",
+        ("env", "environment", "ENV", "ENVIRONMENT", "config"),
+        ("Environment",),
+        ("VARIABLES", "REFERENCES"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

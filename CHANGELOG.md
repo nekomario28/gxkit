@@ -3,6 +3,15 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.0] — envgx, the thirteenth tool
+
+See the [v0.6.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.6.0).
+
+### Added
+- `envgx` — inspect an environment / config declaration: an undeclared
+  reference, a declaration nothing reads, a secret with a default, an unknown
+  type, a required variable that also has a default.
+
 ## [0.5.0] — netgx, the twelfth tool
 
 See the [v0.5.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.5.0).

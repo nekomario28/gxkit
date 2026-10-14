@@ -1,0 +1,11 @@
+# envgx
+
+envgx inspects an environment / configuration declaration for drift: undeclared
+references, secret defaults, unknown types, duplicates. Part of gxkit; the
+inspect contract (stable codes, exit codes, a storyboard) is shared.
+
+- Install/run: uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/envgx" envgx inspect env.py
+- Write: a Python file building envgx.Environment(variables=[envgx.Variable("PORT", type="int", default="8080")], references=["PORT"]); or VARIABLES / REFERENCES / NAME.
+- Types: str, int, float, bool.
+- envgx inspect env.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
+- Codes: secret-with-default (error), unknown-type (error), duplicate-variable (error), empty-name (error), undeclared-reference (error), required-with-default (warn), unused-variable (info), no-variables (info).

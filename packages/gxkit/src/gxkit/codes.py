@@ -151,6 +151,16 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "isolated-node": "info",
         "no-public": "info",
     },
+    "envgx": {
+        "secret-with-default": "error",
+        "unknown-type": "error",
+        "duplicate-variable": "error",
+        "empty-name": "error",
+        "undeclared-reference": "error",
+        "required-with-default": "warn",
+        "unused-variable": "info",
+        "no-variables": "info",
+    },
 }
 
 

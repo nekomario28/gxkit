@@ -286,6 +286,7 @@ DOCUMENTED_EXAMPLES = {
     "framegx": "frozen_clip.py",
     "apigx": "broken_api.py",
     "netgx": "broken_network.py",
+    "envgx": "broken_env.py",
 }
 
 

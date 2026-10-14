@@ -38,6 +38,7 @@ TOOLS = [
     ("framegx", "animations", "frozen"),
     ("apigx", "apis", "unauthenticated-mutation"),
     ("netgx", "networks", "public-reaches-sensitive"),
+    ("envgx", "config", "secret-with-default"),
 ]
 
 
