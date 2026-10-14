@@ -18,8 +18,13 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Tests
 - `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
-  `gxcore.layout` against Shapely on random inputs; a GLSL corpus pins the
-  surface `shadergx` claims to support; one CLI contract test per tool.
+  `gxcore.layout` against Shapely on random inputs; the domain tools' graph
+  reading (`schemagx`, `protogx`) is cross-checked against NetworkX too.
+- `gxcore.diagram`'s layout invariants (determinism, non-overlap, on-canvas)
+  are property-tested on random graphs.
+- A GLSL corpus pins the surface `shadergx` claims to support; `framegx` is
+  exercised on every codec ffmpeg offers (H.264, MPEG-4, VP8/VP9, Theora, GIF)
+  plus audio, silence and odd dimensions; one CLI contract test per tool.
 
 ### Fixed
 - `Shader.assembled` no longer treats a `#version` inside a comment as a real

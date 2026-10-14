@@ -99,7 +99,11 @@ library — `gxcore.graph` versus NetworkX on random digraphs, `gxcore.geometry`
 and `gxcore.layout` versus Shapely on random rectangles — and keep **one CLI
 contract test per tool** (faulty exits 1, honest exits 0, `--json` parses with
 an error). A corpus of valid and invalid shaders pins the GLSL surface
-`shadergx` claims to support.
+`shadergx` claims to support; the domain tools' *reading* of a graph
+(`schemagx` cycles/orphans, `protogx` reachability/deadlocks) is cross-checked
+against NetworkX the same way; and `framegx` is exercised on every codec ffmpeg
+offers (H.264, MPEG-4, VP8/VP9, Theora, GIF), each skipped when the encoder is
+absent.
 
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
