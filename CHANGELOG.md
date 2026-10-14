@@ -14,6 +14,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A reusable GitHub Action (`uses: nekomario28/gxkit@vX.Y.Z`).
 - `docs/RELEASING.md`; PyPI metadata and a `gxcore` version pin.
 - `scripts/check.sh` — one command that runs every gate CI runs.
+- `docs/TRACE.md` — a generated table mapping each tool to its module, codes and
+  examples (pinned to `scripts/make_trace.py`; it cannot drift).
 - **Baselines** (`inspect --baseline` / `--write-baseline`): a stored report makes
   a run a diff (new / fixed / unchanged) that fails only on new errors.
 
@@ -34,6 +36,13 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   `SKILL.md`/`LICENSE`, a `SKILL.md` name matching the tool, and only that tool's
   own codes named in its docs; the `CODEBOOK` keys must equal the tools plus
   `gxcore`; the README action example may only use declared inputs.
+- **The committed evidence is current**: the architecture SVG equals its
+  generator, the levelgx storyboard equals a fresh render (pixel-wise), and
+  `docs/TRACE.md` equals its generator; each `llms.txt` names its tool, mentions
+  `inspect`, and has an install line.
+- **Packaging hygiene**: every package ships `py.typed`, every `LICENSE` equals
+  the root, every `__all__` name resolves, and `docs/LICENSING.md`'s dependency
+  table matches what the source actually imports.
 - **Documented example output is checked against the tools**: every root/`per-tool
   README` example is run and its `inspect:` counts and each shown `[n] severity
   code` must match (it caught five stale examples).
@@ -59,6 +68,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   non-blank — the images a human reviews are not left untested.
 
 ### Fixed
+- `docs/LICENSING.md`'s dependency table listed the wrong packages (Pillow was
+  missing `chartgx` and `framegx`; numpy wrongly credited `chartgx`).
 - `docgx` and `protogx` were missing `AGENTS.md`, though the README and
   `PLAN.md` promise every tool ships it; added, and a guard now enforces the
   required per-tool files.

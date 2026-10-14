@@ -45,15 +45,19 @@ def test_llms_txt_lists_every_tool():
     assert sorted(names) == TOOL_PACKAGES
 
 
-def _figure_module():
+def _script_module(name):
     import importlib.util
 
-    path = ROOT / "scripts" / "make_readme_figure.py"
-    spec = importlib.util.spec_from_file_location("make_readme_figure", path)
+    path = ROOT / "scripts" / name
+    spec = importlib.util.spec_from_file_location(name.removesuffix(".py"), path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _figure_module():
+    return _script_module("make_readme_figure.py")
 
 
 def test_readme_figure_covers_every_tool():
@@ -68,6 +72,37 @@ def test_readme_figure_covers_every_tool():
 def test_the_committed_architecture_svg_is_current():
     produced = _figure_module().build()
     assert produced == (ROOT / "docs" / "assets" / "architecture.svg").read_text(encoding="utf-8")
+
+
+def test_trace_document_covers_every_tool_and_is_current():
+    module = _script_module("make_trace.py")
+    document = module.build()
+    for name in TOOL_PACKAGES:
+        assert f"`{name}`" in document, f"TRACE.md is missing {name}"
+    assert document == (ROOT / "docs" / "TRACE.md").read_text(encoding="utf-8")
+
+
+def test_the_committed_storyboard_is_current(tmp_path):
+    from gxcore.cli import run as run_tool
+    from PIL import Image
+
+    tool = importlib.import_module("levelgx.tool").TOOL
+    out = tmp_path / "storyboard.png"
+    example = ROOT / "packages" / "levelgx" / "examples" / "softlock_level.py"
+    assert run_tool(tool, ["inspect", str(example), "-o", str(out)]) == 1
+    # compare pixels, not bytes: PNG compression may differ across platforms
+    regenerated = Image.open(out).convert("RGB")
+    committed = Image.open(ROOT / "docs" / "assets" / "softlock-storyboard.png").convert("RGB")
+    assert regenerated.size == committed.size
+    assert regenerated.tobytes() == committed.tobytes()
+
+
+def test_every_tool_llms_txt_has_the_essentials():
+    for name in TOOL_PACKAGES:
+        text = (ROOT / "packages" / name / "llms.txt").read_text(encoding="utf-8")
+        assert name in text, f"{name}/llms.txt never names itself"
+        assert "inspect" in text, f"{name}/llms.txt does not mention inspect"
+        assert f"subdirectory=packages/{name}" in text, f"{name}/llms.txt has no install line"
 
 
 def test_no_stale_tool_count_in_the_readme():

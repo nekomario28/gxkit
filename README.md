@@ -76,7 +76,8 @@ uv run gxkit codes              # every problem code and its severity
 
 Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`; the
 repository root has [`SKILL.md`](SKILL.md), the family skill that routes to them
-all.
+all. [`docs/TRACE.md`](docs/TRACE.md) maps each tool to its module, its codes and
+its examples (generated, so it cannot drift).
 
 > **Pairs with ManimGX.** A renderer makes the 3D animation; gxkit checks the
 > result. ManimGX's `inspect` reads the *scene* before rendering; `framegx`
