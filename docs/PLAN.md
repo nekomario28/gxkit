@@ -1,6 +1,6 @@
 # Plan — an agent-native review loop, and the tools built on it
 
-Status: complete. All planned tools landed (P0–P5). This file is the durable
+Status: complete. All planned tools landed (P0–P8). This file is the durable
 plan; keep it current if new tools are added.
 
 How to add a tool (the checklist, the contract, the extraction rule) is in
