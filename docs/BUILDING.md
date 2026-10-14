@@ -191,6 +191,9 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Scope a linter ignore inline, with a reason.** When a deliberate choice
   disagrees with a linter (local `uses: ./` vs zizmor's `$/`), annotate that one
   line (`# zizmor: ignore[rule] -- why`) instead of disabling the rule or drifting.
+- **A runner's bash is not your bash.** `mapfile` does not exist in macOS's
+  bash 3.2 (use a `while read` loop); Windows CI's `bash` is the WSL stub, so
+  skip a shell test there and let the action use GitHub's `shell: bash`.
 - **Assert layout invariants, not a golden image.** Determinism, non-overlap,
   on-canvas and "something was drawn" catch a layout drift that a screenshot
   baseline would bless.
