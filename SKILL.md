@@ -38,6 +38,54 @@ can ignore a code or change its severity; `--no-config` skips it.
   a re-run reports new / fixed / unchanged and fails only on **new** errors.
   Commit the `.gxkit-baseline.json` it writes.
 
+## Using a finding
+
+The artifact is a description you wrote, so a finding is a claim about the description before it is a
+claim about the thing. Check the artifact at the flagged place before repeating the finding as a
+defect - the cost is one look, and the alternative is sending someone to fix something that is fine.
+
+- **A red code usually means the description is wrong.** Four findings in one session across two
+  tools were the model's fault: a protocol that "drops the connection on an unexpected packet"
+  where the code says `continue`; a message "nothing handles" that has a dedicated wait; a state
+  that "deadlocks" where a transition was simply not written down; five modules "unreachable"
+  because the edge extraction only collected one spelling of a path.
+- **Errors that survive that look are real and worth acting on.** A dependency cycle and two upward
+  layer violations were read against the source and confirmed there.
+- **`info` about dead code is usually about the model too.** "Nothing depends on this" often means
+  the edges were missed, not that the code is unused.
+
+## Write the artifact you want, not only the one you have
+
+`inspect` answers "is this sound?". Pointing it at what you intend answers "can it be reached?", and
+that is a gate you can put in CI before any work starts.
+
+Keep both files and check them separately.
+
+```
+artifacts/
+  machine.py          # as the code is today - may be broken, and the count must come down
+  machine.target.py   # as you intend it - must report no problems, always
+```
+
+- **The target must be clean.** If a later change makes it report a violation, the intended design is
+  no longer reachable and no code should move until that is understood.
+- **The current one is allowed to be broken, but not to get worse.** Pin the error count and lower
+  the limit as it falls, so progress is visible in the tool instead of asserted in a commit message.
+- **A finding you intend to keep is still worth keeping.** A deliberate hole - an override flag that
+  grants a low principal a sensitive permission - modelled and committed makes the risk precise and
+  puts it next to the model that has none. Do not silence it; name it.
+
+## What these tools do not check
+
+They check the structure of a description, not the world. A foreign key from `chest.x` to
+`world_cell.local_idx` is well-formed whether or not that row exists, so a schema check cannot see
+the orphan - a container stored by position whose cell is absent from a sparse world. The same split
+runs through all of them: a declared state nothing handles is a structural fault, a state handled in
+a way nobody can observe is not.
+
+For the part a checker cannot reach, write a test. **Structure can be an artifact and a gate;
+existence has to be an assertion.**
+
 ## Route to the tool
 
 | artifact written as… | tool | it catches (the headline) |
