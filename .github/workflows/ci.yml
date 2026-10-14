@@ -56,4 +56,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --all-packages --locked
+      - run: uv run ruff check packages scripts --select F,E9,B
       - run: uv run mypy packages/*/src

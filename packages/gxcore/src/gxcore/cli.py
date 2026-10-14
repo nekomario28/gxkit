@@ -106,6 +106,9 @@ def run(tool: Tool, argv: list[str] | None = None) -> int:
     except FileNotFoundError as e:
         print(f"{tool.name}: no such file: {e}", file=sys.stderr)
         return 2
+    except SystemExit as e:
+        print(f"{tool.name}: the artifact called sys.exit({e.code!r}) while loading", file=sys.stderr)
+        return 2
     except Exception as e:  # a broken artifact file must report, not traceback
         print(f"{tool.name}: {type(e).__name__}: {e}", file=sys.stderr)
         return 2

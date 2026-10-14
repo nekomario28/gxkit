@@ -14,7 +14,7 @@ package = false
 members = ["packages/*"]
 
 [dependency-groups]
-dev = ["pytest>=7", "mypy>=1.10"]
+dev = ["pytest>=7", "mypy>=1.10", "ruff>=0.6"]
 
 [tool.mypy]
 python_version = "3.10"
