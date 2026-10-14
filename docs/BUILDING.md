@@ -176,6 +176,12 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Keep strictness in the repo's config.** `strict = true` for mypy and the
   lint/format rules belong in `pyproject.toml`, not only in a CI command line, so
   the gate cannot quietly weaken; gate `ruff format --check` too.
+- **Give the checker a memory (a baseline).** `--write-baseline` / `--baseline`
+  record an accepted state and fail only on **new** errors; a checker that always
+  fails on old debt gets switched off.
+- **Cover every statement, and be explicit about the exceptions.** A 100% floor
+  is the only one that stops new dark corners; `# pragma: no cover` only for a
+  platform/version fallback. Delete a vestigial guard rather than cover it.
 - **Assert layout invariants, not a golden image.** Determinism, non-overlap,
   on-canvas and "something was drawn" catch a layout drift that a screenshot
   baseline would bless.
