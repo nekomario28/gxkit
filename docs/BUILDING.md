@@ -152,6 +152,11 @@ before committing — the same "look at the picture" rule as the storyboard.
 (Producing it: `doc-figures`; front-page prose and scan order: `write-readme`;
 hierarchy and restraint: `readme-visual-design`.)
 
+For **real 3D or animation**, use a purpose-built engine, not a hand-rolled one —
+gxkit's hero is a ManimGX scene (`docs/hero/gxkit_hero.py`), and the clip is
+checked with `framegx`. Hand-rolling `mplot3d` or a raymarcher is the wrong axis:
+gxkit's job is inspection, not rendering.
+
 Pair it with **one concrete worked example** — a real catch with the command and
 its output — so the reader sees value rather than a claim. A second figure earns
 its place only if it carries distinct information; an image that only decorates

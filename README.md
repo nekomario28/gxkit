@@ -11,7 +11,9 @@ ship — with a storyboard image as the evidence.
 <img alt="python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
 </p>
 
-<p align="center"><img src="docs/assets/hero-3d.png" width="320" alt="A trefoil knot, raymarched — a closed loop, the shape every gxkit check is about"></p>
+<p align="center"><img src="docs/assets/hero.gif" width="340" alt="A white core cube with ten coloured domain cubes orbiting it — one core, ten domains"></p>
+
+<p align="center"><sub>One core, ten domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
 
 ![gxkit: one shared core, nine inspect tools](docs/assets/architecture.svg)
 
@@ -62,7 +64,7 @@ passes — but a one-way tile drops the player into a dead end. `levelgx` walks
 the *directed* graph and finds it (the picture below is generated from the same
 data):
 
-![A soft-lock drawn in 3D: reachable from the start, but the goal is not reachable from there](docs/assets/softlock-3d.png)
+![The levelgx storyboard: a level with the soft-lock cells boxed in red](docs/assets/softlock-storyboard.png)
 
 ```sh
 $ levelgx inspect softlock.py
@@ -112,8 +114,8 @@ uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
 uv run framegx  inspect packages/framegx/examples/frozen_clip.py   # exit 1
 python scripts/prepublish_check.py      # no credentials or machine paths
 python scripts/make_readme_figure.py    # regenerate the architecture figure
-python scripts/make_math_figure.py      # regenerate the 3D soft-lock figure
-uv run python scripts/make_hero3d.py    # regenerate the 3D hero (needs a GL context)
+# the 3D hero is made with ManimGX (scene in docs/hero/):
+uvx --python 3.14 manimgx render docs/hero/gxkit_hero.py -r 720x720 --fps 24
 ```
 
 ## Documentation
