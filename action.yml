@@ -21,15 +21,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
     - name: Install gxkit
       shell: bash
+      env:
+        TOOL: ${{ inputs.tool }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
         set -euo pipefail
-        if [ -n "${{ inputs.tool }}" ]; then
-          uv tool install "${{ github.action_path }}/packages/${{ inputs.tool }}"
+        if [ -n "$TOOL" ]; then
+          uv tool install "$ACTION_PATH/packages/$TOOL"
         else
-          uv tool install "${{ github.action_path }}/packages/gxkit"
+          uv tool install "$ACTION_PATH/packages/gxkit"
         fi
     - name: Inspect
       shell: bash

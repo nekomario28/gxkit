@@ -5,7 +5,7 @@ headlessly, reports a black/constant/NaN frame, and probes whether the uniforms
 it set actually change anything.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_shader
 from .gl import ShaderError, context, members, render_array
@@ -14,22 +14,22 @@ from .render import render_image
 from .tool import TOOL, Scene, main
 
 __all__ = [
-    "Shader",
-    "load_shader",
-    "shader_from_source",
-    "render_image",
-    "inspect_shader",
-    "render_array",
-    "context",
-    "members",
-    "ShaderError",
-    "Scene",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "Scene",
+    "Shader",
+    "ShaderError",
+    "context",
+    "inspect_shader",
+    "load_shader",
+    "main",
+    "members",
+    "render_array",
+    "render_image",
+    "shader_from_source",
 ]
 __version__ = "0.1.0"

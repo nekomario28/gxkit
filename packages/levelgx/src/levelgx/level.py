@@ -81,9 +81,7 @@ class Level:
     def passable(self, r: int, c: int, *, hazards_block: bool = True) -> bool:
         if self.is_wall(r, c):
             return False
-        if hazards_block and self.is_hazard(r, c):
-            return False
-        return True
+        return not (hazards_block and self.is_hazard(r, c))
 
     def neighbors(self, r: int, c: int, *, hazards_block: bool = True) -> list[tuple[int, int]]:
         """Cells reachable from ``(r, c)`` in one step, honouring one-way tiles."""
@@ -109,7 +107,7 @@ def _as_rows(value: object) -> list[str] | None:
     return None
 
 
-def _as_level(value: object) -> "Level | None":
+def _as_level(value: object) -> Level | None:
     if isinstance(value, Level):
         return value
     rows = _as_rows(value)

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from gxcore.toolkit import Scene, scene_tool  # noqa: F401  (Scene re-exported)
 
-from .checks import inspect_auth
 from .authmodel import load_model
+from .checks import inspect_auth
 from .render import render_image
 
 main, TOOL = scene_tool(

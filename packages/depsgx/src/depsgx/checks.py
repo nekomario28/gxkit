@@ -13,7 +13,7 @@ from gxcore import ERROR, INFO, Problem, Report
 from gxcore.graph import find_cycle, reverse
 
 from .model import ModuleGraph
-from .render import compute_layout, image_size, node_box
+from .render import compute_layout, node_box
 
 
 def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
@@ -92,7 +92,6 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
                            "no root modules declared, so dead code cannot be found"))
 
     positions, r = compute_layout(graph)
-    width, height = image_size(graph)
     for p in out:
         if p.bbox is None and p.target in positions:
             p.bbox = node_box(positions[p.target], r)

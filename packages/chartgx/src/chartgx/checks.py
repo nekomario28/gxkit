@@ -6,6 +6,7 @@ Everything mechanical — severities, storyboards, CLI, JSON — is `gxcore`'s.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
@@ -100,17 +101,13 @@ def _series_count(ax: Any, kind: str) -> int:
 def _series_colors(ax: Any) -> list[str]:
     colors: list[str] = []
     for ln in ax.lines:
-        try:
+        with contextlib.suppress(Exception):
             colors.append(str(ln.get_color()))
-        except Exception:
-            pass
     for c in ax.collections:
-        try:
+        with contextlib.suppress(Exception):
             fc = c.get_facecolor()
             if len(fc):
                 colors.append(str(fc[0]))
-        except Exception:
-            pass
     return colors
 
 

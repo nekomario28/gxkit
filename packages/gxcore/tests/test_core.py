@@ -3,23 +3,21 @@ from __future__ import annotations
 import json
 
 import pytest
-from PIL import Image
-
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.model import sort_key
 from gxcore.cli import Tool, run
 from gxcore.geometry import both_covered, clipped, covered, intersecting_pairs, overlap, union
+from gxcore.model import sort_key
 from gxcore.report import human, to_json
 from gxcore.storyboard import annotate, safe_name, storyboard_path
 from gxcore.testing import assert_fires, assert_quiet, codes, has
-
+from PIL import Image
 
 # --------------------------------------------------------------------------- #
 # model
 # --------------------------------------------------------------------------- #
 
 def test_unknown_severity_is_rejected():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unknown severity"):
         Problem("fatal", "x", "y")
 
 
@@ -249,7 +247,8 @@ def test_cli_storyboard_honours_top_left_origin(tmp_path):
     run(tool, ["inspect", str(src), "-o", str(out)])
 
     img = Image.open(out).convert("RGB")
-    red = lambda p: p[0] > 200 and p[1] < 120 and p[2] < 120
+    def red(pixel):
+        return pixel[0] > 200 and pixel[1] < 120 and pixel[2] < 120
     top = sum(1 for x in range(100) for y in range(45) if red(img.getpixel((x, y))))
     bottom = sum(1 for x in range(100) for y in range(55, 100) if red(img.getpixel((x, y))))
     assert top > 0 and bottom == 0

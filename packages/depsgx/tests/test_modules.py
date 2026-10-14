@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from depsgx import ModuleGraph, inspect_graph, load_graph
 from gxcore import ERROR, INFO
 from gxcore.testing import assert_fires, assert_quiet
-from depsgx import ModuleGraph, inspect_graph, load_graph
 
 GOOD = ModuleGraph(
     modules=["api", "service", "domain", "util"],

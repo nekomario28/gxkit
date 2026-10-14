@@ -18,9 +18,9 @@ one) is a layer violation.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
 from gxcore.graph import reachable
 
@@ -53,7 +53,7 @@ class ModuleGraph:
         return reachable(self.edges(), self.roots)
 
 
-def _as_graph(value: object) -> "ModuleGraph | None":
+def _as_graph(value: object) -> ModuleGraph | None:
     return value if isinstance(value, ModuleGraph) else None
 
 

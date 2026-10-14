@@ -7,7 +7,6 @@ from types import SimpleNamespace
 from gxkit import TOOLS, detect
 from gxkit.cli import main
 
-
 # --------------------------------------------------------------------------- #
 # registry
 # --------------------------------------------------------------------------- #
@@ -103,8 +102,10 @@ def test_inspect_a_tool_without_a_file_exits_2(capsys):
 
 
 def test_inspect_two_files_with_json_is_refused(tmp_path, capsys):
-    a = tmp_path / "a.py"; a.write_text("x = 1\n")
-    b = tmp_path / "b.py"; b.write_text("y = 1\n")
+    a = tmp_path / "a.py"
+    a.write_text("x = 1\n")
+    b = tmp_path / "b.py"
+    b.write_text("y = 1\n")
     assert main(["inspect", str(a), str(b), "--json"]) == 2
     assert "single artifact" in capsys.readouterr().err
 

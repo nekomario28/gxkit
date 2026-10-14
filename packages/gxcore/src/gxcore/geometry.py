@@ -7,7 +7,7 @@ display coordinates) flip at storyboard time; the maths is the same either way.
 
 from __future__ import annotations
 
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from .model import BBox
 

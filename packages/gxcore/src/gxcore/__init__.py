@@ -9,46 +9,59 @@ Domain tools (`chartgx`, `levelgx`, `flowgx`, …) add only a loader, a checks
 module, and a renderer; the CLI, report and storyboard come from here.
 """
 
-from .model import ERROR, INFO, WARN, SEVERITIES, BBox, Problem, Report
-from .storyboard import annotate, safe_name, storyboard_path
-from .report import human, to_json
 from .cli import Tool, run
-from .graph import can_reach, distances, find_cycle, reachable, reverse, shortest_path, terminals, traps, unreachable, weak_components
+from .config import Config
+from .config import apply as apply_config
+from .config import load as load_config
+from .graph import (
+    can_reach,
+    distances,
+    find_cycle,
+    reachable,
+    reverse,
+    shortest_path,
+    terminals,
+    traps,
+    unreachable,
+    weak_components,
+)
 from .layout import TextBox
 from .loading import load_from_file, load_module, resolve
-from .config import Config, apply as apply_config, load as load_config
+from .model import ERROR, INFO, SEVERITIES, WARN, BBox, Problem, Report
+from .report import human, to_json
+from .storyboard import annotate, safe_name, storyboard_path
 
 __all__ = [
     "ERROR",
-    "WARN",
     "INFO",
     "SEVERITIES",
+    "WARN",
     "BBox",
+    "Config",
     "Problem",
     "Report",
-    "annotate",
-    "safe_name",
-    "storyboard_path",
-    "human",
-    "to_json",
+    "TextBox",
     "Tool",
-    "run",
-    "reachable",
-    "reverse",
+    "annotate",
+    "apply_config",
     "can_reach",
     "distances",
-    "shortest_path",
-    "traps",
-    "unreachable",
-    "terminals",
-    "weak_components",
     "find_cycle",
-    "TextBox",
+    "human",
+    "load_config",
     "load_from_file",
     "load_module",
+    "reachable",
     "resolve",
-    "Config",
-    "load_config",
-    "apply_config",
+    "reverse",
+    "run",
+    "safe_name",
+    "shortest_path",
+    "storyboard_path",
+    "terminals",
+    "to_json",
+    "traps",
+    "unreachable",
+    "weak_components",
 ]
 __version__ = "0.4.0"

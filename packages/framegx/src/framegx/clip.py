@@ -39,7 +39,7 @@ class Video:
         return p if p.is_absolute() else Path(base).parent / p
 
 
-def _as_video(value: object) -> "Video | None":
+def _as_video(value: object) -> Video | None:
     return value if isinstance(value, Video) else None
 
 

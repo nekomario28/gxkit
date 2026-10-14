@@ -12,7 +12,7 @@ from gxcore import ERROR, INFO, Problem, Report
 from gxcore.graph import find_cycle, reachable
 
 from .authmodel import AuthModel
-from .render import compute_layout, image_size, node_box
+from .render import compute_layout, node_box
 
 
 def _arrow(model: AuthModel, ids: list[str]) -> str:
@@ -116,7 +116,6 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
         out.append(Problem(INFO, "no-permissions", "the model declares no roles"))
 
     positions, r = compute_layout(model)
-    width, height = image_size(model)
     for p in out:
         if p.bbox is None and p.target in positions:
             p.bbox = node_box(positions[p.target], r)

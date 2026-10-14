@@ -14,7 +14,7 @@ from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.graph import can_reach, find_cycle, reachable
 
 from .model import Protocol
-from .render import compute_layout, image_size, node_box
+from .render import compute_layout, node_box
 
 
 def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
@@ -100,7 +100,6 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                            target=cycle[0]))
 
     positions, r = compute_layout(proto)
-    width, height = image_size(proto)
     for p in out:
         if p.bbox is None and p.target in positions:
             p.bbox = node_box(positions[p.target], r)

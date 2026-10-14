@@ -19,19 +19,20 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
+from .config import apply as apply_config
+from .config import load as load_config
 from .model import Report
 from .report import human, to_json
 from .storyboard import annotate, storyboard_path
-from .config import apply as apply_config
-from .config import load as load_config
 
 Load = Callable[[Path], Any]
 Inspect = Callable[[Any], Report]
-Render = Callable[[Any, Optional[Path], Optional[float]], Path]
+Render = Callable[[Any, Path | None, float | None], Path]
 ToImage = Callable[[Any], Any]
 
 

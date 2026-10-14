@@ -5,12 +5,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image
-
 from gxcore import ERROR, Problem, Report
 from gxcore.diagram import ACCEPT, START, Edge, Node, image_size, layout, node_box, render
 from gxcore.toolkit import scene_tool
-
+from PIL import Image
 
 # --------------------------------------------------------------------------- #
 # diagram
@@ -68,14 +66,14 @@ def _make_tool(tmp_path: Path):
 
 
 def test_scene_tool_loads_wraps_and_exits_on_error(tmp_path):
-    main, tool = _make_tool(tmp_path)
+    main, _tool = _make_tool(tmp_path)
     src = tmp_path / "x.py"
     src.write_text("")
     assert main(["inspect", str(src), "--no-storyboard"]) == 1
 
 
 def test_scene_tool_writes_a_render(tmp_path):
-    main, tool = _make_tool(tmp_path)
+    _main, tool = _make_tool(tmp_path)
     src = tmp_path / "x.py"
     src.write_text("")
     out = tmp_path / "o.png"
@@ -84,5 +82,5 @@ def test_scene_tool_writes_a_render(tmp_path):
 
 
 def test_scene_tool_storyboard_defaults_to_top_left(tmp_path):
-    main, tool = _make_tool(tmp_path)
+    _main, tool = _make_tool(tmp_path)
     assert tool.origin == "top-left"

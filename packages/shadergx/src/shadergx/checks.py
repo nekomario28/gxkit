@@ -8,7 +8,6 @@ anything? The GLSL compiler removing an unused uniform is the cheapest signal.
 from __future__ import annotations
 
 import numpy as np
-
 from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .gl import ShaderError, members, perturb, render_array

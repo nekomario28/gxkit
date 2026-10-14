@@ -5,22 +5,22 @@ inspect` reads the figure's artist tree, reports every problem with a stable
 code and an exit code, and draws a storyboard with the problems outlined.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_figure
 from .loader import load_figure
-from .tool import Chart, TOOL, main
+from .tool import TOOL, Chart, main
 
 __all__ = [
-    "inspect_figure",
-    "load_figure",
-    "Chart",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
+    "Chart",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "inspect_figure",
+    "load_figure",
+    "main",
 ]
 __version__ = "0.1.0"

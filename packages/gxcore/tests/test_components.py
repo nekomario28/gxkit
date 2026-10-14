@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from gxcore.geometry import canvas_box
 from gxcore.graph import (
     can_reach,
     distances,
@@ -14,10 +15,9 @@ from gxcore.graph import (
     unreachable,
     weak_components,
 )
-from gxcore.geometry import canvas_box
-from gxcore.layout import TextBox, check as check_layout
+from gxcore.layout import TextBox
+from gxcore.layout import check as check_layout
 from gxcore.loading import load_from_file, load_module, resolve
-
 
 # --------------------------------------------------------------------------- #
 # graph

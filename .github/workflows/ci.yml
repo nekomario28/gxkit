@@ -4,57 +4,121 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Software GL (shadergx) and ffmpeg (framegx) are best-effort; without them
+  # those tests skip, and the coverage gate is only on the ubuntu leg.
+  LIBGL_ALWAYS_SOFTWARE: "1"
+  GALLIUM_DRIVER: llvmpipe
+  MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          # full history: the pre-publication check scans `git log -p --all`
-          fetch-depth: 0
-      - uses: astral-sh/setup-uv@v5
-
-      # Best effort: Mesa software GL (so shadergx tests run) and ffmpeg (so
-      # framegx tests run). If either is unavailable, those tests skip.
+          persist-credentials: false
+          fetch-depth: 0            # the pre-publication check scans full history
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
       - name: System tools (best effort)
         run: |
           sudo apt-get update -y || true
           sudo apt-get install -y --no-install-recommends \
             libegl1 libgl1-mesa-dri libgbm1 ffmpeg || true
-
       - name: Pre-publication check
         run: python3 scripts/prepublish_check.py
-
       - run: uv sync --all-packages --locked
-      - run: uv run pytest
-        env:
-          LIBGL_ALWAYS_SOFTWARE: "1"
-          GALLIUM_DRIVER: llvmpipe
-          MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+      - name: Tests with a coverage floor
+        run: |
+          uv run pytest \
+            --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \
+            --cov=authzgx --cov=depsgx --cov=schemagx --cov=docgx --cov=shadergx \
+            --cov=framegx --cov=gxkit --cov-report=term-missing --cov-fail-under=85
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      UV_PYTHON: "3.13"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - run: uv sync --all-packages --locked
+      - run: uv run pytest           # GL/ffmpeg tests skip; the rest must pass
+
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - run: uv sync --all-packages --locked
+      - run: uv run ruff check packages scripts
+      - run: uv run mypy packages/*/src
 
   package:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
       - run: uv build --all-packages -o dist
       - run: uvx twine check dist/*
-      - uses: actions/upload-artifact@v4
+      - name: Every wheel carries its LICENSE and py.typed
+        run: |
+          python3 - <<'PY'
+          import glob, sys, zipfile
+          bad = []
+          for wheel in glob.glob("dist/*.whl"):
+              names = zipfile.ZipFile(wheel).namelist()
+              if not any(n.endswith("licenses/LICENSE") for n in names):
+                  bad.append(f"{wheel}: no LICENSE")
+              if not any(n.endswith("py.typed") for n in names):
+                  bad.append(f"{wheel}: no py.typed")
+          print("\n".join(bad) if bad else "all wheels carry LICENSE + py.typed")
+          sys.exit(1 if bad else 0)
+          PY
+      - name: Install the built sdists in a clean env and smoke-test
+        run: |
+          uv venv /tmp/smoke --python 3.13
+          uv pip install --python /tmp/smoke dist/*.tar.gz
+          /tmp/smoke/bin/gxkit tools
+          /tmp/smoke/bin/gxkit codes chartgx
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist
           path: dist/*
 
-  types:
+  security:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Workflow security
+        run: uvx zizmor .
       - run: uv sync --all-packages --locked
-      - run: uv run ruff check packages scripts --select F,E9,B
-      - run: uv run mypy packages/*/src
+      - name: Dependency audit
+        run: uv run --with pip-audit pip-audit --skip-editable

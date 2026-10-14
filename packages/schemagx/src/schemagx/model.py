@@ -73,7 +73,7 @@ class Schema:
         }
 
 
-def _as_schema(value: object) -> "Schema | None":
+def _as_schema(value: object) -> Schema | None:
     return value if isinstance(value, Schema) else None
 
 

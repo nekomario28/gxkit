@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from authzgx import AuthModel, inspect_auth, load_model
 from gxcore import ERROR, INFO
 from gxcore.testing import assert_fires, assert_quiet
-from authzgx import AuthModel, inspect_auth, load_model
 
 GOOD = AuthModel(
     principals=["anonymous", "user", "admin"],

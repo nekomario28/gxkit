@@ -42,7 +42,7 @@ class Page:
     name: str = "page"
 
 
-def _as_page(value: object) -> "Page | None":
+def _as_page(value: object) -> Page | None:
     return value if isinstance(value, Page) else None
 
 

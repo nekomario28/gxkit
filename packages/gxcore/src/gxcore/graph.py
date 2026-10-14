@@ -10,7 +10,8 @@ means.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from typing import Hashable, Iterable, Iterator, Mapping, TypeVar
+from collections.abc import Hashable, Iterable, Iterator, Mapping
+from typing import TypeVar
 
 _H = TypeVar("_H", bound=Hashable)
 Adjacency = Mapping[_H, Iterable[_H]]
@@ -165,7 +166,7 @@ def find_cycle(edges: Adjacency[_H]) -> list[_H] | None:
             advanced = False
             for v in it:
                 if color[v] == GREY:
-                    return path[path.index(v):] + [v]
+                    return [*path[path.index(v):], v]
                 if color[v] == WHITE:
                     color[v] = GREY
                     path.append(v)

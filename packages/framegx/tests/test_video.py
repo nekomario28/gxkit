@@ -17,9 +17,9 @@ pytestmark = pytest.mark.skipif(
     reason="ffmpeg / ffprobe not installed",
 )
 
+from framegx import Video, inspect_video, load_video  # noqa: E402
 from gxcore import ERROR, WARN  # noqa: E402
 from gxcore.testing import assert_fires, assert_quiet  # noqa: E402
-from framegx import Video, inspect_video, load_video  # noqa: E402
 
 
 def make(tmp_path: Path, source: str, name: str = "v.mp4") -> Video:

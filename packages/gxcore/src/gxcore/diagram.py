@@ -9,8 +9,8 @@ and gets the drawing for free. Coordinates are top-left origin.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -76,7 +76,7 @@ def node_box(pos: tuple[float, float], r: float) -> tuple[float, float, float, f
     return (x - r, y - r, x + r, y + r)
 
 
-def _fit(draw: "ImageDraw.ImageDraw", text: str, max_width: float, size: float):
+def _fit(draw: ImageDraw.ImageDraw, text: str, max_width: float, size: float):
     size = max(8, int(size))
     while size > 8:
         font = ImageFont.load_default(size=size)
@@ -90,7 +90,7 @@ def _fit(draw: "ImageDraw.ImageDraw", text: str, max_width: float, size: float):
     return font, (shown + "…") if shown != text else text
 
 
-def _arrowhead(draw: "ImageDraw.ImageDraw", tip, direction, color):
+def _arrowhead(draw: ImageDraw.ImageDraw, tip, direction, color):
     ux, uy = direction
     norm = math.hypot(ux, uy) or 1
     ux, uy = ux / norm, uy / norm

@@ -18,7 +18,6 @@ from gxcore.graph import traps as _traps
 from .level import HAZARD, ONEWAY, Level
 from .render import cell_box
 
-
 # --------------------------------------------------------------------------- #
 # reachability
 # --------------------------------------------------------------------------- #

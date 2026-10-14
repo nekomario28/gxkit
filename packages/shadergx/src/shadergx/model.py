@@ -53,7 +53,7 @@ class Shader:
         return "\n".join(lines) + "\n" + src
 
 
-def _as_shader(value: object) -> "Shader | None":
+def _as_shader(value: object) -> Shader | None:
     return value if isinstance(value, Shader) else None
 
 

@@ -25,7 +25,7 @@ _RANK = {ERROR: 0, WARN: 1, INFO: 2}
 BBox = tuple[float, float, float, float]
 
 
-def sort_key(p: "Problem") -> tuple[int, str]:
+def sort_key(p: Problem) -> tuple[int, str]:
     """Canonical problem order: errors first, then by target.
 
     The report and the storyboard both number problems in this order, so box

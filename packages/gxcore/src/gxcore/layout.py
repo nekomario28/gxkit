@@ -8,8 +8,8 @@ and the messages.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from .geometry import clipped, covered
 from .model import ERROR, INFO, BBox, Problem

@@ -13,7 +13,6 @@ import importlib
 import random
 
 import pytest
-
 from gxcore import Report
 from gxcore.cli import run
 
@@ -169,7 +168,6 @@ def test_weird_chart_figures_do_not_raise():
 
     matplotlib.use("Agg", force=True)
     import matplotlib.pyplot as plt
-
     from chartgx import inspect_figure
 
     figures = []

@@ -15,3 +15,8 @@ build/
 
 # scratch environments
 .venv*/
+
+# coverage
+.coverage
+.coverage.*
+htmlcov/

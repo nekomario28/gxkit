@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from flowgx import Machine, inspect_machine, load_machine
 from gxcore import ERROR, INFO
 from gxcore.testing import assert_fires, assert_quiet, has
-from flowgx import Machine, inspect_machine, load_machine
 
 GOOD = Machine(
     states=["draft", "review", "changes", "published", "archived"],

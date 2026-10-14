@@ -6,7 +6,7 @@ render is black, frozen, the wrong length, or missing its sound, with a contact
 sheet as the storyboard.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_video
 from .clip import Video, clip, load_video
@@ -15,22 +15,22 @@ from .render import contact_sheet
 from .tool import TOOL, Scene, main
 
 __all__ = [
-    "Video",
-    "clip",
-    "load_video",
-    "inspect_video",
-    "contact_sheet",
-    "probe",
-    "sample_frames",
-    "mean_volume_db",
-    "VideoError",
-    "Scene",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "Scene",
+    "Video",
+    "VideoError",
+    "clip",
+    "contact_sheet",
+    "inspect_video",
+    "load_video",
+    "main",
+    "mean_volume_db",
+    "probe",
+    "sample_frames",
 ]
 __version__ = "0.1.0"

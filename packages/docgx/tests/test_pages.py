@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from docgx import Block, Page, inspect_page, load_page
 from gxcore import ERROR, INFO, WARN
 from gxcore.testing import assert_fires, assert_quiet
-from docgx import Block, Page, inspect_page, load_page
 
 GOOD = Page(
     width=1280, height=720, title="Q3 results",

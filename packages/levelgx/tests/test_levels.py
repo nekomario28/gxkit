@@ -6,7 +6,6 @@ solvable but a reachable one-way tile traps the player forever.
 
 from __future__ import annotations
 
-
 from gxcore import ERROR, INFO, WARN
 from gxcore.testing import assert_fires, assert_quiet
 from levelgx import Level, can_reach, inspect_level, load_level, reachable

@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any
 
 DEFAULT_BUILDERS = ("build", "make", "create", "make_figure", "figure", "create_figure",
                     "make_level", "level_from_rows")

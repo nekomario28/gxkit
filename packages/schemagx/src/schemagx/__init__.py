@@ -5,7 +5,7 @@ reference resolves, finds foreign-key cycles that need deferred constraints, and
 points at tables nothing uses.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_schema
 from .model import Schema, load_schema, schema_from_parts
@@ -13,18 +13,18 @@ from .render import render_image
 from .tool import TOOL, Scene, main
 
 __all__ = [
-    "Schema",
-    "load_schema",
-    "schema_from_parts",
-    "render_image",
-    "inspect_schema",
-    "Scene",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "Scene",
+    "Schema",
+    "inspect_schema",
+    "load_schema",
+    "main",
+    "render_image",
+    "schema_from_parts",
 ]
 __version__ = "0.1.0"

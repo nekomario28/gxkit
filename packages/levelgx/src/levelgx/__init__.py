@@ -6,7 +6,7 @@ make the level directed — catches soft-locks: cells you can enter but never
 leave with the goal still reachable.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import can_reach, distances, inspect_level, reachable
 from .level import Level, load_level
@@ -14,20 +14,20 @@ from .render import render_image
 from .tool import TOOL, Scene, main
 
 __all__ = [
-    "Level",
-    "load_level",
-    "render_image",
-    "inspect_level",
-    "reachable",
-    "can_reach",
-    "distances",
-    "Scene",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
+    "Level",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "Scene",
+    "can_reach",
+    "distances",
+    "inspect_level",
+    "load_level",
+    "main",
+    "reachable",
+    "render_image",
 ]
 __version__ = "0.1.0"

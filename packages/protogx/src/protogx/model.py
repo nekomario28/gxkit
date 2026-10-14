@@ -83,7 +83,7 @@ class Protocol:
         return set(terminals(self.edges(), self.all_states()))
 
 
-def _as_protocol(value: object) -> "Protocol | None":
+def _as_protocol(value: object) -> Protocol | None:
     return value if isinstance(value, Protocol) else None
 
 

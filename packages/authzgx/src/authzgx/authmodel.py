@@ -22,9 +22,9 @@ principal reaching a sensitive permission is a privilege-escalation path.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
 from gxcore.graph import reachable, shortest_path
 
@@ -110,7 +110,7 @@ class AuthModel:
         return all_nodes
 
 
-def _as_model(value: object) -> "AuthModel | None":
+def _as_model(value: object) -> AuthModel | None:
     return value if isinstance(value, AuthModel) else None
 
 

@@ -22,9 +22,9 @@ Transitions are ``(source, target)`` or ``(source, target, event)``. If
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
 from gxcore.graph import terminals
 
@@ -94,7 +94,7 @@ class Machine:
         return out
 
 
-def _as_machine(value: object) -> "Machine | None":
+def _as_machine(value: object) -> Machine | None:
     if isinstance(value, Machine):
         return value
     return None

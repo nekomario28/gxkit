@@ -16,6 +16,15 @@ members = ["packages/*"]
 [dependency-groups]
 dev = ["pytest>=7", "mypy>=1.10", "ruff>=0.6"]
 
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Strict on real mistakes; E501 (line length) is not one, PT018 is fine in tests.
+select = ["E", "W", "F", "B", "SIM", "RUF", "UP", "PT", "I"]
+ignore = ["E501", "PT018"]
+
 [tool.mypy]
 python_version = "3.10"
 

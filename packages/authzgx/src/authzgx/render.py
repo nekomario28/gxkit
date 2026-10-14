@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from gxcore.diagram import DEFAULT, DANGER, MUTED, START, Edge, Node
+from gxcore.diagram import DANGER, DEFAULT, MUTED, START, Edge, Node, node_box, render
 from gxcore.diagram import image_size as _image_size
 from gxcore.diagram import layout as _layout
-from gxcore.diagram import node_box, render
 
 from .authmodel import AuthModel
 
-__all__ = ["render_image", "compute_layout", "image_size", "node_box"]
+__all__ = ["compute_layout", "image_size", "node_box", "render_image"]
 
 
 def _nodes_edges(model: AuthModel) -> tuple[list[Node], list[Edge]]:

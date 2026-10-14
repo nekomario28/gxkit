@@ -5,7 +5,7 @@ every state can still reach "done", and no event is ambiguous. Soft-locks in a
 game level become "no way to finish" in a workflow — the same graph check.
 """
 
-from gxcore import ERROR, INFO, WARN, Problem, Report  # noqa: F401  (re-exported)
+from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_machine
 from .machine import Machine, load_machine, machine_from_parts
@@ -13,18 +13,18 @@ from .render import render_image
 from .tool import TOOL, Scene, main
 
 __all__ = [
-    "Machine",
-    "load_machine",
-    "machine_from_parts",
-    "render_image",
-    "inspect_machine",
-    "Scene",
+    "ERROR",
+    "INFO",
     "TOOL",
-    "main",
+    "WARN",
+    "Machine",
     "Problem",
     "Report",
-    "ERROR",
-    "WARN",
-    "INFO",
+    "Scene",
+    "inspect_machine",
+    "load_machine",
+    "machine_from_parts",
+    "main",
+    "render_image",
 ]
 __version__ = "0.1.0"

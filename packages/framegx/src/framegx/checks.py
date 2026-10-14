@@ -10,7 +10,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-
 from gxcore import ERROR, WARN, Problem, Report
 from gxcore.geometry import union
 
@@ -69,14 +68,14 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
         f"{f'{seconds:.2f}' if seconds else '?'}s, {meta.get('codec')}"
     )
 
-    if video.expected_duration is not None and seconds is not None:
-        if abs(seconds - video.expected_duration) > 0.35:
-            out.append(Problem(WARN, "duration-mismatch",
-                               f"duration is {seconds:.2f}s, expected {video.expected_duration:.2f}s"))
-    if video.expected_fps is not None and fps is not None:
-        if abs(fps - video.expected_fps) > 0.5:
-            out.append(Problem(WARN, "wrong-fps",
-                               f"frame rate is {fps:.2f}, expected {video.expected_fps:g}"))
+    if (video.expected_duration is not None and seconds is not None
+            and abs(seconds - video.expected_duration) > 0.35):
+        out.append(Problem(WARN, "duration-mismatch",
+                           f"duration is {seconds:.2f}s, expected {video.expected_duration:.2f}s"))
+    if (video.expected_fps is not None and fps is not None
+            and abs(fps - video.expected_fps) > 0.5):
+        out.append(Problem(WARN, "wrong-fps",
+                           f"frame rate is {fps:.2f}, expected {video.expected_fps:g}"))
     if video.expected_size is not None and (meta["width"], meta["height"]) != tuple(video.expected_size):
         out.append(Problem(WARN, "wrong-size",
                            f"size is {meta['width']}x{meta['height']}, "
