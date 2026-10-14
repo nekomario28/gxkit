@@ -24,6 +24,30 @@ Not a gxkit vulnerability:
 - running `gxkit inspect` on a file you do not trust (see above);
 - the artifact's own code doing something malicious.
 
+## Running an untrusted artifact
+
+`inspect` executes the artifact, so treat an untrusted artifact as an untrusted
+program and give it an environment with nothing to steal:
+
+- **No network** (the tools never need it), **no secrets** in the environment,
+  and a **disposable** container or VM.
+- Build an image that already has gxkit installed, then run only the artifact:
+
+  ```dockerfile
+  FROM python:3.12-slim
+  RUN pip install "gxkit-cli @ git+https://github.com/nekomario28/gxkit#subdirectory=packages/gxkit"
+  WORKDIR /w
+  ENTRYPOINT ["gxkit", "inspect"]
+  ```
+
+  ```sh
+  docker run --rm --network=none -v "$PWD:/w:ro" gxkit-inspect /w/artifact.py
+  ```
+
+The reusable GitHub Action runs on an ephemeral hosted runner. Pair it with
+`permissions: contents: read` and a job that exposes no secrets; never run it on
+an artifact you would not run as a script on that runner.
+
 ## Supported versions
 
 The latest release of each package.

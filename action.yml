@@ -46,8 +46,15 @@ runs:
         if [ -n "$TOOL" ]; then CMD="$TOOL inspect"; else CMD="gxkit inspect"; fi
         if [ -d "$TARGET" ]; then
           mapfile -t files < <(find "$TARGET" -name '*.py' | sort)
-        else
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::no *.py artifacts under $TARGET — refusing to report success"
+            exit 1
+          fi
+        elif [ -f "$TARGET" ]; then
           files=("$TARGET")
+        else
+          echo "::error::path not found: $TARGET"
+          exit 1
         fi
         rc=0
         for f in "${files[@]}"; do

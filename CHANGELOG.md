@@ -43,6 +43,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   non-blank — the images a human reviews are not left untested.
 
 ### Fixed
+- The reusable Action no longer reports success on a directory with no `*.py`
+  artifacts, or on a path that does not exist — an empty gate is a failure.
 - `Shader.assembled` no longer treats a `#version` inside a comment as a real
   directive (which silently dropped the preamble).
 - `shadergx` tries the platform-default GL context (and CGL) so it can work on

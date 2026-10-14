@@ -130,8 +130,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - run: mkdir -p empty-artifacts
       - name: The published action passes on a clean artifact
-        uses: $/
+        uses: $/  # `$` is GitHub's self-repository reference (zizmor prefers it over `./`)
         with:
           path: packages/levelgx/examples/good_level.py
       - name: The published action fails on a faulty artifact
@@ -151,6 +152,28 @@ jobs:
           path: packages/schemagx/examples/good_schema.py
           tool: schemagx
           args: "--json"
+      - name: The action refuses a directory with no artifacts
+        id: empty
+        continue-on-error: true
+        uses: $/
+        with:
+          path: empty-artifacts
+      - name: It really failed on the empty directory
+        if: steps.empty.outcome != 'failure'
+        run: |
+          echo "::error::the action reported success on a directory with no *.py artifacts"
+          exit 1
+      - name: The action refuses a missing path
+        id: missing
+        continue-on-error: true
+        uses: $/
+        with:
+          path: does/not/exist
+      - name: It really failed on the missing path
+        if: steps.missing.outcome != 'failure'
+        run: |
+          echo "::error::the action reported success on a missing path"
+          exit 1
 
   security:
     runs-on: ubuntu-latest

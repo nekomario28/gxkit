@@ -139,13 +139,23 @@ matplotlib, and `shadergx` needs a GL context (Mesa/EGL or a GPU).
 A reusable action runs `gxkit inspect` and fails the job on an `error`:
 
 ```yaml
-- uses: actions/checkout@v4
-- uses: nekomario28/gxkit@v0.2.0
-  with:
-    path: artifacts/          # a file, or a directory of *.py artifacts
-    args: --json              # optional extra flags
-    # tool: chartgx           # optional: install just one tool
+permissions:
+  contents: read          # the action only needs to read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nekomario28/gxkit@v0.2.2
+        with:
+          path: artifacts/          # a file, or a directory of *.py artifacts
+          args: --json              # optional extra flags
+          # tool: chartgx           # optional: install just one tool
 ```
+
+The action **runs the artifact** to inspect it (see [`SECURITY.md`](SECURITY.md)),
+so run it on an ephemeral runner with no secrets, and not on files you do not
+trust.
 
 ## Configure
 
