@@ -21,10 +21,14 @@ only ``main`` and any custom ``uniform`` declarations. If the source contains
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 PREAMBLE = "#version 330 core"
+# A real directive starts a line; `#version` inside a comment must not switch
+# the shader to "verbatim" mode and silently drop the preamble.
+_VERSION_DIRECTIVE = re.compile(r"^\s*#version\b", re.MULTILINE)
 
 
 @dataclass
@@ -37,7 +41,7 @@ class Shader:
 
     def assembled(self) -> str:
         src = self.fragment
-        if "#version" in src:
+        if _VERSION_DIRECTIVE.search(src):
             return src
         lines = [PREAMBLE]
         # Inject only what the source does not already declare (a *use* of

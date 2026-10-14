@@ -12,6 +12,21 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A reusable GitHub Action (`uses: nekomario28/gxkit@vX.Y.Z`).
 - `docs/RELEASING.md`; PyPI metadata and a `gxcore` version pin.
 
+### Changed
+- mypy runs in `--strict`; `ruff format --check` is a CI gate; a macOS leg was
+  added to the test matrix.
+
+### Tests
+- `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
+  `gxcore.layout` against Shapely on random inputs; a GLSL corpus pins the
+  surface `shadergx` claims to support; one CLI contract test per tool.
+
+### Fixed
+- `Shader.assembled` no longer treats a `#version` inside a comment as a real
+  directive (which silently dropped the preamble).
+- `shadergx` tries the platform-default GL context (and CGL) so it can work on
+  macOS instead of only EGL/WGL/GLX.
+
 ## [0.1.2] — robustness
 
 ### Added

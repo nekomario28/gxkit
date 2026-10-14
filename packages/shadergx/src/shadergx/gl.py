@@ -42,14 +42,21 @@ def context() -> Any:
         raise ShaderError(
             "moderngl is not installed — `pip install moderngl` (needs Mesa/EGL or a GPU)"
         ) from exc
-    for backend in ("egl", "wgl", "glx"):
+    # Try the platform default first (headless CGL on macOS, EGL/GLX on Linux),
+    # then each named backend, so a host with only one path still works.
+    attempts: list[dict[str, Any]] = [{}]
+    attempts += [{"backend": b} for b in ("egl", "wgl", "cgl", "glx")]
+    for kwargs in attempts:
         try:
-            _ctx = moderngl.create_standalone_context(backend=backend)  # type: ignore[arg-type]
+            _ctx = moderngl.create_standalone_context(**kwargs)
             return _ctx
+        except TypeError:
+            continue
         except Exception:
             continue
     raise ShaderError(
-        "no GL context available (tried egl and glx) — install Mesa/EGL or run somewhere with a GPU"
+        "no GL context available (tried the default, EGL, WGL, CGL and GLX) — "
+        "install Mesa/EGL or run somewhere with a GPU"
     )
 
 
