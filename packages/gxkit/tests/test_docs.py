@@ -136,6 +136,32 @@ def test_every_doc_is_referenced_from_somewhere():
     assert not orphans, f"docs not linked from anywhere: {orphans}"
 
 
+def test_tool_doc_severities_match_the_catalogue():
+    from gxkit.codes import CODEBOOK
+
+    for name in TOOL_PACKAGES:
+        codes = CODEBOOK[name]
+        for filename in ("README.md", "SKILL.md"):
+            text = (ROOT / "packages" / name / filename).read_text(encoding="utf-8")
+            for code, severity in re.findall(
+                r"^\|\s*`([a-z][a-z0-9-]+)`\s*\|\s*(error|warn|info)\s*\|", text, re.M
+            ):
+                if code in codes:
+                    assert codes[code] == severity, (
+                        f"packages/{name}/{filename}: {code} is documented as {severity}, "
+                        f"the catalogue says {codes[code]}"
+                    )
+
+
+def test_readme_figure_headline_codes_are_real():
+    from gxkit.codes import CODEBOOK
+
+    for tool, _what, code in _figure_module().TOOLS:
+        assert code in CODEBOOK.get(tool, {}), (
+            f"the figure names {tool}/{code}, not in the catalogue"
+        )
+
+
 def test_no_stale_tool_count_in_the_readme():
     # a hardcoded "nine" was left behind after the tenth tool landed
     assert "nine inspect tools" not in (ROOT / "README.md").read_text(encoding="utf-8").lower()
