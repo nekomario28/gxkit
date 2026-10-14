@@ -83,7 +83,7 @@ def load_module(path: str | Path) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     # Inspect the current source, not a timestamp/size-matched cached .pyc.
-    exec(compile(path.read_bytes(), str(path), "exec"), module.__dict__)
+    exec(compile(path.read_bytes(), str(path), "exec", dont_inherit=True), module.__dict__)
     if modules is not None:
         modules[key] = module
     return module

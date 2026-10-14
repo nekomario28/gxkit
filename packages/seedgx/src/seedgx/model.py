@@ -47,6 +47,7 @@ def _seed(value: object) -> int | None:
 
 def _as_stream(value: object) -> Stream | None:
     if isinstance(value, Stream):
+        _seed(value.seed)
         return value
     if isinstance(value, str):
         return Stream(value)

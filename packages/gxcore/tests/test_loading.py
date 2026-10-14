@@ -16,8 +16,16 @@ from gxcore.loading import load_from_file, load_module, resolve
 
 def _write(tmp_path: Path, name: str, text: str) -> Path:
     path = tmp_path / name
-    path.write_text(text)
+    path.write_text(text, encoding="utf-8")
     return path
+
+
+@pytest.mark.parametrize(
+    ("header", "expected"), [("", int), ("from __future__ import annotations\n", "int")]
+)
+def test_future_annotations_follow_the_artifact_not_the_loader(tmp_path, header, expected):
+    path = _write(tmp_path, "annotation.py", header + "def factory() -> int:\n    return 1\n")
+    assert load_module(path).factory.__annotations__["return"] == expected
 
 
 def test_a_missing_file_is_a_file_not_found(tmp_path):
@@ -104,9 +112,13 @@ def test_load_from_file_names_the_description_in_its_error(tmp_path):
 
 def test_same_size_edits_are_not_hidden_by_cached_bytecode(tmp_path):
     import os
+    import py_compile
 
     path = _write(tmp_path, "edited.py", "value = 'A'\n")
     assert load_module(path).value == "A"
+    # Another producer may have compiled this file even when this inspector
+    # disables bytecode writes. Explicit compilation makes the stale cache real.
+    py_compile.compile(str(path), doraise=True)
     stamp = path.stat()
     path.write_text("value = 'B'\n", encoding="utf-8")
     os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))

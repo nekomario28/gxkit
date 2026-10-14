@@ -46,10 +46,10 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
 
     try:
         module = load_module(path)
+        spec = detect(module)
     except (Exception, SystemExit) as exc:  # an artifact exit is not inspection success
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
-    spec = detect(module)
     if spec is None:
         names = ", ".join(t.name for t in TOOLS)
         print(
@@ -157,7 +157,9 @@ def build_parser() -> argparse.ArgumentParser:
         description="Route an artifact to the gxkit tool that inspects it.",
     )
     p.add_argument(
-        "--version", action="version", version=f"gxkit {distribution_version('gxkit-cli', '0.1.0')}"
+        "--version",
+        action="version",
+        version=f"gxkit {distribution_version('gxkit-cli')}",
     )
     sub = p.add_subparsers(dest="command", required=True)
 

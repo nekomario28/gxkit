@@ -3,6 +3,30 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased — inspection correctness hardening
+
+### Fixed
+- Artifact exits during import or detection are input failures, never successful
+  inspection; directory inspection continues to later files.
+- Routing and inspection execute the same module once per invocation and read
+  current source rather than stale timestamp-matched bytecode.
+- Baselines preserve repeated findings and cron conflict partners. Format 2
+  rejects version 1; deliberately recreate accepted debt after reviewing it.
+- Malformed collection members are rejected with a field/index, not dropped or
+  hidden by another representation's fallback.
+- Schedule tuple defaults, empty intervals and non-finite times; seed integer
+  validation without truncation; references against empty declarations; API base
+  matching at a path boundary.
+
+### Verification
+- Setup-handoff and executable coverage-command guards replace token presence.
+- Bounded mutation proofs run green controls before restoring named defects in
+  disposable copies. Git consumer checks install an immutable revision in fresh
+  tool/cache directories and exercise inspection and baseline exit semantics.
+- gxcore is staged at 0.5.0, with compatible dependency ranges in consumers;
+  changed domain packages and gxkit-cli receive patch versions. No release tag
+  or PyPI publication is created by this hardening branch.
+
 ## [0.9.1] — publish-readiness audit fixes
 
 See the [v0.9.1 release](https://github.com/nekomario28/gxkit/releases/tag/v0.9.1).

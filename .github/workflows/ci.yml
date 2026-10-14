@@ -49,6 +49,9 @@ jobs:
             --cov=authzgx --cov=depsgx --cov=schemagx --cov=docgx --cov=shadergx \
             --cov=framegx --cov=apigx --cov=netgx --cov=envgx --cov=pipegx --cov=seedgx --cov=crongx --cov=gxkit --cov-report=term-missing --cov-fail-under=100
 
+      - name: Bounded mutation proofs
+        run: uv run python scripts/check_mutations.py
+
   windows:
     runs-on: windows-latest
     timeout-minutes: 20
@@ -107,6 +110,8 @@ jobs:
           uv pip install --python /tmp/smoke dist/*.tar.gz
           /tmp/smoke/bin/gxkit tools
           /tmp/smoke/bin/gxkit codes chartgx
+      - name: Isolated Git consumer at this exact revision
+        run: uv run python scripts/check_consumer.py --repository . --revision "$(git rev-parse HEAD)"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist

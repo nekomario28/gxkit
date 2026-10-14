@@ -53,7 +53,7 @@ def test_seed_declarations_reject_noninteger_values_without_truncation(tmp_path,
         source = f'from seedgx import SeedSpec, Stream\nspec = SeedSpec([Stream("bad", {seed})])\n'
     path = tmp_path / "artifact.py"
     path.write_text(source, encoding="utf-8")
-    assert main(["inspect", "seedgx", str(path), "--no-storyboard", "--no-config"]) in (1, 2)
+    assert main(["inspect", "seedgx", str(path), "--no-storyboard", "--no-config"]) == 2
 
 
 @pytest.mark.parametrize(

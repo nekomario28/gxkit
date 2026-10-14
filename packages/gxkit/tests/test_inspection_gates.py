@@ -23,12 +23,17 @@ def _inspect(path, *flags):
         capture_output=True,
         text=True,
         check=False,
+        timeout=15,
     )
 
 
 @pytest.mark.parametrize("status", [0, 3, "stop"])
-def test_artifact_exit_is_a_load_failure_and_does_not_stop_the_directory(tmp_path, status):
-    (tmp_path / "a.py").write_text(f"raise SystemExit({status!r})\n", encoding="utf-8")
+@pytest.mark.parametrize("stage", ["import", "detection"])
+def test_artifact_exit_is_a_load_failure_and_does_not_stop_the_directory(tmp_path, status, stage):
+    source = f"raise SystemExit({status!r})\n"
+    if stage == "detection":
+        source = f"def __getattr__(name):\n    raise SystemExit({status!r})\n"
+    (tmp_path / "a.py").write_text(source, encoding="utf-8")
     (tmp_path / "b.py").write_text(
         'from seedgx import SeedSpec, Stream\nspec = SeedSpec(streams=[Stream("bad", None)])\n',
         encoding="utf-8",

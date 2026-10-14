@@ -10,17 +10,17 @@ consumer run. A green coverage percentage is supplemental evidence, not the goal
 ## Next Agent Prompt
 
 You are implementing this hardening plan on `fix/audit-gates`, based on `3f89316`.
-Resume at [behavioral guards](slices/03-guards.md), then proceed through the checklist
+Resume at [consumer and CI verification](slices/04-verification.md), then proceed through the checklist
 without stopping at intermediate commits. Update this prompt and the evidence
 ledger after each checkpoint. Do not add tools or release tags. Preserve clean
 inputs, stable existing codes, optional storyboards and the 100% statement floor.
 
-Status: shared gates and strict input/boundary repairs pass the local gates. No blockers. Baseline v1 will be rejected;
+Status: shared gates, inputs and mutation proofs implemented; final verification pending. No blockers. Baseline v1 will be rejected;
 users explicitly recreate accepted debt using `--write-baseline` (no migration).
 
 - [x] [1. Shared gates](slices/01-gates.md): A01, A02, A03.
 - [x] [2. Strict inputs and boundaries](slices/02-inputs.md): A04–A09, A11.
-- [ ] [3. Behavioral guards](slices/03-guards.md): A10 and mutation proofs.
+- [x] [3. Behavioral guards](slices/03-guards.md): A10 and mutation proofs.
 - [ ] [4. Consumer and CI verification](slices/04-verification.md).
 
 ## Ownership and contracts
@@ -59,6 +59,15 @@ strict conversion. Boundary regressions exposed tuple-default, empty-interval,
 non-finite-time, fractional/boolean/string seed and API path-boundary defects;
 now green. Empty-set reference regressions will also be mutation-proven before
 closeout. Strict local gate: 100% statements; lint/types/security checks pass.
+
+Guard checkpoint: green controls followed by named rejected mutants,
+including all original audit fault classes, commented/echoed/disabled coverage
+commands and both empty-set reference cases. Mutation drilling exposed a missing
+`--no-cov` rejection, repaired and retested. Additional introspection-stage
+SystemExit variants went red before extending the routing exception boundary.
+Independent final review reproduced inherited future flags in the source loader;
+the annotation regression went red before disabling inheritance. The added
+mutation pins this execution-semantics boundary too.
 
 Record named red/green regression results here, not full terminal transcripts.
 Full logs belong outside the repository. Decisions belong in [choices](choices.md).

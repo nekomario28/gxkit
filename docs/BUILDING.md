@@ -111,6 +111,24 @@ and a tool's drawn pixels are held against the boxes it reports.
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
 
+A presence check is not a gate proof. `scripts/guard_contracts.py` checks the
+actual setup handoff and records pytest arguments from trusted shell scripts
+with external commands stubbed out. Comments and echo output cannot stand in
+for execution. The shell observer runs on POSIX coverage lanes; Windows still
+exercises inspector behavior. Real installation is a separate consumer gate.
+
+`scripts/check_mutations.py` first runs green controls, then restores named
+faults in disposable source copies. Rejection counts only when the intended
+test assertion fails, not when collection or imports break. It runs in the
+local gate and Ubuntu CI. Keep that bounded catalogue with each regression;
+it is not an exhaustive proof against arbitrary edits.
+
+The POSIX consumer check in `scripts/check_consumer.py` installs a full Git SHA
+in fresh tool/cache directories, verifies direct-URL provenance, then exercises
+inspection and baseline exit semantics from outside the workspace. The package
+CI job uses its exact checkout revision; a remote URL run additionally checks
+that the same revision is publicly retrievable.
+
 ## 5. Disciplines that catch real bugs
 
 - **Look at the storyboard image.** Every rendering bug in this project — a

@@ -16,6 +16,10 @@ def test_a_clean_manifest_has_no_problems():
     assert inspect_spec(spec).problems == []
 
 
+def test_direct_inspection_also_rejects_a_noninteger_seed():
+    assert_fires(inspect_spec(SeedSpec(streams=[Stream("bad", 0.5)])), "invalid-seed", ERROR)
+
+
 def test_missing_seed():
     assert_fires(inspect_spec(SeedSpec(streams=[Stream("numpy", None)])), "missing-seed", ERROR)
 
