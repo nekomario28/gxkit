@@ -11,7 +11,8 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 TOOL_PACKAGES = sorted(
-    d.name for d in (ROOT / "packages").iterdir()
+    d.name
+    for d in (ROOT / "packages").iterdir()
     if (d / "pyproject.toml").exists() and d.name not in {"gxcore", "gxkit"}
 )
 

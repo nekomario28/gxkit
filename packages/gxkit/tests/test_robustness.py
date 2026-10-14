@@ -11,13 +11,24 @@ from __future__ import annotations
 
 import importlib
 import random
+import shutil
 
 import pytest
 from gxcore import Report
 from gxcore.cli import run
 
-TOOL_NAMES = ["chartgx", "levelgx", "flowgx", "protogx", "authzgx",
-              "depsgx", "schemagx", "docgx", "shadergx", "framegx"]
+TOOL_NAMES = [
+    "chartgx",
+    "levelgx",
+    "flowgx",
+    "protogx",
+    "authzgx",
+    "depsgx",
+    "schemagx",
+    "docgx",
+    "shadergx",
+    "framegx",
+]
 
 MALFORMED = {
     "empty": "",
@@ -65,9 +76,17 @@ def _random_machines(rng):
     for _ in range(40):
         n = rng.randint(0, 5)
         states = [f"s{i}" for i in range(n)]
-        edges = [(rng.choice(states), rng.choice(states)) for _ in range(rng.randint(0, 6))] if states else []
-        yield Machine(states=states, start=(states[0] if states else None),
-                      accept=[states[0]] if states else [], transitions=edges)
+        edges = (
+            [(rng.choice(states), rng.choice(states)) for _ in range(rng.randint(0, 6))]
+            if states
+            else []
+        )
+        yield Machine(
+            states=states,
+            start=(states[0] if states else None),
+            accept=[states[0]] if states else [],
+            transitions=edges,
+        )
 
 
 def _random_protocols(rng):
@@ -80,10 +99,16 @@ def _random_protocols(rng):
         edges = []
         for _ in range(rng.randint(0, 6)):
             if states:
-                edges.append((rng.choice(states), rng.choice(states), rng.choice(msgs) if msgs else None))
-        yield Protocol(states=states, start=(states[0] if states else None),
-                       terminal=[states[0]] if states else [], messages=msgs,
-                       transitions=[e for e in edges if e[2] is not None])
+                edges.append(
+                    (rng.choice(states), rng.choice(states), rng.choice(msgs) if msgs else None)
+                )
+        yield Protocol(
+            states=states,
+            start=(states[0] if states else None),
+            terminal=[states[0]] if states else [],
+            messages=msgs,
+            transitions=[e for e in edges if e[2] is not None],
+        )
 
 
 def _random_auths(rng):
@@ -94,11 +119,21 @@ def _random_auths(rng):
         perms = [f"p{i}" for i in range(rng.randint(0, 4))]
         principals = [f"u{i}" for i in range(rng.randint(0, 3))]
         yield AuthModel(
-            principals=principals, roles=roles, permissions=perms,
-            grants=[(rng.choice(roles), rng.choice(perms)) for _ in range(rng.randint(0, 5))] if roles and perms else [],
-            inherits=[(rng.choice(roles), rng.choice(roles)) for _ in range(rng.randint(0, 4))] if roles else [],
-            assigned=[(rng.choice(principals), rng.choice(roles)) for _ in range(rng.randint(0, 4))] if principals and roles else [],
-            sensitive=perms[:1], low=principals[:1])
+            principals=principals,
+            roles=roles,
+            permissions=perms,
+            grants=[(rng.choice(roles), rng.choice(perms)) for _ in range(rng.randint(0, 5))]
+            if roles and perms
+            else [],
+            inherits=[(rng.choice(roles), rng.choice(roles)) for _ in range(rng.randint(0, 4))]
+            if roles
+            else [],
+            assigned=[(rng.choice(principals), rng.choice(roles)) for _ in range(rng.randint(0, 4))]
+            if principals and roles
+            else [],
+            sensitive=perms[:1],
+            low=principals[:1],
+        )
 
 
 def _random_deps(rng):
@@ -108,9 +143,12 @@ def _random_deps(rng):
         modules = [f"m{i}" for i in range(rng.randint(0, 5))]
         yield ModuleGraph(
             modules=modules,
-            depends=[(rng.choice(modules), rng.choice(modules)) for _ in range(rng.randint(0, 5))] if modules else [],
+            depends=[(rng.choice(modules), rng.choice(modules)) for _ in range(rng.randint(0, 5))]
+            if modules
+            else [],
             roots=modules[:1],
-            layers=[[m] for m in modules] if rng.random() < 0.5 else [])
+            layers=[[m] for m in modules] if rng.random() < 0.5 else [],
+        )
 
 
 def _random_schemas(rng):
@@ -119,18 +157,38 @@ def _random_schemas(rng):
     for _ in range(40):
         tables = {f"t{i}": {"id": "int"} for i in range(rng.randint(0, 4))}
         names = list(tables)
-        fks = [(f"{rng.choice(names)}.id", f"{rng.choice(names)}.id") for _ in range(rng.randint(0, 5))] if names else []
-        yield Schema(tables=tables, primary_keys={n: "id" for n in names}, foreign_keys=fks, roots=names[:1])
+        fks = (
+            [
+                (f"{rng.choice(names)}.id", f"{rng.choice(names)}.id")
+                for _ in range(rng.randint(0, 5))
+            ]
+            if names
+            else []
+        )
+        yield Schema(
+            tables=tables, primary_keys={n: "id" for n in names}, foreign_keys=fks, roots=names[:1]
+        )
 
 
 def _random_pages(rng):
     from docgx import Block, Page
 
     for _ in range(40):
-        blocks = [Block("word " * rng.randint(0, 40), x=rng.random(), y=rng.random(),
-                        font_size=rng.randint(4, 40)) for _ in range(rng.randint(0, 4))]
-        yield Page(width=rng.choice([320, 640, 1280]), height=rng.choice([240, 480, 720]),
-                   title=rng.choice(["", "T"]), blocks=blocks)
+        blocks = [
+            Block(
+                "word " * rng.randint(0, 40),
+                x=rng.random(),
+                y=rng.random(),
+                font_size=rng.randint(4, 40),
+            )
+            for _ in range(rng.randint(0, 4))
+        ]
+        yield Page(
+            width=rng.choice([320, 640, 1280]),
+            height=rng.choice([240, 480, 720]),
+            title=rng.choice(["", "T"]),
+            blocks=blocks,
+        )
 
 
 GENERATORS = {
@@ -163,6 +221,18 @@ def test_random_artifacts_do_not_raise(name):
         assert isinstance(report, Report)
 
 
+def test_framegx_corrupt_media_is_reported_not_crashed(tmp_path):
+    if not shutil.which("ffprobe"):
+        pytest.skip("no ffprobe")
+    from framegx import Video, inspect_video
+
+    for name, blob in (("bad.mp4", b"not a video" * 50), ("empty.mp4", b"")):
+        path = tmp_path / name
+        path.write_bytes(blob)
+        report = inspect_video(Video(path=str(path)))
+        assert report.errors >= 1, f"{name}: corrupt media not reported"
+
+
 def test_weird_chart_figures_do_not_raise():
     import matplotlib
 
@@ -172,12 +242,12 @@ def test_weird_chart_figures_do_not_raise():
 
     figures = []
     for build in (
-        lambda ax: None,                                    # empty axes
-        lambda ax: ax.plot([1], [float("nan")]),            # NaN
-        lambda ax: ax.bar(["a"], [0.0]),                    # zero-height bar
-        lambda ax: ax.plot([1, 2, 3], [1, 1, 1]),           # constant
+        lambda ax: None,  # empty axes
+        lambda ax: ax.plot([1], [float("nan")]),  # NaN
+        lambda ax: ax.bar(["a"], [0.0]),  # zero-height bar
+        lambda ax: ax.plot([1, 2, 3], [1, 1, 1]),  # constant
         lambda ax: [ax.plot([0, 1], [i, i + 1]) for i in range(50)],  # many series
-        lambda ax: ax.set_yscale("log") or ax.plot([1, 2], [0, 5]),   # log + zero
+        lambda ax: ax.set_yscale("log") or ax.plot([1, 2], [0, 5]),  # log + zero
     ):
         plt.close("all")
         fig, ax = plt.subplots()

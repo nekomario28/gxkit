@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -19,16 +20,25 @@ class VideoError(Exception):
     """ffprobe or ffmpeg could not read the file."""
 
 
-def _run(args: list[str], **kw) -> subprocess.CompletedProcess:
+def _run(args: list[str], **kw: Any) -> subprocess.CompletedProcess[Any]:
     return subprocess.run(args, capture_output=True, **kw)
 
 
-def probe(path: str | Path) -> dict:
+def probe(path: str | Path) -> dict[str, Any]:
     """Metadata: size, fps, duration, whether there is audio."""
-    result = _run([
-        "ffprobe", "-v", "error", "-print_format", "json",
-        "-show_format", "-show_streams", str(path),
-    ], text=True)
+    result = _run(
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-print_format",
+            "json",
+            "-show_format",
+            "-show_streams",
+            str(path),
+        ],
+        text=True,
+    )
     if result.returncode != 0:
         raise VideoError(result.stderr.strip() or f"ffprobe failed for {path}")
     try:
@@ -66,13 +76,22 @@ def probe(path: str | Path) -> dict:
     }
 
 
-def sample_frames(path: str | Path, sample_fps: float = 2.0) -> np.ndarray:
+def sample_frames(path: str | Path, sample_fps: float = 2.0) -> np.ndarray[Any, Any]:
     """A small grayscale frame per sampled moment, as ``(N, SAMPLE_H, SAMPLE_W)``."""
-    result = _run([
-        "ffmpeg", "-v", "error", "-i", str(path),
-        "-vf", f"fps={sample_fps},scale={SAMPLE_W}:{SAMPLE_H},format=gray",
-        "-f", "rawvideo", "-",
-    ])
+    result = _run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-i",
+            str(path),
+            "-vf",
+            f"fps={sample_fps},scale={SAMPLE_W}:{SAMPLE_H},format=gray",
+            "-f",
+            "rawvideo",
+            "-",
+        ]
+    )
     if result.returncode != 0:
         raise VideoError(result.stderr.decode(errors="replace").strip() or "ffmpeg failed")
     frame_bytes = SAMPLE_W * SAMPLE_H
@@ -86,8 +105,10 @@ def sample_frames(path: str | Path, sample_fps: float = 2.0) -> np.ndarray:
 
 def mean_volume_db(path: str | Path) -> float | None:
     """Integrated mean volume in dBFS, or None if there is no audio."""
-    result = _run(["ffmpeg", "-v", "info", "-i", str(path), "-af", "volumedetect", "-f", "null", "-"],
-                  text=True)
+    result = _run(
+        ["ffmpeg", "-v", "info", "-i", str(path), "-af", "volumedetect", "-f", "null", "-"],
+        text=True,
+    )
     text = result.stderr
     for line in text.splitlines():
         if "mean_volume:" in line:

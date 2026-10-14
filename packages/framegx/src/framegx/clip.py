@@ -67,9 +67,7 @@ def load_video(path: str | Path) -> tuple[Video, object]:
                 sample_fps=float(getattr(module, "SAMPLE_FPS", 2.0)),
             )
     if video is None:
-        raise ValueError(
-            f"{path}: no video found — define `video` (a framegx.Video) or PATH=…"
-        )
+        raise ValueError(f"{path}: no video found — define `video` (a framegx.Video) or PATH=…")
     if video.name == "video":
         video.name = getattr(module, "NAME", path.stem)
     video.resolved_path = video.resolved(path)
@@ -86,6 +84,13 @@ def clip(
     sample_fps: float = 2.0,
     name: str = "video",
 ) -> Video:
-    return Video(path=path, expected_duration=expected_duration, expected_fps=expected_fps,
-                 expected_size=expected_size, expect_audio=expect_audio,
-                 frozen_seconds=frozen_seconds, sample_fps=sample_fps, name=name)
+    return Video(
+        path=path,
+        expected_duration=expected_duration,
+        expected_fps=expected_fps,
+        expected_size=expected_size,
+        expect_audio=expect_audio,
+        frozen_seconds=frozen_seconds,
+        sample_fps=sample_fps,
+        name=name,
+    )

@@ -56,14 +56,18 @@ def test_nan_output():
 
 
 def test_unused_uniform_is_removed_by_the_compiler():
-    s = shader("uniform vec3 u_tint;\nvoid main(){ fragColor = vec4(uv, 0.5, 1.0); }",
-               uniforms={"u_tint": (1.0, 0.0, 0.0)})
+    s = shader(
+        "uniform vec3 u_tint;\nvoid main(){ fragColor = vec4(uv, 0.5, 1.0); }",
+        uniforms={"u_tint": (1.0, 0.0, 0.0)},
+    )
     assert_fires(inspect_shader(s), "uniform-unused", WARN)
 
 
 def test_used_uniform_is_quiet():
-    s = shader("uniform vec3 u_tint;\nvoid main(){ fragColor = vec4(uv * u_tint.xy, 0.5, 1.0); }",
-               uniforms={"u_tint": (1.0, 1.0, 0.0)})
+    s = shader(
+        "uniform vec3 u_tint;\nvoid main(){ fragColor = vec4(uv * u_tint.xy, 0.5, 1.0); }",
+        uniforms={"u_tint": (1.0, 1.0, 0.0)},
+    )
     assert_quiet(inspect_shader(s), "uniform-unused")
 
 

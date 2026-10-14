@@ -5,6 +5,7 @@ from __future__ import annotations
 from gxcore.diagram import DEFAULT, START, Edge, Node, node_box, render
 from gxcore.diagram import image_size as _image_size
 from gxcore.diagram import layout as _layout
+from PIL import Image
 
 from .model import ModuleGraph
 
@@ -26,6 +27,6 @@ def compute_layout(graph: ModuleGraph) -> tuple[dict[str, tuple[float, float]], 
     return _layout(graph.modules)
 
 
-def render_image(graph: ModuleGraph):
+def render_image(graph: ModuleGraph) -> Image.Image:
     nodes, edges = _nodes_edges(graph)
     return render(nodes, edges)

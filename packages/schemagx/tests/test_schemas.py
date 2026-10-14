@@ -26,34 +26,57 @@ def test_good_schema_has_no_problems():
 
 
 def test_dangling_parent_table():
-    s = Schema(tables={"a": {"id": "int"}}, primary_keys={"a": "id"},
-               foreign_keys=[("a.x", "ghost.id")], roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int"}},
+        primary_keys={"a": "id"},
+        foreign_keys=[("a.x", "ghost.id")],
+        roots=["a"],
+        name="x",
+    )
     assert_fires(inspect_schema(s), "dangling-foreign-key", ERROR)
 
 
 def test_dangling_column():
-    s = Schema(tables={"a": {"id": "int"}, "b": {"id": "int"}}, primary_keys={"a": "id", "b": "id"},
-               foreign_keys=[("a.b_id", "b.missing")], roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int"}, "b": {"id": "int"}},
+        primary_keys={"a": "id", "b": "id"},
+        foreign_keys=[("a.b_id", "b.missing")],
+        roots=["a"],
+        name="x",
+    )
     assert_fires(inspect_schema(s), "dangling-foreign-key", ERROR)
 
 
 def test_type_mismatch():
-    s = Schema(tables={"a": {"id": "int"}, "b": {"id": "text"}}, primary_keys={"a": "id", "b": "id"},
-               foreign_keys=[("b.id", "a.id")], roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int"}, "b": {"id": "text"}},
+        primary_keys={"a": "id", "b": "id"},
+        foreign_keys=[("b.id", "a.id")],
+        roots=["a"],
+        name="x",
+    )
     assert_fires(inspect_schema(s), "fk-type-mismatch", WARN)
 
 
 def test_cycle():
-    s = Schema(tables={"a": {"id": "int", "b_id": "int"}, "b": {"id": "int", "a_id": "int"}},
-               primary_keys={"a": "id", "b": "id"},
-               foreign_keys=[("a.b_id", "b.id"), ("b.a_id", "a.id")], roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int", "b_id": "int"}, "b": {"id": "int", "a_id": "int"}},
+        primary_keys={"a": "id", "b": "id"},
+        foreign_keys=[("a.b_id", "b.id"), ("b.a_id", "a.id")],
+        roots=["a"],
+        name="x",
+    )
     assert_fires(inspect_schema(s), "cyclic-foreign-key", WARN)
 
 
 def test_self_reference_is_not_a_cycle():
-    s = Schema(tables={"users": {"id": "int", "manager_id": "int"}},
-               primary_keys={"users": "id"},
-               foreign_keys=[("users.manager_id", "users.id")], roots=["users"], name="x")
+    s = Schema(
+        tables={"users": {"id": "int", "manager_id": "int"}},
+        primary_keys={"users": "id"},
+        foreign_keys=[("users.manager_id", "users.id")],
+        roots=["users"],
+        name="x",
+    )
     assert_quiet(inspect_schema(s), "cyclic-foreign-key")
 
 
@@ -63,8 +86,12 @@ def test_missing_primary_key():
 
 
 def test_orphan_table():
-    s = Schema(tables={"a": {"id": "int"}, "lonely": {"id": "int"}}, primary_keys={"a": "id", "lonely": "id"},
-               roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int"}, "lonely": {"id": "int"}},
+        primary_keys={"a": "id", "lonely": "id"},
+        roots=["a"],
+        name="x",
+    )
     r = inspect_schema(s)
     assert_fires(r, "orphan-table", INFO)
     # a leaf that references a parent is not an orphan
@@ -72,9 +99,13 @@ def test_orphan_table():
 
 
 def test_fk_to_non_primary_key():
-    s = Schema(tables={"a": {"id": "int", "code": "int"}, "b": {"id": "int"}},
-               primary_keys={"a": "id", "b": "id"},
-               foreign_keys=[("b.id", "a.code")], roots=["a"], name="x")
+    s = Schema(
+        tables={"a": {"id": "int", "code": "int"}, "b": {"id": "int"}},
+        primary_keys={"a": "id", "b": "id"},
+        foreign_keys=[("b.id", "a.code")],
+        roots=["a"],
+        name="x",
+    )
     assert_fires(inspect_schema(s), "fk-to-non-primary-key", WARN)
 
 

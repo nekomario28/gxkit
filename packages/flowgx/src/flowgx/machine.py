@@ -118,7 +118,9 @@ def load_machine(path: str | Path) -> tuple[Machine, object]:
         if transitions is not None:
             machine = Machine(
                 states=list(getattr(module, "STATES", getattr(module, "states", []))),
-                transitions=[(t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions],
+                transitions=[
+                    (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions
+                ],
                 start=getattr(module, "START", getattr(module, "start", None)),
                 accept=list(getattr(module, "ACCEPT", getattr(module, "accept", []))),
             )
@@ -141,7 +143,9 @@ def machine_from_parts(
 ) -> Machine:
     return Machine(
         states=list(states or []),
-        transitions=[(t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in (transitions or [])],
+        transitions=[
+            (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in (transitions or [])
+        ],
         start=start,
         accept=list(accept or []),
         name=name,

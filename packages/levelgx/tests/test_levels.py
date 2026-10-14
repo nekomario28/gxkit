@@ -51,6 +51,7 @@ def level(rows):
 # the clean control
 # --------------------------------------------------------------------------- #
 
+
 def test_good_level_is_clean():
     r = inspect_level(level(GOOD))
     assert r.errors == 0
@@ -67,6 +68,7 @@ def test_shortest_path_is_reported():
 # --------------------------------------------------------------------------- #
 # structural errors
 # --------------------------------------------------------------------------- #
+
 
 def test_no_spawn():
     r = inspect_level(level(["###", "#.G#", "###"]))
@@ -96,6 +98,7 @@ def test_stranded_item():
 # soft-lock — the directed-graph check
 # --------------------------------------------------------------------------- #
 
+
 def test_softlock_is_an_error():
     r = inspect_level(level(SOFTLOCK))
     assert_fires(r, "soft-lock", ERROR)
@@ -121,12 +124,15 @@ def test_level_without_one_way_has_no_soft_lock():
 # one-way semantics
 # --------------------------------------------------------------------------- #
 
+
 def test_one_way_only_allows_its_direction():
-    lv = level([
-        "#####",
-        "#S>.#",
-        "#####",
-    ])
+    lv = level(
+        [
+            "#####",
+            "#S>.#",
+            "#####",
+        ]
+    )
     # entering the '>' from the west is allowed...
     assert (1, 2) in lv.neighbors(1, 1)
     # ...leaving it must go east, so it cannot go back west...

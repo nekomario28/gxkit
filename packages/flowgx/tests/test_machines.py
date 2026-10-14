@@ -50,9 +50,9 @@ def test_good_machine_has_no_errors():
 
 def test_broken_machine_fires_every_fault():
     r = inspect_machine(BROKEN)
-    assert_fires(r, "unreachable-state", ERROR)   # rejected
-    assert_fires(r, "dead-end", ERROR)            # limbo
-    assert_fires(r, "no-exit", ERROR)             # changes
+    assert_fires(r, "unreachable-state", ERROR)  # rejected
+    assert_fires(r, "dead-end", ERROR)  # limbo
+    assert_fires(r, "no-exit", ERROR)  # changes
     assert_fires(r, "ambiguous-transition", ERROR)  # review "act"
 
 
@@ -62,8 +62,9 @@ def test_no_start():
 
 
 def test_no_accept_when_no_terminal():
-    m = Machine(states=["a", "b"], start="a", accept=[],
-                transitions=[("a", "b"), ("b", "a")], name="x")
+    m = Machine(
+        states=["a", "b"], start="a", accept=[], transitions=[("a", "b"), ("b", "a")], name="x"
+    )
     assert_fires(inspect_machine(m), "no-accept", ERROR)
 
 
@@ -75,15 +76,19 @@ def test_terminal_is_the_default_accept():
 
 
 def test_unknown_state():
-    m = Machine(states=["a", "b"], start="a", accept=["b"],
-                transitions=[("a", "c")], name="x")
+    m = Machine(states=["a", "b"], start="a", accept=["b"], transitions=[("a", "c")], name="x")
     assert_fires(inspect_machine(m), "unknown-state", ERROR)
 
 
 def test_reachable_but_cannot_finish_is_no_exit():
     # a -> b; b -> c; c -> b (cycle with no way to "done"); d is accepting but unreachable
-    m = Machine(states=["a", "b", "c", "d"], start="a", accept=["d"],
-                transitions=[("a", "b"), ("b", "c"), ("c", "b")], name="x")
+    m = Machine(
+        states=["a", "b", "c", "d"],
+        start="a",
+        accept=["d"],
+        transitions=[("a", "b"), ("b", "c"), ("c", "b")],
+        name="x",
+    )
     r = inspect_machine(m)
     assert_fires(r, "no-exit", ERROR)
     assert_fires(r, "unreachable-state", ERROR)

@@ -166,7 +166,7 @@ def find_cycle(edges: Adjacency[_H]) -> list[_H] | None:
             advanced = False
             for v in it:
                 if color[v] == GREY:
-                    return [*path[path.index(v):], v]
+                    return [*path[path.index(v) :], v]
                 if color[v] == WHITE:
                     color[v] = GREY
                     path.append(v)

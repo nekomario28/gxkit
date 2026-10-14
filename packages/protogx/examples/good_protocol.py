@@ -14,7 +14,7 @@ protocol = p.Protocol(
     terminal=["closed"],
     messages=["SYN", "SYN+ACK", "ACK", "FIN"],
     transitions=[
-        ("closed", "listen", None),          # internal
+        ("closed", "listen", None),  # internal
         ("listen", "syn_sent", "SYN"),
         ("syn_sent", "established", "SYN+ACK"),
         ("established", "closing", "FIN"),

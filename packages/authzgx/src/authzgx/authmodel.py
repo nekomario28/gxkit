@@ -131,17 +131,24 @@ def load_model(path: str | Path) -> tuple[AuthModel, object]:
             model = AuthModel(
                 principals=list(getattr(module, "PRINCIPALS", getattr(module, "principals", []))),
                 roles=list(getattr(module, "ROLES", getattr(module, "roles", []))),
-                permissions=list(getattr(module, "PERMISSIONS", getattr(module, "permissions", []))),
+                permissions=list(
+                    getattr(module, "PERMISSIONS", getattr(module, "permissions", []))
+                ),
                 grants=[(g[0], g[1]) for g in grants],
-                inherits=[(i[0], i[1]) for i in getattr(module, "INHERITS", getattr(module, "inherits", []))],
-                assigned=[(a[0], a[1]) for a in getattr(module, "ASSIGNED", getattr(module, "assigned", []))],
+                inherits=[
+                    (i[0], i[1])
+                    for i in getattr(module, "INHERITS", getattr(module, "inherits", []))
+                ],
+                assigned=[
+                    (a[0], a[1])
+                    for a in getattr(module, "ASSIGNED", getattr(module, "assigned", []))
+                ],
                 sensitive=list(getattr(module, "SENSITIVE", getattr(module, "sensitive", []))),
                 low=list(getattr(module, "LOW", getattr(module, "low", []))),
             )
     if model is None:
         raise ValueError(
-            f"{path}: no model found — define `model` (an AuthModel) or a "
-            "GRANTS/ROLES/... set"
+            f"{path}: no model found — define `model` (an AuthModel) or a GRANTS/ROLES/... set"
         )
     if model.name == "auth":
         model.name = getattr(module, "NAME", path.stem)

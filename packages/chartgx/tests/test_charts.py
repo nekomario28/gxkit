@@ -28,6 +28,7 @@ def report(fig):
 # misleading encoding
 # --------------------------------------------------------------------------- #
 
+
 def test_truncated_bar_baseline_is_an_error():
     fresh()
     fig, ax = plt.subplots()
@@ -101,6 +102,7 @@ def test_reference_line_is_not_a_constant_series():
 # broken layout
 # --------------------------------------------------------------------------- #
 
+
 def test_empty_axes_is_an_error():
     fresh()
     fig, ax = plt.subplots()
@@ -148,6 +150,7 @@ def test_legend_covers_data():
 # --------------------------------------------------------------------------- #
 # missing context / deceptive composition
 # --------------------------------------------------------------------------- #
+
 
 def test_missing_title_and_labels():
     fresh()
@@ -201,6 +204,7 @@ def test_pie_too_many_slices():
 # --------------------------------------------------------------------------- #
 # report shape
 # --------------------------------------------------------------------------- #
+
 
 def test_report_has_details_and_stable_codes():
     fresh()

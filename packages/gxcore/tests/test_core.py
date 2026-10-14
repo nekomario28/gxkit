@@ -16,26 +16,33 @@ from PIL import Image
 # model
 # --------------------------------------------------------------------------- #
 
+
 def test_unknown_severity_is_rejected():
     with pytest.raises(ValueError, match="unknown severity"):
         Problem("fatal", "x", "y")
 
 
 def test_errors_count_only_errors():
-    r = Report("n", problems=[
-        Problem(ERROR, "a", "m"),
-        Problem(WARN, "b", "m"),
-        Problem(INFO, "c", "m"),
-    ])
+    r = Report(
+        "n",
+        problems=[
+            Problem(ERROR, "a", "m"),
+            Problem(WARN, "b", "m"),
+            Problem(INFO, "c", "m"),
+        ],
+    )
     assert r.errors == 1
 
 
 def test_sorted_puts_errors_first():
-    r = Report("n", problems=[
-        Problem(INFO, "i", "m"),
-        Problem(ERROR, "e", "m"),
-        Problem(WARN, "w", "m"),
-    ])
+    r = Report(
+        "n",
+        problems=[
+            Problem(INFO, "i", "m"),
+            Problem(ERROR, "e", "m"),
+            Problem(WARN, "w", "m"),
+        ],
+    )
     assert [p.severity for p in r.sorted()] == [ERROR, WARN, INFO]
 
 
@@ -59,6 +66,7 @@ def test_as_dict_is_stable_and_omits_empty_fields():
 # --------------------------------------------------------------------------- #
 # geometry
 # --------------------------------------------------------------------------- #
+
 
 def test_overlap_and_covered():
     a = (0, 0, 10, 10)
@@ -91,6 +99,7 @@ def test_intersecting_pairs():
 # report
 # --------------------------------------------------------------------------- #
 
+
 def test_human_no_problems():
     out = human("chart.py", Report("T"))
     assert "no problems" in out
@@ -114,6 +123,7 @@ def test_json_roundtrips():
 # --------------------------------------------------------------------------- #
 # storyboard
 # --------------------------------------------------------------------------- #
+
 
 def test_safe_name():
     assert safe_name("a b/c:d") == "a_b_c_d"
@@ -157,6 +167,7 @@ def test_annotate_groups_colocated_problems(tmp_path):
 # testing helpers
 # --------------------------------------------------------------------------- #
 
+
 def test_testing_helpers():
     r = Report("T", problems=[Problem(ERROR, "e", "m")])
     assert (ERROR, "e") in codes(r)
@@ -171,6 +182,7 @@ def test_testing_helpers():
 # --------------------------------------------------------------------------- #
 # cli
 # --------------------------------------------------------------------------- #
+
 
 def _tool(tmp_path, with_image=True):
     from gxcore import ERROR as E
@@ -189,8 +201,15 @@ def _tool(tmp_path, with_image=True):
     def to_image(art):
         return Image.new("RGB", (10, 10), "white")
 
-    return Tool("t", "d", load=load, inspect=inspect, render=render,
-                to_image=to_image if with_image else None, version="1")
+    return Tool(
+        "t",
+        "d",
+        load=load,
+        inspect=inspect,
+        render=render,
+        to_image=to_image if with_image else None,
+        version="1",
+    )
 
 
 from pathlib import Path  # noqa: E402  (used in _tool)
@@ -215,8 +234,9 @@ def test_cli_clean_report_exits_0(tmp_path):
     def inspect(art):
         return Report("R")
 
-    tool = Tool("t", "d", load=lambda p: None, inspect=inspect,
-                render=lambda a, o, d: o, to_image=None)
+    tool = Tool(
+        "t", "d", load=lambda p: None, inspect=inspect, render=lambda a, o, d: o, to_image=None
+    )
     assert run(tool, ["inspect", str(tmp_path / "x.py"), "--no-storyboard"]) == 0
 
 
@@ -224,8 +244,9 @@ def test_cli_broken_file_reports_without_traceback(tmp_path, capsys):
     def boom(path):
         raise RuntimeError("nope")
 
-    tool = Tool("t", "d", load=boom, inspect=lambda a: Report("R"),
-                render=lambda a, o, d: o, to_image=None)
+    tool = Tool(
+        "t", "d", load=boom, inspect=lambda a: Report("R"), render=lambda a, o, d: o, to_image=None
+    )
     rc = run(tool, ["inspect", str(tmp_path / "x.py")])
     assert rc == 2
     assert "RuntimeError: nope" in capsys.readouterr().err
@@ -237,18 +258,25 @@ def test_cli_storyboard_honours_top_left_origin(tmp_path):
     def inspect(_):
         return Report("R", problems=[Problem(ERROR, "e", "m", bbox=(10, 10, 40, 40))])
 
-    tool = Tool("t", "d", load=lambda p: None, inspect=inspect,
-                render=lambda a, o, d: o,
-                to_image=lambda _: Image.new("RGB", (100, 100), "white"),
-                origin="top-left")
+    tool = Tool(
+        "t",
+        "d",
+        load=lambda p: None,
+        inspect=inspect,
+        render=lambda a, o, d: o,
+        to_image=lambda _: Image.new("RGB", (100, 100), "white"),
+        origin="top-left",
+    )
     src = tmp_path / "x.py"
     src.write_text("")
     out = tmp_path / "sb.png"
     run(tool, ["inspect", str(src), "-o", str(out)])
 
     img = Image.open(out).convert("RGB")
+
     def red(pixel):
         return pixel[0] > 200 and pixel[1] < 120 and pixel[2] < 120
+
     top = sum(1 for x in range(100) for y in range(45) if red(img.getpixel((x, y))))
     bottom = sum(1 for x in range(100) for y in range(55, 100) if red(img.getpixel((x, y))))
     assert top > 0 and bottom == 0
@@ -263,12 +291,13 @@ def test_cli_storyboard_failure_does_not_hide_the_report(tmp_path, capsys):
     def to_image(_):
         raise RuntimeError("no GL context")
 
-    tool = Tool("t", "d", load=lambda p: None, inspect=inspect,
-                render=lambda a, o, d: o, to_image=to_image)
+    tool = Tool(
+        "t", "d", load=lambda p: None, inspect=inspect, render=lambda a, o, d: o, to_image=to_image
+    )
     src = tmp_path / "x.py"
     src.write_text("")
     rc = run(tool, ["inspect", str(src)])
     captured = capsys.readouterr()
-    assert rc == 1                      # still gated on the report's error
-    assert "boom" in captured.out       # the report survived
+    assert rc == 1  # still gated on the report's error
+    assert "boom" in captured.out  # the report survived
     assert "storyboard skipped" in captured.err

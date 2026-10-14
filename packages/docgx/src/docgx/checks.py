@@ -37,13 +37,13 @@ def inspect_page(page: Page, name: str | None = None) -> Report:
         out.append(Problem(INFO, "empty-page", "the page has no content"))
 
     if page.max_words and words > page.max_words:
-        out.append(Problem(WARN, "too-much-text",
-                           f"{words} words on the page (limit {page.max_words})"))
+        out.append(
+            Problem(WARN, "too-much-text", f"{words} words on the page (limit {page.max_words})")
+        )
 
     ys = [b.y for b in page.blocks]
     if ys != sorted(ys):
-        out.append(Problem(INFO, "reading-order",
-                           "blocks are declared out of top-to-bottom order"))
+        out.append(Problem(INFO, "reading-order", "blocks are declared out of top-to-bottom order"))
 
     report.problems = out
     return report

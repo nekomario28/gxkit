@@ -21,8 +21,12 @@ model = a.AuthModel(
     principals=["anonymous", "user", "admin"],
     roles=["viewer", "editor", "owner"],
     permissions=["read", "write", "delete", "manage_users"],
-    grants=[("viewer", "read"), ("editor", "write"),
-            ("owner", "delete"), ("owner", "manage_users")],
+    grants=[
+        ("viewer", "read"),
+        ("editor", "write"),
+        ("owner", "delete"),
+        ("owner", "manage_users"),
+    ],
     inherits=[("editor", "viewer"), ("owner", "editor")],  # child gets parent's perms
     assigned=[("user", "editor"), ("admin", "owner")],
     sensitive=["delete", "manage_users"],

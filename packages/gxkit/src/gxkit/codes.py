@@ -7,7 +7,7 @@ literal is not listed here, so the catalogue cannot quietly drift.
 from __future__ import annotations
 
 CODEBOOK: dict[str, dict[str, str]] = {
-    "gxcore": {                      # emitted by shared components (gxcore.layout)
+    "gxcore": {  # emitted by shared components (gxcore.layout)
         "clipped-text": "error",
         "text-overlap": "error",
         "small-text": "info",

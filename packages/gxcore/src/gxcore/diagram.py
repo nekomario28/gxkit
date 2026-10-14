@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -76,7 +77,7 @@ def node_box(pos: tuple[float, float], r: float) -> tuple[float, float, float, f
     return (x - r, y - r, x + r, y + r)
 
 
-def _fit(draw: ImageDraw.ImageDraw, text: str, max_width: float, size: float):
+def _fit(draw: ImageDraw.ImageDraw, text: str, max_width: float, size: float) -> tuple[Any, str]:
     size = max(8, int(size))
     while size > 8:
         font = ImageFont.load_default(size=size)
@@ -90,7 +91,12 @@ def _fit(draw: ImageDraw.ImageDraw, text: str, max_width: float, size: float):
     return font, (shown + "…") if shown != text else text
 
 
-def _arrowhead(draw: ImageDraw.ImageDraw, tip, direction, color):
+def _arrowhead(
+    draw: ImageDraw.ImageDraw,
+    tip: tuple[float, float],
+    direction: tuple[float, float],
+    color: tuple[int, int, int],
+) -> None:
     ux, uy = direction
     norm = math.hypot(ux, uy) or 1
     ux, uy = ux / norm, uy / norm
@@ -116,8 +122,9 @@ def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
         p0, p1 = positions[e.src], positions[e.dst]
         if e.src == e.dst:
             x, y = p0
-            draw.ellipse((x + r * 0.35, y - r * 1.95, x + r * 1.95, y - r * 0.35),
-                         outline=EDGE, width=2)
+            draw.ellipse(
+                (x + r * 0.35, y - r * 1.95, x + r * 1.95, y - r * 0.35), outline=EDGE, width=2
+            )
             _arrowhead(draw, (x + r * 1.2, y - r * 0.5), (0.4, 1.0), EDGE)
             continue
         dx, dy = p1[0] - p0[0], p1[1] - p0[1]
@@ -139,6 +146,10 @@ def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
             draw.ellipse(node_box(pos, r - 3), outline=RING[node.kind], width=2)
         font, shown = _fit(draw, node.text, r * 1.7, r * 0.55)
         tb = draw.textbbox((0, 0), shown, font=font)
-        draw.text((pos[0] - (tb[2] - tb[0]) / 2, pos[1] - (tb[3] - tb[1]) / 2 - tb[1]),
-                  shown, fill=INK, font=font)
+        draw.text(
+            (pos[0] - (tb[2] - tb[0]) / 2, pos[1] - (tb[3] - tb[1]) / 2 - tb[1]),
+            shown,
+            fill=INK,
+            font=font,
+        )
     return img

@@ -69,7 +69,10 @@ def load_page(path: str | Path) -> tuple[Page, object]:
     )
     if page is None:
         blocks = getattr(module, "BLOCKS", getattr(module, "blocks", None))
-        if blocks is not None or getattr(module, "TITLE", getattr(module, "title", None)) is not None:
+        if (
+            blocks is not None
+            or getattr(module, "TITLE", getattr(module, "title", None)) is not None
+        ):
             page = Page(
                 width=int(getattr(module, "WIDTH", getattr(module, "width", 1280))),
                 height=int(getattr(module, "HEIGHT", getattr(module, "height", 720))),
@@ -79,9 +82,7 @@ def load_page(path: str | Path) -> tuple[Page, object]:
                 max_words=int(getattr(module, "MAX_WORDS", 0)),
             )
     if page is None:
-        raise ValueError(
-            f"{path}: no page found — define `page` (a Page) or TITLE/BLOCKS"
-        )
+        raise ValueError(f"{path}: no page found — define `page` (a Page) or TITLE/BLOCKS")
     if page.name == "page":
         page.name = getattr(module, "NAME", path.stem)
     return page, module
@@ -95,5 +96,11 @@ def page_from_parts(
     max_words: int = 0,
     name: str = "page",
 ) -> Page:
-    return Page(width=width, height=height, title=title,
-                blocks=list(blocks or []), max_words=max_words, name=name)
+    return Page(
+        width=width,
+        height=height,
+        title=title,
+        blocks=list(blocks or []),
+        max_words=max_words,
+        name=name,
+    )

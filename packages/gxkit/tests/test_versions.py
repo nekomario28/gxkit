@@ -31,7 +31,8 @@ def test_pyproject_and_dunder_version_agree():
     for module_name, _, declared in _packages():
         module = importlib.import_module(module_name)
         assert module.__version__ == declared, (
-            f"{module_name}: __version__ {module.__version__!r} != pyproject {declared!r}")
+            f"{module_name}: __version__ {module.__version__!r} != pyproject {declared!r}"
+        )
 
 
 def test_tool_version_matches_the_distribution():
@@ -40,4 +41,5 @@ def test_tool_version_matches_the_distribution():
         tool = getattr(module, "TOOL", None)
         if tool is not None:
             assert tool.version == declared, (
-                f"{module_name}: TOOL.version {tool.version!r} != pyproject {declared!r}")
+                f"{module_name}: TOOL.version {tool.version!r} != pyproject {declared!r}"
+            )

@@ -55,7 +55,7 @@ def scene_tool(
         artifact, _module = load(path)
         return Scene(artifact, Path(path))
 
-    def _inspect(scene: Scene):
+    def _inspect(scene: Scene) -> Any:
         return inspect(scene.artifact)
 
     def _render(scene: Scene, out: Path | None, dpi: float | None) -> Path:
@@ -68,7 +68,7 @@ def scene_tool(
             image.save(out)
         return out
 
-    def _to_image(scene: Scene):
+    def _to_image(scene: Scene) -> Any:
         return to_image(scene.artifact)
 
     tool = Tool(

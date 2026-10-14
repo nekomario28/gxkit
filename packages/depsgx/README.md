@@ -21,9 +21,9 @@ import depsgx as d
 graph = d.ModuleGraph(
     modules=["api", "service", "domain", "util"],
     depends=[("api", "service"), ("service", "domain"), ("domain", "util")],
-    roots=["api"],                                        # entry points
+    roots=["api"],  # entry points
     layers=[["api"], ["service"], ["domain"], ["util"]],  # top -> bottom
-    forbidden=[("domain", "infra")],                      # explicit bans
+    forbidden=[("domain", "infra")],  # explicit bans
 )
 ```
 

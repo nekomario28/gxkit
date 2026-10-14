@@ -13,36 +13,85 @@ from dataclasses import dataclass
 class ToolSpec:
     name: str
     inspects: str
-    module: str                      # "<tool>.tool" holds TOOL
-    attrs: tuple[str, ...]           # module attributes holding the artifact object
-    classes: tuple[str, ...]         # the artifact's class name(s)
-    markers: tuple[str, ...]         # module-level names that also identify it
+    module: str  # "<tool>.tool" holds TOOL
+    attrs: tuple[str, ...]  # module attributes holding the artifact object
+    classes: tuple[str, ...]  # the artifact's class name(s)
+    markers: tuple[str, ...]  # module-level names that also identify it
 
 
 # Order matters: class matches win, then markers, and `protogx` is checked
 # before `flowgx` because a protocol file also has STATES/TRANSITIONS.
 TOOLS: tuple[ToolSpec, ...] = (
-    ToolSpec("chartgx", "matplotlib charts", "chartgx.tool",
-             ("fig", "figure"), ("Figure",), ("PLOT", "matplotlib")),
-    ToolSpec("levelgx", "game levels", "levelgx.tool",
-             ("level",), ("Level",), ("LEVEL", "rows", "MAP", "map")),
-    ToolSpec("authzgx", "permission models", "authzgx.tool",
-             ("model", "auth"), ("AuthModel",), ("GRANTS", "ROLES", "PERMISSIONS", "ASSIGNED")),
-    ToolSpec("depsgx", "module dependency graphs", "depsgx.tool",
-             ("graph",), ("ModuleGraph",), ("DEPENDS", "MODULES", "LAYERS", "ROOTS")),
-    ToolSpec("schemagx", "relational schemas", "schemagx.tool",
-             ("schema",), ("Schema",), ("TABLES", "FOREIGN_KEYS", "PRIMARY_KEYS")),
-    ToolSpec("docgx", "pages / slides", "docgx.tool",
-             ("page", "slide"), ("Page",), ("BLOCKS", "TITLE")),
-    ToolSpec("shadergx", "fragment shaders", "shadergx.tool",
-             ("shader",), ("Shader",), ("FRAGMENT", "fragment")),
-    ToolSpec("framegx", "rendered animations", "framegx.tool",
-             ("video", "clip"), ("Video",), ("PATH",)),
-    ToolSpec("protogx", "protocols", "protogx.tool",
-             ("protocol", "proto"), ("Protocol",),
-             ("PROTOCOL", "MESSAGES", "REQUESTS", "RESPONSES")),
-    ToolSpec("flowgx", "state machines", "flowgx.tool",
-             ("machine",), ("Machine",), ("MACHINE", "STATES", "TRANSITIONS", "ACCEPT")),
+    ToolSpec(
+        "chartgx",
+        "matplotlib charts",
+        "chartgx.tool",
+        ("fig", "figure"),
+        ("Figure",),
+        ("PLOT", "matplotlib"),
+    ),
+    ToolSpec(
+        "levelgx",
+        "game levels",
+        "levelgx.tool",
+        ("level",),
+        ("Level",),
+        ("LEVEL", "rows", "MAP", "map"),
+    ),
+    ToolSpec(
+        "authzgx",
+        "permission models",
+        "authzgx.tool",
+        ("model", "auth"),
+        ("AuthModel",),
+        ("GRANTS", "ROLES", "PERMISSIONS", "ASSIGNED"),
+    ),
+    ToolSpec(
+        "depsgx",
+        "module dependency graphs",
+        "depsgx.tool",
+        ("graph",),
+        ("ModuleGraph",),
+        ("DEPENDS", "MODULES", "LAYERS", "ROOTS"),
+    ),
+    ToolSpec(
+        "schemagx",
+        "relational schemas",
+        "schemagx.tool",
+        ("schema",),
+        ("Schema",),
+        ("TABLES", "FOREIGN_KEYS", "PRIMARY_KEYS"),
+    ),
+    ToolSpec(
+        "docgx", "pages / slides", "docgx.tool", ("page", "slide"), ("Page",), ("BLOCKS", "TITLE")
+    ),
+    ToolSpec(
+        "shadergx",
+        "fragment shaders",
+        "shadergx.tool",
+        ("shader",),
+        ("Shader",),
+        ("FRAGMENT", "fragment"),
+    ),
+    ToolSpec(
+        "framegx", "rendered animations", "framegx.tool", ("video", "clip"), ("Video",), ("PATH",)
+    ),
+    ToolSpec(
+        "protogx",
+        "protocols",
+        "protogx.tool",
+        ("protocol", "proto"),
+        ("Protocol",),
+        ("PROTOCOL", "MESSAGES", "REQUESTS", "RESPONSES"),
+    ),
+    ToolSpec(
+        "flowgx",
+        "state machines",
+        "flowgx.tool",
+        ("machine",),
+        ("Machine",),
+        ("MACHINE", "STATES", "TRANSITIONS", "ACCEPT"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}
@@ -53,7 +102,7 @@ def detect(module: object) -> ToolSpec | None:
 
     def first_attr(names: tuple[str, ...]) -> object | None:
         for name in names:
-            value = getattr(module, name, None)
+            value: object = getattr(module, name, None)
             if value is not None:
                 return value
         return None

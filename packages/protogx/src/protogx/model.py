@@ -103,7 +103,9 @@ def load_protocol(path: str | Path) -> tuple[Protocol, object]:
         if transitions is not None:
             proto = Protocol(
                 states=list(getattr(module, "STATES", getattr(module, "states", []))),
-                transitions=[(t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions],
+                transitions=[
+                    (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions
+                ],
                 start=getattr(module, "START", getattr(module, "start", None)),
                 terminal=list(getattr(module, "TERMINAL", getattr(module, "terminal", []))),
                 messages=list(getattr(module, "MESSAGES", getattr(module, "messages", []))),
@@ -132,7 +134,9 @@ def protocol_from_parts(
 ) -> Protocol:
     return Protocol(
         states=list(states or []),
-        transitions=[(t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in (transitions or [])],
+        transitions=[
+            (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in (transitions or [])
+        ],
         start=start,
         terminal=list(terminal or []),
         messages=list(messages or []),

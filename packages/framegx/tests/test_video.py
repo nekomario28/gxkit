@@ -25,8 +25,19 @@ from gxcore.testing import assert_fires, assert_quiet  # noqa: E402
 def make(tmp_path: Path, source: str, name: str = "v.mp4") -> Video:
     out = tmp_path / name
     subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", source,
-         "-pix_fmt", "yuv420p", str(out)],
+        [
+            "ffmpeg",
+            "-y",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            source,
+            "-pix_fmt",
+            "yuv420p",
+            str(out),
+        ],
         check=True,
     )
     return Video(path=str(out), name="v")

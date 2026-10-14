@@ -66,7 +66,9 @@ def canvas_box(width: int, height: int) -> BBox:
     return (0.0, 0.0, float(width), float(height))
 
 
-def intersecting_pairs(boxes: Sequence[BBox], min_fraction: float = 0.35) -> list[tuple[int, int, float]]:
+def intersecting_pairs(
+    boxes: Sequence[BBox], min_fraction: float = 0.35
+) -> list[tuple[int, int, float]]:
     """Index pairs whose boxes collide by at least ``min_fraction`` of the smaller."""
     out: list[tuple[int, int, float]] = []
     for i in range(len(boxes)):

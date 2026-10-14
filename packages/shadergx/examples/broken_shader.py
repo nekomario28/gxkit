@@ -1,7 +1,7 @@
 """A shader with faults.
 
-  * it paints a single black frame                  -> black-output
-  * the uniform u_color is never read               -> uniform-unused
+* it paints a single black frame                  -> black-output
+* the uniform u_color is never read               -> uniform-unused
 """
 
 import shadergx as s

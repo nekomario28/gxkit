@@ -36,6 +36,15 @@ def test_catalogue_covers_every_emitted_code():
     assert not missing, f"codes emitted but not catalogued: {missing}"
 
 
+def test_catalogue_has_no_stale_entries():
+    emitted = {
+        (code, severity) for code, severities in _emitted().items() for severity in severities
+    }
+    known = {(code, severity) for codes in CODEBOOK.values() for code, severity in codes.items()}
+    stale = sorted(known - emitted)
+    assert not stale, f"catalogued but never emitted: {stale}"
+
+
 def test_for_tool_and_flat():
     assert for_tool("chartgx")["truncated-baseline"] == "error"
     assert "soft-lock" in for_tool("levelgx")

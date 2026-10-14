@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots()
 ax.bar(["Q1", "Q2", "Q3"], [42, 51, 47])
-ax.set_ylim(0, 60)              # the value axis starts at zero
+ax.set_ylim(0, 60)  # the value axis starts at zero
 ax.set_title("Revenue by quarter")
 ax.set_xlabel("Quarter")
 ax.set_ylabel("Revenue (£m)")

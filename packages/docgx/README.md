@@ -19,7 +19,8 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/docgx
 import docgx as d
 
 page = d.Page(
-    width=1280, height=720,
+    width=1280,
+    height=720,
     title="Q3 results",
     blocks=[
         d.Block("Revenue up 12% year over year.", x=0.08, y=0.24, font_size=32),

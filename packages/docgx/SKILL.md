@@ -20,7 +20,9 @@ uv tool install ./packages/docgx
 import docgx as d
 
 page = d.Page(
-    width=1280, height=720, title="Q3 results",
+    width=1280,
+    height=720,
+    title="Q3 results",
     blocks=[
         d.Block("Revenue up 12%.", x=0.08, y=0.24, font_size=32),
         d.Block("Costs flat.", x=0.08, y=0.46, font_size=28),

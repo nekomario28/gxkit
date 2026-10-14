@@ -39,14 +39,24 @@ def test_self_dependency():
 
 
 def test_forbidden_dependency():
-    g = ModuleGraph(modules=["domain", "infra"], depends=[("domain", "infra")],
-                    roots=["domain"], forbidden=[("domain", "infra")], name="x")
+    g = ModuleGraph(
+        modules=["domain", "infra"],
+        depends=[("domain", "infra")],
+        roots=["domain"],
+        forbidden=[("domain", "infra")],
+        name="x",
+    )
     assert_fires(inspect_graph(g), "forbidden-dependency", ERROR)
 
 
 def test_layer_violation():
-    g = ModuleGraph(modules=["api", "util"], depends=[("api", "util"), ("util", "api")],
-                    roots=["api"], layers=[["api"], ["util"]], name="x")
+    g = ModuleGraph(
+        modules=["api", "util"],
+        depends=[("api", "util"), ("util", "api")],
+        roots=["api"],
+        layers=[["api"], ["util"]],
+        name="x",
+    )
     assert_fires(inspect_graph(g), "layer-violation", ERROR)
 
 
@@ -80,7 +90,12 @@ def test_examples_load_and_are_diagnosed():
     broken, _ = load_graph(examples / "broken_modules.py")
     assert inspect_graph(good).errors == 0
     r = inspect_graph(broken)
-    for code in ("cycle", "layer-violation", "forbidden-dependency",
-                 "self-dependency", "dangling-dependency"):
+    for code in (
+        "cycle",
+        "layer-violation",
+        "forbidden-dependency",
+        "self-dependency",
+        "dangling-dependency",
+    ):
         assert_fires(r, code, ERROR)
     assert_fires(r, "unreachable-module", INFO)

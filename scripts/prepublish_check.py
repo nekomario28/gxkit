@@ -25,8 +25,12 @@ SECRETS: list[tuple[str, re.Pattern[str]]] = [
     ("anthropic-key", re.compile(r"\bsk-ant-[A-Za-z0-9-]{20,}\b")),
     ("slack-token", re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}")),
     ("private-key-block", re.compile(r"BEGIN [A-Z ]*PRIVATE KEY")),
-    ("hardcoded-secret", re.compile(
-        r"(?i)(api[_-]?key|secret|passwd|password|access[_-]?token)\s*[:=]\s*['\"][^'\"]{12,}['\"]")),
+    (
+        "hardcoded-secret",
+        re.compile(
+            r"(?i)(api[_-]?key|secret|passwd|password|access[_-]?token)\s*[:=]\s*['\"][^'\"]{12,}['\"]"
+        ),
+    ),
 ]
 
 MACHINE_PATHS: list[tuple[str, re.Pattern[str]]] = [
@@ -60,8 +64,9 @@ def scan_head() -> list[tuple[str, str, int, str]]:
 
 def scan_history() -> tuple[list[tuple[str, str, int, str]], list[tuple[str, str, int, str]]]:
     """(secrets, machine_paths) found in added lines anywhere in history."""
-    diff = subprocess.run(["git", "log", "-p", "--all", "--no-color"],
-                          capture_output=True, text=True).stdout
+    diff = subprocess.run(
+        ["git", "log", "-p", "--all", "--no-color"], capture_output=True, text=True
+    ).stdout
     secrets: list[tuple[str, str, int, str]] = []
     paths: list[tuple[str, str, int, str]] = []
     for line in diff.splitlines():
@@ -95,8 +100,11 @@ def main() -> int:
 
     authors = sorted(set(_git("log", "--format=%an <%ae>").splitlines()))
     print("authors:", "; ".join(authors) or "none")
-    trailers = [ln.strip() for ln in _git("log", "--format=%B").splitlines()
-                if re.search(r"(?i)co-authored-by|signed-off-by", ln)]
+    trailers = [
+        ln.strip()
+        for ln in _git("log", "--format=%B").splitlines()
+        if re.search(r"(?i)co-authored-by|signed-off-by", ln)
+    ]
     print("trailers:", "; ".join(sorted(set(trailers))) or "none")
     submodules = pathlib.Path(".gitmodules").exists()
     print("submodules:", "present" if submodules else "none")

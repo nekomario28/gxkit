@@ -30,7 +30,9 @@ _GLYPH = {SPAWN: "S", GOAL: "G", ITEM: "X", HAZARD: "!", **{k: k for k in ONEWAY
 _INK = (24, 24, 28)
 
 
-def cell_box(r: int, c: int, cell: int = CELL, margin: int = MARGIN) -> tuple[float, float, float, float]:
+def cell_box(
+    r: int, c: int, cell: int = CELL, margin: int = MARGIN
+) -> tuple[float, float, float, float]:
     x0 = margin + c * cell
     y0 = margin + r * cell
     return (float(x0), float(y0), float(x0 + cell), float(y0 + cell))
@@ -52,9 +54,11 @@ def render_image(level: Level, cell: int = CELL, margin: int = MARGIN) -> Image.
         for c in range(level.width):
             ch = level.at(r, c) or " "
             x0, y0, x1, y1 = cell_box(r, c, cell, margin)
-            draw.rectangle((x0, y0, x1, y1),
-                           fill=_COLORS.get(ch, (236, 236, 236)),
-                           outline=(196, 198, 208) if ch not in (WALL, None) else None)
+            draw.rectangle(
+                (x0, y0, x1, y1),
+                fill=_COLORS.get(ch, (236, 236, 236)),
+                outline=(196, 198, 208) if ch not in (WALL, None) else None,
+            )
             glyph = _GLYPH.get(ch)
             if glyph:
                 draw.text((x0 + cell * 0.28, y0 + cell * 0.16), glyph, fill=_INK, font=font)

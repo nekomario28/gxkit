@@ -11,25 +11,43 @@ from gxkit.cli import main
 # registry
 # --------------------------------------------------------------------------- #
 
+
 def test_catalogue_covers_every_tool():
     names = [t.name for t in TOOLS]
     assert set(names) == {
-        "chartgx", "levelgx", "flowgx", "protogx", "authzgx",
-        "depsgx", "schemagx", "docgx", "shadergx", "framegx",
+        "chartgx",
+        "levelgx",
+        "flowgx",
+        "protogx",
+        "authzgx",
+        "depsgx",
+        "schemagx",
+        "docgx",
+        "shadergx",
+        "framegx",
     }
     assert len(names) == 10
 
 
 def test_detect_by_object_class():
     class Machine: ...
+
     class Protocol: ...
+
     class Level: ...
+
     class AuthModel: ...
+
     class ModuleGraph: ...
+
     class Schema: ...
+
     class Page: ...
+
     class Shader: ...
+
     class Video: ...
+
     class Figure: ...
 
     assert detect(SimpleNamespace(machine=Machine())).name == "flowgx"
@@ -53,8 +71,10 @@ def test_detect_by_marker():
     assert detect(SimpleNamespace(FRAGMENT="void main(){}")).name == "shadergx"
     assert detect(SimpleNamespace(PATH="out.mp4")).name == "framegx"
     # a protocol file also has STATES/TRANSITIONS; MESSAGES must win
-    assert detect(SimpleNamespace(STATES=["a"], TRANSITIONS=[("a", "a")],
-                                  MESSAGES=["SYN"])).name == "protogx"
+    assert (
+        detect(SimpleNamespace(STATES=["a"], TRANSITIONS=[("a", "a")], MESSAGES=["SYN"])).name
+        == "protogx"
+    )
 
 
 def test_detect_unknown_is_none():
@@ -64,6 +84,7 @@ def test_detect_unknown_is_none():
 # --------------------------------------------------------------------------- #
 # cli
 # --------------------------------------------------------------------------- #
+
 
 def test_tools_lists_the_catalogue(capsys):
     assert main(["tools"]) == 0
@@ -82,8 +103,12 @@ def test_tools_json(capsys):
 
 def test_inspect_routes_and_returns_the_tools_code(capsys):
     # the levelgx soft-lock example must route to levelgx and exit 1
-    example = (__import__("pathlib").Path(__file__).resolve().parents[2]
-               / "levelgx" / "examples" / "softlock_level.py")
+    example = (
+        __import__("pathlib").Path(__file__).resolve().parents[2]
+        / "levelgx"
+        / "examples"
+        / "softlock_level.py"
+    )
     rc = main(["inspect", str(example), "--no-storyboard"])
     assert rc == 1
     assert "levelgx" in capsys.readouterr().err
@@ -118,10 +143,9 @@ def test_inspect_undetectable_exits_2(tmp_path, capsys):
 
 
 def test_inspect_a_directory_runs_each_artifact(capsys):
-    examples = (__import__("pathlib").Path(__file__).resolve().parents[2]
-                / "levelgx" / "examples")
+    examples = __import__("pathlib").Path(__file__).resolve().parents[2] / "levelgx" / "examples"
     rc = main(["inspect", str(examples), "--no-storyboard"])
-    assert rc == 1                       # the soft-lock example is in there
+    assert rc == 1  # the soft-lock example is in there
     assert "levelgx" in capsys.readouterr().err
 
 

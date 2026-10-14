@@ -22,7 +22,7 @@ Beside the video, a tiny file:
 import framegx as f
 
 video = f.Video(
-    "out.mp4",                 # relative to this clip file
+    "out.mp4",  # relative to this clip file
     expected_duration=9.0,
     expect_audio=True,
 )

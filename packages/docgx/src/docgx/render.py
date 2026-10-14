@@ -17,7 +17,7 @@ INK = (24, 24, 28)
 BACKGROUND = (255, 255, 255)
 
 
-def _font(size: int):
+def _font(size: int) -> Any:
     return ImageFont.load_default(size=max(6, int(size)))
 
 
@@ -38,15 +38,23 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font: Any, max_width: float) -> 
     return lines
 
 
-def _measure(draw, kind, text, lines, font, x, y, size):
-    top = y
-    bottom = y
-    width = 0
+def _measure(
+    draw: ImageDraw.ImageDraw,
+    kind: str,
+    text: str,
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    x: int,
+    y: int,
+    size: int,
+) -> dict[str, Any]:
+    top = float(y)
+    cursor = float(y)
+    width = 0.0
     for line in lines:
-        box = draw.textbbox((x, y), line, font=font)
+        box = draw.textbbox((x, cursor), line, font=font)
         width = max(width, box[2] - x)
-        bottom = max(bottom, box[3])
-        y = box[3]
+        cursor = max(cursor, box[3])
     return {
         "kind": kind,
         "text": text,
@@ -55,20 +63,22 @@ def _measure(draw, kind, text, lines, font, x, y, size):
         "fontsize": size,
         "x": x,
         "y": top,
-        "bbox": (float(x), float(top), float(x + width), float(bottom)),
+        "bbox": (float(x), top, float(x + width), cursor),
     }
 
 
-def block_boxes(page: Page) -> list[dict]:
+def block_boxes(page: Page) -> list[dict[str, Any]]:
     """Every text block with its pixel bbox, in draw order."""
     probe = Image.new("RGB", (1, 1))
     draw = ImageDraw.Draw(probe)
-    items: list[dict] = []
+    items: list[dict[str, Any]] = []
 
     if page.title:
         font = _font(page.title_size)
         lines = _wrap(draw, page.title, font, page.width - 2 * MARGIN)
-        items.append(_measure(draw, "title", page.title, lines, font, MARGIN, MARGIN, page.title_size))
+        items.append(
+            _measure(draw, "title", page.title, lines, font, MARGIN, MARGIN, page.title_size)
+        )
 
     for block in page.blocks:
         font = _font(block.font_size)

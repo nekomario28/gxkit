@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from PIL import Image
 
 from .model import Shader
 
@@ -31,7 +32,7 @@ class ShaderError(Exception):
     """The shader failed to compile, link, or could not be rendered."""
 
 
-def context():
+def context() -> Any:
     global _ctx
     if _ctx is not None:
         return _ctx
@@ -41,19 +42,18 @@ def context():
         raise ShaderError(
             "moderngl is not installed — `pip install moderngl` (needs Mesa/EGL or a GPU)"
         ) from exc
-    for backend in ("egl", "glx"):
+    for backend in ("egl", "wgl", "glx"):
         try:
-            _ctx = moderngl.create_standalone_context(backend=backend)
+            _ctx = moderngl.create_standalone_context(backend=backend)  # type: ignore[arg-type]
             return _ctx
         except Exception:
             continue
     raise ShaderError(
-        "no GL context available (tried egl and glx) — install Mesa/EGL or run "
-        "somewhere with a GPU"
+        "no GL context available (tried egl and glx) — install Mesa/EGL or run somewhere with a GPU"
     )
 
 
-def program(shader: Shader):
+def program(shader: Shader) -> Any:
     """Compile (and cache) the shader's program."""
     src = shader.assembled()
     if src in _programs:
@@ -73,7 +73,7 @@ def members(shader: Shader) -> list[str]:
     return list(program(shader))
 
 
-def _set(prog, name: str, value: object) -> bool:
+def _set(prog: Any, name: str, value: object) -> bool:
     if name not in prog:
         return False
     try:
@@ -83,7 +83,9 @@ def _set(prog, name: str, value: object) -> bool:
         return False
 
 
-def render_array(shader: Shader, *, time: float | None = None, overrides: dict[str, Any] | None = None) -> np.ndarray:
+def render_array(
+    shader: Shader, *, time: float | None = None, overrides: dict[str, Any] | None = None
+) -> np.ndarray[Any, Any]:
     """Render the shader and return an ``(H, W, 4)`` float32 array, top-left origin."""
     import moderngl
 
@@ -113,7 +115,7 @@ def render_array(shader: Shader, *, time: float | None = None, overrides: dict[s
     return arr[::-1]  # GL origin is bottom-left
 
 
-def to_rgb8(arr: np.ndarray):
+def to_rgb8(arr: np.ndarray[Any, Any]) -> Image.Image:
     """Clamp a float render to an 8-bit RGB PIL image."""
     from PIL import Image
 

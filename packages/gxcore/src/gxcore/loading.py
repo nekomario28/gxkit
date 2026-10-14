@@ -18,8 +18,16 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-DEFAULT_BUILDERS = ("build", "make", "create", "make_figure", "figure", "create_figure",
-                    "make_level", "level_from_rows")
+DEFAULT_BUILDERS = (
+    "build",
+    "make",
+    "create",
+    "make_figure",
+    "figure",
+    "create_figure",
+    "make_level",
+    "level_from_rows",
+)
 
 
 def load_module(path: str | Path) -> ModuleType:
@@ -43,6 +51,7 @@ def resolve(
     convert: Callable[[Any], Any] | None = None,
 ) -> Any:
     """First value that satisfies ``convert`` (or is not None) among attrs then builders."""
+
     def ok(value: Any) -> Any:
         if value is None:
             return None

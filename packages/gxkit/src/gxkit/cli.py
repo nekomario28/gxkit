@@ -21,7 +21,7 @@ from gxcore.cli import run
 from gxcore.toolkit import distribution_version
 
 from .codes import CODEBOOK
-from .registry import BY_NAME, TOOLS, detect
+from .registry import BY_NAME, TOOLS, ToolSpec, detect
 
 
 def _tools_table(as_json: bool) -> int:
@@ -34,7 +34,7 @@ def _tools_table(as_json: bool) -> int:
     return 0
 
 
-def _tool_for(path: Path, explicit: str | None):
+def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
     if explicit:
         spec = BY_NAME.get(explicit)
         if spec is None:
@@ -51,9 +51,12 @@ def _tool_for(path: Path, explicit: str | None):
     spec = detect(module)
     if spec is None:
         names = ", ".join(t.name for t in TOOLS)
-        print(f"gxkit: could not tell which tool fits {path.name}.\n"
-              f"  name one explicitly: gxkit inspect <tool> {path}\n"
-              f"  tools: {names}", file=sys.stderr)
+        print(
+            f"gxkit: could not tell which tool fits {path.name}.\n"
+            f"  name one explicitly: gxkit inspect <tool> {path}\n"
+            f"  tools: {names}",
+            file=sys.stderr,
+        )
     return spec
 
 
@@ -84,7 +87,7 @@ def _cmd_codes(args: argparse.Namespace) -> int:
     return _codes_table(args.json, args.tool)
 
 
-def _run_tool(spec, file: Path, args: argparse.Namespace) -> int:
+def _run_tool(spec: ToolSpec, file: Path, args: argparse.Namespace) -> int:
     tool = importlib.import_module(spec.module).TOOL
     forwarded = ["inspect", str(file)]
     if args.output:
@@ -104,8 +107,11 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
     explicit = None
     if positional and positional[0] in BY_NAME:
         explicit, positional = positional[0], positional[1:]
-    elif (len(positional) >= 2 and not Path(positional[0]).exists()
-          and not positional[0].endswith(".py")):
+    elif (
+        len(positional) >= 2
+        and not Path(positional[0]).exists()
+        and not positional[0].endswith(".py")
+    ):
         # looks like a mistyped tool name beside a real path
         print(f"gxkit: unknown tool {positional[0]!r}; try `gxkit tools`", file=sys.stderr)
         return 2
@@ -144,8 +150,9 @@ def build_parser() -> argparse.ArgumentParser:
         prog="gxkit",
         description="Route an artifact to the gxkit tool that inspects it.",
     )
-    p.add_argument("--version", action="version",
-                   version=f"gxkit {distribution_version('gxkit-cli', '0.1.0')}")
+    p.add_argument(
+        "--version", action="version", version=f"gxkit {distribution_version('gxkit-cli', '0.1.0')}"
+    )
     sub = p.add_subparsers(dest="command", required=True)
 
     tools = sub.add_parser("tools", help="list the tools and what they inspect")
@@ -170,7 +177,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        return args.func(args)
+        return int(args.func(args))
     except Exception as exc:
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

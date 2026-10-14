@@ -11,6 +11,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from PIL import Image
+
 from .model import Problem, sort_key
 
 # Box outline colours by severity.
@@ -34,7 +36,7 @@ def storyboard_path(name: str, out: str | Path | None = None) -> Path:
 
 
 def annotate(
-    image,
+    image: Image.Image,
     problems: Sequence[Problem],
     path: str | Path,
     *,
@@ -74,8 +76,10 @@ def annotate(
         if p.bbox is None:
             continue
         key: tuple[float, float, float, float] = (
-            float(round(p.bbox[0])), float(round(p.bbox[1])),
-            float(round(p.bbox[2])), float(round(p.bbox[3])),
+            float(round(p.bbox[0])),
+            float(round(p.bbox[1])),
+            float(round(p.bbox[2])),
+            float(round(p.bbox[3])),
         )
         groups.setdefault(key, []).append(n)
         representative.setdefault(key, p)

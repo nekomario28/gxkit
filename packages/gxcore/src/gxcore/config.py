@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 try:
     import tomllib
@@ -34,7 +35,7 @@ RESERVED = {"ignore", "severity"}
 class Config:
     ignore: set[str] = field(default_factory=set)
     severity: dict[str, str] = field(default_factory=dict)
-    per_tool: dict[str, dict] = field(default_factory=dict)
+    per_tool: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def for_tool(self, tool: str) -> tuple[set[str], dict[str, str]]:
         ignore = set(self.ignore)

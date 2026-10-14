@@ -19,11 +19,12 @@ from gxcore import ERROR, Problem, Report, Tool, run
 TOOL = Tool(
     name="mytool",
     description="…",
-    load=load,            # Path -> artifact
-    inspect=inspect,      # artifact -> Report
-    render=render,        # (artifact, Path|None, dpi|None) -> Path
-    to_image=to_image,    # artifact -> PIL.Image, for the storyboard
+    load=load,  # Path -> artifact
+    inspect=inspect,  # artifact -> Report
+    render=render,  # (artifact, Path|None, dpi|None) -> Path
+    to_image=to_image,  # artifact -> PIL.Image, for the storyboard
 )
+
 
 def main(argv=None):
     return run(TOOL, argv)

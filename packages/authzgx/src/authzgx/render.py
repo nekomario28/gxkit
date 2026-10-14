@@ -5,6 +5,7 @@ from __future__ import annotations
 from gxcore.diagram import DANGER, DEFAULT, MUTED, START, Edge, Node, node_box, render
 from gxcore.diagram import image_size as _image_size
 from gxcore.diagram import layout as _layout
+from PIL import Image
 
 from .authmodel import AuthModel
 
@@ -35,6 +36,6 @@ def compute_layout(model: AuthModel) -> tuple[dict[str, tuple[float, float]], fl
     return _layout(model.all_nodes())
 
 
-def render_image(model: AuthModel):
+def render_image(model: AuthModel) -> Image.Image:
     nodes, edges = _nodes_edges(model)
     return render(nodes, edges)

@@ -1,10 +1,10 @@
 """A chart with problems injected on purpose — the inspector must catch them.
 
-  * bar baseline truncated at y=40  -> truncated-baseline (error)
-  * the title is far too long and runs off both edges -> clipped-text (error)
-  * the y-axis label is missing    -> no-ylabel (warn)
-  * the x tick labels are tiny     -> small-text (info)
-  * a second y-axis shares the plot-> dual-axis (warn)
+* bar baseline truncated at y=40  -> truncated-baseline (error)
+* the title is far too long and runs off both edges -> clipped-text (error)
+* the y-axis label is missing    -> no-ylabel (warn)
+* the x tick labels are tiny     -> small-text (info)
+* a second y-axis shares the plot-> dual-axis (warn)
 """
 
 import matplotlib.pyplot as plt

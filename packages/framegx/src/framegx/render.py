@@ -51,8 +51,9 @@ def contact_sheet(video: Video) -> Image.Image:
 
     if frames is None or frames.shape[0] == 0:
         img = Image.new("RGB", sheet_size(1), BG)
-        ImageDraw.Draw(img).text((MARGIN, MARGIN), "no frames could be decoded",
-                                 fill=(200, 80, 80), font=font)
+        ImageDraw.Draw(img).text(
+            (MARGIN, MARGIN), "no frames could be decoded", fill=(200, 80, 80), font=font
+        )
         return img
 
     n = int(frames.shape[0])

@@ -42,19 +42,29 @@ def check(
 
     for it in items:
         if it.fontsize is not None and it.fontsize < min_fontsize:
-            out.append(Problem(
-                INFO, "small-text",
-                f"{it.role} {_short(it.text)!r} is {it.fontsize:g}pt — below the readable floor",
-                target=target, label=_short(it.text), bbox=it.bbox,
-            ))
+            out.append(
+                Problem(
+                    INFO,
+                    "small-text",
+                    f"{it.role} {_short(it.text)!r} is {it.fontsize:g}pt — below the readable floor",
+                    target=target,
+                    label=_short(it.text),
+                    bbox=it.bbox,
+                )
+            )
 
     for it in items:
         if clipped(it.bbox, canvas, tol):
-            out.append(Problem(
-                ERROR, "clipped-text",
-                f"{it.role} {_short(it.text)!r} is cut off at the {surface} edge",
-                target=target, label=_short(it.text), bbox=it.bbox,
-            ))
+            out.append(
+                Problem(
+                    ERROR,
+                    "clipped-text",
+                    f"{it.role} {_short(it.text)!r} is cut off at the {surface} edge",
+                    target=target,
+                    label=_short(it.text),
+                    bbox=it.bbox,
+                )
+            )
 
     for a in range(len(items)):
         for b in range(a + 1, len(items)):
@@ -63,12 +73,23 @@ def check(
                 continue
             # Either box substantially inside the other is a collision — a small
             # label on top of a big block counts.
-            if covered(x.bbox, y.bbox) > overlap_fraction or covered(y.bbox, x.bbox) > overlap_fraction:
-                out.append(Problem(
-                    ERROR, "text-overlap",
-                    f"{x.role} {_short(x.text)!r} and {y.role} {_short(y.text)!r} overlap",
-                    target=target, label=_short(x.text),
-                    bbox=(min(x.bbox[0], y.bbox[0]), min(x.bbox[1], y.bbox[1]),
-                          max(x.bbox[2], y.bbox[2]), max(x.bbox[3], y.bbox[3])),
-                ))
+            if (
+                covered(x.bbox, y.bbox) > overlap_fraction
+                or covered(y.bbox, x.bbox) > overlap_fraction
+            ):
+                out.append(
+                    Problem(
+                        ERROR,
+                        "text-overlap",
+                        f"{x.role} {_short(x.text)!r} and {y.role} {_short(y.text)!r} overlap",
+                        target=target,
+                        label=_short(x.text),
+                        bbox=(
+                            min(x.bbox[0], y.bbox[0]),
+                            min(x.bbox[1], y.bbox[1]),
+                            max(x.bbox[2], y.bbox[2]),
+                            max(x.bbox[3], y.bbox[3]),
+                        ),
+                    )
+                )
     return out

@@ -94,5 +94,10 @@ def shader_from_source(
     time: float = 0.0,
     name: str = "shader",
 ) -> Shader:
-    return Shader(fragment=fragment, uniforms=dict(uniforms or {}),
-                  size=(int(size[0]), int(size[1])), time=time, name=name)
+    return Shader(
+        fragment=fragment,
+        uniforms=dict(uniforms or {}),
+        size=(int(size[0]), int(size[1])),
+        time=time,
+        name=name,
+    )

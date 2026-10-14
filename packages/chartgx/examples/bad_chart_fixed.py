@@ -1,10 +1,10 @@
 """The same chart as bad_chart.py, with every error and warning fixed.
 
-  * value axis from 0           -> no truncated-baseline
-  * a short title that fits     -> no clipped-text
-  * y-axis label added          -> no no-ylabel
-  * readable tick font          -> no small-text
-  * the twin axis is gone, and growth is a second panel instead of a second scale.
+* value axis from 0           -> no truncated-baseline
+* a short title that fits     -> no clipped-text
+* y-axis label added          -> no no-ylabel
+* readable tick font          -> no small-text
+* the twin axis is gone, and growth is a second panel instead of a second scale.
 """
 
 import matplotlib.pyplot as plt

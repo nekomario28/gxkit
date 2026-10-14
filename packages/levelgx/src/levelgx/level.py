@@ -50,8 +50,9 @@ class Level:
 
     def find(self, *chars: str) -> list[tuple[int, int]]:
         wanted = set(chars)
-        return [(r, c) for r in range(self.height) for c in range(self.width)
-                if self.at(r, c) in wanted]
+        return [
+            (r, c) for r in range(self.height) for c in range(self.width) if self.at(r, c) in wanted
+        ]
 
     def spawn(self) -> tuple[int, int] | None:
         cells = self.find(SPAWN)
@@ -93,10 +94,10 @@ class Level:
                 continue
             step = (dr, dc)
             if here in ONEWAY and ONEWAY[here] != step:
-                continue          # cannot leave against the arrow
+                continue  # cannot leave against the arrow
             there = self.at(nr, nc)
             if there in ONEWAY and ONEWAY[there] != step:
-                continue          # cannot enter against the arrow
+                continue  # cannot enter against the arrow
             out.append((nr, nc))
         return out
 

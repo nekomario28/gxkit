@@ -11,8 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from gxcore import Tool, run
+from gxcore import Report, Tool, run
 from gxcore.toolkit import distribution_version
+from PIL import Image
 
 from .checks import inspect_figure
 from .loader import load_figure
@@ -27,10 +28,10 @@ class Chart:
 
 def _figure_name(fig: Any, fallback: str) -> str:
     if fig.get_suptitle().strip():
-        return fig.get_suptitle().strip()
+        return str(fig.get_suptitle().strip())
     for ax in fig.axes:
         if ax.get_title().strip():
-            return ax.get_title().strip()
+            return str(ax.get_title().strip())
     return fallback
 
 
@@ -39,7 +40,7 @@ def load(path: Path) -> Chart:
     return Chart(fig=fig, path=Path(path), name=_figure_name(fig, Path(path).stem))
 
 
-def inspect(chart: Chart):
+def inspect(chart: Chart) -> Report:
     return inspect_figure(chart.fig, name=chart.name)
 
 
@@ -50,7 +51,7 @@ def render(chart: Chart, out: Path | None, dpi: float | None) -> Path:
     return out
 
 
-def to_image(chart: Chart):
+def to_image(chart: Chart) -> Image.Image:
     from PIL import Image
 
     fig = chart.fig

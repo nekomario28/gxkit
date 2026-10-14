@@ -23,6 +23,7 @@ from gxcore.loading import load_from_file, load_module, resolve
 # graph
 # --------------------------------------------------------------------------- #
 
+
 def test_reachable_and_distance():
     g = {"a": ["b"], "b": ["c"], "c": []}
     assert reachable(g, ["a"]) == {"a", "b", "c"}
@@ -109,14 +110,14 @@ def test_identical_text_is_not_flagged_as_overlap():
 
 
 def test_clean_layout_is_empty():
-    items = [TextBox("a", "hello", (5, 5, 40, 25), 12),
-             TextBox("b", "world", (55, 60, 90, 80), 12)]
+    items = [TextBox("a", "hello", (5, 5, 40, 25), 12), TextBox("b", "world", (55, 60, 90, 80), 12)]
     assert check_layout(items, CANVAS) == []
 
 
 # --------------------------------------------------------------------------- #
 # loading
 # --------------------------------------------------------------------------- #
+
 
 def test_load_module_and_resolve(tmp_path):
     f = tmp_path / "thing.py"

@@ -1,10 +1,10 @@
 """A page with several faults.
 
-  * a very long block overflows the bottom of the page   -> clipped-text
-  * a tiny block sits on top of it                        -> text-overlap + small-text
-  * no title                                              -> no-title
-  * far more words than the budget allows                 -> too-much-text
-  * the last block is declared above blocks that precede it -> reading-order
+* a very long block overflows the bottom of the page   -> clipped-text
+* a tiny block sits on top of it                        -> text-overlap + small-text
+* no title                                              -> no-title
+* far more words than the budget allows                 -> too-much-text
+* the last block is declared above blocks that precede it -> reading-order
 """
 
 import docgx as d

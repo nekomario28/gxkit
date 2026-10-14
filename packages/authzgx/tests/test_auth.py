@@ -16,8 +16,12 @@ GOOD = AuthModel(
     principals=["anonymous", "user", "admin"],
     roles=["viewer", "editor", "owner"],
     permissions=["read", "write", "delete", "manage_users"],
-    grants=[("viewer", "read"), ("editor", "write"), ("owner", "delete"),
-            ("owner", "manage_users")],
+    grants=[
+        ("viewer", "read"),
+        ("editor", "write"),
+        ("owner", "delete"),
+        ("owner", "manage_users"),
+    ],
     inherits=[("editor", "viewer"), ("owner", "editor")],
     assigned=[("user", "editor"), ("admin", "owner")],
     sensitive=["delete", "manage_users"],
@@ -69,14 +73,18 @@ def test_dangling_assignment():
 
 
 def test_cyclic_inheritance():
-    m = AuthModel(roles=["a", "b"], permissions=["p"],
-                  inherits=[("a", "b"), ("b", "a")], name="x")
+    m = AuthModel(roles=["a", "b"], permissions=["p"], inherits=[("a", "b"), ("b", "a")], name="x")
     assert_fires(inspect_auth(m), "cyclic-inheritance", ERROR)
 
 
 def test_unreachable_role_and_orphan_permission():
-    m = AuthModel(principals=["p"], roles=["r", "ghost"], permissions=["unused"],
-                  assigned=[("p", "r")], name="x")
+    m = AuthModel(
+        principals=["p"],
+        roles=["r", "ghost"],
+        permissions=["unused"],
+        assigned=[("p", "r")],
+        name="x",
+    )
     r = inspect_auth(m)
     assert_fires(r, "unreachable-role", INFO)
     assert_fires(r, "orphan-permission", INFO)

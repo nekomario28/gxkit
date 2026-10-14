@@ -14,6 +14,7 @@ from PIL import Image
 # diagram
 # --------------------------------------------------------------------------- #
 
+
 def test_layout_is_deterministic_and_inside_the_canvas():
     ids = ["a", "b", "c", "d"]
     pos1, r1 = layout(ids)
@@ -50,6 +51,7 @@ def test_render_ignores_edges_to_unknown_nodes():
 # toolkit
 # --------------------------------------------------------------------------- #
 
+
 def _make_tool(tmp_path: Path):
     def load(path):
         return {"artifact": True}, None
@@ -60,8 +62,9 @@ def _make_tool(tmp_path: Path):
     def to_image(artifact):
         return Image.new("RGB", (20, 20), "white")
 
-    main, tool = scene_tool(name="t", description="d", load=load, inspect=inspect,
-                            to_image=to_image)
+    main, tool = scene_tool(
+        name="t", description="d", load=load, inspect=inspect, to_image=to_image
+    )
     return main, tool
 
 

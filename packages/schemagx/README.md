@@ -23,7 +23,7 @@ schema = s.Schema(
         "posts": {"id": "int", "author_id": "int", "title": "text"},
     },
     primary_keys={"users": "id", "posts": "id"},
-    foreign_keys=[("posts.author_id", "users.id")],   # "table.column"
+    foreign_keys=[("posts.author_id", "users.id")],  # "table.column"
     roots=["users"],
 )
 ```

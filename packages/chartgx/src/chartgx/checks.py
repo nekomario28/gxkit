@@ -176,8 +176,9 @@ def _is_green(c: str) -> bool:
 
 def _check_empty(ax: Any, i: int, kind: str, out: list[Problem]) -> bool:
     if kind == "empty":
-        out.append(Problem(ERROR, "empty-chart", "no data is drawn on this axes",
-                           target=f"ax[{i}]"))
+        out.append(
+            Problem(ERROR, "empty-chart", "no data is drawn on this axes", target=f"ax[{i}]")
+        )
         return True
     return False
 
@@ -193,8 +194,11 @@ def _check_units_note(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
         if rects and rects[0].get_width() > rects[0].get_height():
             axis, label = "x", ax.get_xlabel()
     if label and not any(ch in label for ch in "([%£$€¥):"):
-        out.append(Problem(INFO, "no-units", f"{axis}-axis label {label!r} names no unit",
-                           target=f"ax[{i}]"))
+        out.append(
+            Problem(
+                INFO, "no-units", f"{axis}-axis label {label!r} names no unit", target=f"ax[{i}]"
+            )
+        )
 
 
 def _check_title(fig: Any, axes_list: list[Any], out: list[Problem]) -> None:
@@ -225,12 +229,15 @@ def _check_bar_baseline(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
     lo, hi = ax.get_ylim() if vertical else ax.get_xlim()
     axis = "y" if vertical else "x"
     if not (lo <= 0 <= hi):
-        out.append(Problem(
-            ERROR, "truncated-baseline",
-            f"bar lengths start at {axis}={lo:g}, not 0 — the bars no longer show amounts "
-            "(the difference looks larger than it is). Draw the value axis from 0.",
-            target=f"ax[{i}]",
-        ))
+        out.append(
+            Problem(
+                ERROR,
+                "truncated-baseline",
+                f"bar lengths start at {axis}={lo:g}, not 0 — the bars no longer show amounts "
+                "(the difference looks larger than it is). Draw the value axis from 0.",
+                target=f"ax[{i}]",
+            )
+        )
 
 
 def _check_line_baseline(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
@@ -238,12 +245,15 @@ def _check_line_baseline(ax: Any, i: int, kind: str, out: list[Problem]) -> None
         return
     ylo = ax.get_ylim()[0]
     if ylo > 0:
-        out.append(Problem(
-            INFO, "cut-value-axis",
-            f"the {kind} axis is cut at y={ylo:g}: fine for change over time, but not for "
-            "comparing magnitudes.",
-            target=f"ax[{i}]",
-        ))
+        out.append(
+            Problem(
+                INFO,
+                "cut-value-axis",
+                f"the {kind} axis is cut at y={ylo:g}: fine for change over time, but not for "
+                "comparing magnitudes.",
+                target=f"ax[{i}]",
+            )
+        )
 
 
 def _check_constant(ax: Any, i: int, out: list[Problem]) -> None:
@@ -251,12 +261,15 @@ def _check_constant(ax: Any, i: int, out: list[Problem]) -> None:
         try:
             ys = ln.get_ydata()
             if len(ys) > 2 and float(min(ys)) == float(max(ys)):
-                out.append(Problem(
-                    WARN, "constant-series",
-                    f"series {j} is constant ({float(ys[0]):g}) — it carries no information "
-                    "or the data did not load.",
-                    target=f"ax[{i}]",
-                ))
+                out.append(
+                    Problem(
+                        WARN,
+                        "constant-series",
+                        f"series {j} is constant ({float(ys[0]):g}) — it carries no information "
+                        "or the data did not load.",
+                        target=f"ax[{i}]",
+                    )
+                )
         except Exception:
             continue
 
@@ -271,13 +284,23 @@ def _check_clipped_data(ax: Any, i: int, out: list[Problem]) -> None:
             if not xs:
                 continue
             if min(xs) < xlo - 1e-9 or max(xs) > xhi + 1e-9:
-                out.append(Problem(WARN, "clipped-data",
-                                   f"line {j} runs past the x-limits and is cut off",
-                                   target=f"ax[{i}]"))
+                out.append(
+                    Problem(
+                        WARN,
+                        "clipped-data",
+                        f"line {j} runs past the x-limits and is cut off",
+                        target=f"ax[{i}]",
+                    )
+                )
             if min(ys) < ylo - 1e-9 or max(ys) > yhi + 1e-9:
-                out.append(Problem(WARN, "clipped-data",
-                                   f"line {j} runs past the y-limits and is cut off",
-                                   target=f"ax[{i}]"))
+                out.append(
+                    Problem(
+                        WARN,
+                        "clipped-data",
+                        f"line {j} runs past the y-limits and is cut off",
+                        target=f"ax[{i}]",
+                    )
+                )
         except Exception:
             continue
 
@@ -287,41 +310,67 @@ def _check_log(ax: Any, i: int, out: list[Problem]) -> None:
         for j, ln in enumerate(ax.lines):
             try:
                 if min(float(v) for v in ln.get_ydata()) <= 0:
-                    out.append(Problem(ERROR, "log-nonpositive",
-                                       f"line {j} has a value <= 0 on a log y-axis — those points vanish",
-                                       target=f"ax[{i}]"))
+                    out.append(
+                        Problem(
+                            ERROR,
+                            "log-nonpositive",
+                            f"line {j} has a value <= 0 on a log y-axis — those points vanish",
+                            target=f"ax[{i}]",
+                        )
+                    )
             except Exception:
                 continue
     if ax.get_xscale() == "log":
         for j, ln in enumerate(ax.lines):
             try:
                 if min(float(v) for v in ln.get_xdata()) <= 0:
-                    out.append(Problem(ERROR, "log-nonpositive",
-                                       f"line {j} has a value <= 0 on a log x-axis — those points vanish",
-                                       target=f"ax[{i}]"))
+                    out.append(
+                        Problem(
+                            ERROR,
+                            "log-nonpositive",
+                            f"line {j} has a value <= 0 on a log x-axis — those points vanish",
+                            target=f"ax[{i}]",
+                        )
+                    )
             except Exception:
                 continue
 
 
 def _check_dual_axis(ax: Any, i: int, primary: bool, out: list[Problem]) -> None:
     if _twins(ax) and primary:
-        out.append(Problem(WARN, "dual-axis",
-                           "a second y-axis shares this plot — two scales invite false correlation",
-                           target=f"ax[{i}]"))
+        out.append(
+            Problem(
+                WARN,
+                "dual-axis",
+                "a second y-axis shares this plot — two scales invite false correlation",
+                target=f"ax[{i}]",
+            )
+        )
 
 
 def _check_series_colors(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
     n = _series_count(ax, kind)
     if n > 10:
-        out.append(Problem(WARN, "too-many-series",
-                           f"{n} series share the default color cycle — they repeat and are "
-                           "hard to tell apart", target=f"ax[{i}]"))
+        out.append(
+            Problem(
+                WARN,
+                "too-many-series",
+                f"{n} series share the default color cycle — they repeat and are "
+                "hard to tell apart",
+                target=f"ax[{i}]",
+            )
+        )
     look = {c.lower() for c in _series_colors(ax)}
     if any(_is_red(c) for c in look) and any(_is_green(c) for c in look) and len(look) <= 4:
-        out.append(Problem(INFO, "red-green",
-                           "the series are told apart by red/green alone — hard for "
-                           "color-vision-deficient readers; add line styles or markers",
-                           target=f"ax[{i}]"))
+        out.append(
+            Problem(
+                INFO,
+                "red-green",
+                "the series are told apart by red/green alone — hard for "
+                "color-vision-deficient readers; add line styles or markers",
+                target=f"ax[{i}]",
+            )
+        )
 
 
 def _check_pie(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
@@ -331,9 +380,15 @@ def _check_pie(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
 
     n = len([p for p in ax.patches if isinstance(p, Wedge)])
     if n > 6:
-        out.append(Problem(WARN, "pie-slices",
-                           f"a pie with {n} slices is hard to read — use a bar chart or group "
-                           "the small slices", target=f"ax[{i}]"))
+        out.append(
+            Problem(
+                WARN,
+                "pie-slices",
+                f"a pie with {n} slices is hard to read — use a bar chart or group "
+                "the small slices",
+                target=f"ax[{i}]",
+            )
+        )
 
 
 def _text_items(ax: Any, renderer: Any) -> list[TextBox]:
@@ -351,8 +406,11 @@ def _text_items(ax: Any, renderer: Any) -> list[TextBox]:
 
 
 def _check_text(fig: Any, ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
-    out.extend(check_text_layout(_text_items(ax, renderer), _figure_box(fig),
-                                 target=f"ax[{i}]", surface="figure"))
+    out.extend(
+        check_text_layout(
+            _text_items(ax, renderer), _figure_box(fig), target=f"ax[{i}]", surface="figure"
+        )
+    )
 
 
 def _check_legend_covers(ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
@@ -368,9 +426,15 @@ def _check_legend_covers(ax: Any, i: int, renderer: Any, out: list[Problem]) -> 
     if db is None:
         return
     if overlap(lbb, db) > 0.15 * area(lbb):
-        out.append(Problem(WARN, "legend-covers",
-                           "the legend sits over the plotted data",
-                           target=f"ax[{i}]", bbox=lbb))
+        out.append(
+            Problem(
+                WARN,
+                "legend-covers",
+                "the legend sits over the plotted data",
+                target=f"ax[{i}]",
+                bbox=lbb,
+            )
+        )
 
 
 # --------------------------------------------------------------------------- #

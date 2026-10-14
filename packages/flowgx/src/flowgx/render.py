@@ -5,6 +5,7 @@ from __future__ import annotations
 from gxcore.diagram import ACCEPT, DEFAULT, START, Edge, Node, node_box, render
 from gxcore.diagram import image_size as _image_size
 from gxcore.diagram import layout as _layout
+from PIL import Image
 
 from .machine import Machine
 
@@ -29,6 +30,6 @@ def compute_layout(machine: Machine) -> tuple[dict[str, tuple[float, float]], fl
     return _layout(machine.all_states())
 
 
-def render_image(machine: Machine):
+def render_image(machine: Machine) -> Image.Image:
     nodes, edges = _nodes_edges(machine)
     return render(nodes, edges)

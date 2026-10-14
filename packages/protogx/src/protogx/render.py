@@ -5,6 +5,7 @@ from __future__ import annotations
 from gxcore.diagram import ACCEPT, DEFAULT, START, Edge, Node, node_box, render
 from gxcore.diagram import image_size as _image_size
 from gxcore.diagram import layout as _layout
+from PIL import Image
 
 from .model import Protocol
 
@@ -29,6 +30,6 @@ def compute_layout(proto: Protocol) -> tuple[dict[str, tuple[float, float]], flo
     return _layout(proto.all_states())
 
 
-def render_image(proto: Protocol):
+def render_image(proto: Protocol) -> Image.Image:
     nodes, edges = _nodes_edges(proto)
     return render(nodes, edges)
