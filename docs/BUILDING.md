@@ -217,6 +217,9 @@ this family makes network requests; say so, so the boundary is explicit.
 figure, generated deterministically from the code by a repo-owned script (no
 hosted service, no CLI to install). Regenerate it and look at the rendered image
 before committing — the same "look at the picture" rule as the storyboard.
+Derive the figure's own labels (its title, `<desc>`, counts) from the list it
+draws, and pin the committed asset to the generator with a test — a hardcoded
+"nine" outlives the tenth tool when nothing checks.
 (Producing it: `doc-figures`; front-page prose and scan order: `write-readme`;
 hierarchy and restraint: `readme-visual-design`.)
 

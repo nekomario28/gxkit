@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1040" height="620" viewBox="0 0 1040 620" role="img" aria-labelledby="t d" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
-<title id="t">gxkit: one shared core, nine inspect tools</title>
-<desc id="d">gxcore is the shared review loop. Nine tools, one per artifact domain, each turn an artifact into problems with stable codes, an exit code and a storyboard.</desc>
+<title id="t">gxkit: one shared core, 10 inspect tools</title>
+<desc id="d">gxcore is the shared review loop. 10 tools, one per artifact domain, each turn an artifact into problems with stable codes, an exit code and a storyboard.</desc>
 <rect width="1040" height="620" fill="#ffffff"/>
 <rect x="24" y="24" width="360" height="572" rx="16" fill="#f1f5f9"/>
 <text x="48" y="66" font-size="19" font-weight="700" fill="#0f172a">The inspect loop</text>

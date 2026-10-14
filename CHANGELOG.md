@@ -46,6 +46,9 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   non-blank — the images a human reviews are not left untested.
 
 ### Fixed
+- The architecture figure's own text said "nine inspect tools" after the tenth
+  tool landed; the count is now derived from the tool list, and a test pins the
+  committed SVG to the generator so a stale label cannot survive again.
 - The reusable Action no longer reports success on a directory with no `*.py`
   artifacts, or on a path that does not exist — an empty gate is a failure.
 - `Shader.assembled` no longer treats a `#version` inside a comment as a real

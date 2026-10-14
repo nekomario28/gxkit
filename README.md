@@ -22,7 +22,7 @@ ship — with a storyboard image as the evidence.
 
 <p align="center"><sub>One core, ten domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
 
-![gxkit: one shared core, nine inspect tools](docs/assets/architecture.svg)
+![gxkit: one shared core, an inspect tool for every artifact domain](docs/assets/architecture.svg)
 
 ## The loop
 

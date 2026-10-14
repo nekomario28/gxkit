@@ -2,8 +2,8 @@
 """Generate the README architecture figure as a deterministic SVG.
 
 Repo-owned and reproducible: no hosted service, no CLI to install. Layout is
-math — the nine tools sit on a circle at evenly spaced angles with evenly
-spaced hues, so the picture is the data.
+math — the tools sit on a circle at evenly spaced angles with evenly spaced
+hues, so the picture is the data.
 
     python scripts/make_readme_figure.py   # writes docs/assets/architecture.svg
 """
@@ -59,9 +59,9 @@ def build() -> str:
         f'viewBox="0 0 {W} {H}" role="img" '
         f'aria-labelledby="t d" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">'
     )
-    p.append('<title id="t">gxkit: one shared core, nine inspect tools</title>')
+    p.append(f'<title id="t">gxkit: one shared core, {len(TOOLS)} inspect tools</title>')
     p.append(
-        '<desc id="d">gxcore is the shared review loop. Nine tools, one per '
+        f'<desc id="d">gxcore is the shared review loop. {len(TOOLS)} tools, one per '
         "artifact domain, each turn an artifact into problems with stable codes, "
         "an exit code and a storyboard.</desc>"
     )
