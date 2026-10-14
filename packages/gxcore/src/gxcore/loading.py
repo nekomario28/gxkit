@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -30,8 +32,25 @@ DEFAULT_BUILDERS = (
 )
 
 
+_MODULES: ContextVar[dict[Path, ModuleType] | None] = ContextVar("gx_modules", default=None)
+
+
+@contextmanager
+def loading_session() -> Iterator[None]:
+    """Share imported artifacts within one inspection, never across invocations."""
+    token = _MODULES.set({})
+    try:
+        yield
+    finally:
+        _MODULES.reset(token)
+
+
 def load_module(path: str | Path) -> ModuleType:
     path = Path(path)
+    modules = _MODULES.get()
+    key = path.resolve()
+    if modules is not None and key in modules:
+        return modules[key]
     if not path.exists():
         raise FileNotFoundError(path)
     name = f"gx_under_test_{abs(hash(str(path)))}"
@@ -40,7 +59,10 @@ def load_module(path: str | Path) -> ModuleType:
         raise ImportError(f"cannot load a Python module from {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
-    spec.loader.exec_module(module)
+    # Inspect the current source, not a timestamp/size-matched cached .pyc.
+    exec(compile(path.read_bytes(), str(path), "exec"), module.__dict__)
+    if modules is not None:
+        modules[key] = module
     return module
 
 

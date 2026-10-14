@@ -31,7 +31,8 @@ def _tool(report):
 
 
 def test_fingerprint_is_code_target_and_label_only():
-    assert fingerprint("a", "t", "l") == "a\x1ft\x1fl"
+    assert fingerprint("a", "t", "l") != fingerprint("b", "t", "l")
+    assert fingerprint("a\x1ft", "", "l") != fingerprint("a", "t", "l")
     assert fingerprint("a", None, "") != fingerprint("a", "t", "")
     assert fingerprint("a", "t", "l") != fingerprint("a", "t", "m")
 

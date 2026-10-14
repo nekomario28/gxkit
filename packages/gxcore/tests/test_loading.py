@@ -100,3 +100,14 @@ def test_load_from_file_names_the_description_in_its_error(tmp_path):
     path = _write(tmp_path, "m.py", "x = 1\n")
     with pytest.raises(ValueError, match="no gadget found"):
         load_from_file(path, attrs=("gadget",), builders=(), description="gadget")
+
+
+def test_same_size_edits_are_not_hidden_by_cached_bytecode(tmp_path):
+    import os
+
+    path = _write(tmp_path, "edited.py", "value = 'A'\n")
+    assert load_module(path).value == "A"
+    stamp = path.stat()
+    path.write_text("value = 'B'\n", encoding="utf-8")
+    os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+    assert load_module(path).value == "B"

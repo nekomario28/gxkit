@@ -81,6 +81,7 @@ def inspect_schedule(schedule: Schedule, name: str | None = None) -> Report:
                         f"{a.name!r} and {b.name!r} both hold {a.resource!r} at once",
                         target=_node_id(j),
                         label=b.name,
+                        identity=(a.resource, *sorted((a.name, b.name))),
                     )
                 )
 

@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 from gxcore.cli import run
+from gxcore.loading import loading_session
 from gxcore.toolkit import distribution_version
 
 from .codes import CODEBOOK
@@ -45,7 +46,7 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
 
     try:
         module = load_module(path)
-    except Exception as exc:  # a broken artifact reports, does not traceback
+    except (Exception, SystemExit) as exc:  # an artifact exit is not inspection success
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
     spec = detect(module)
@@ -141,11 +142,12 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
     rc = 0
     for file in files:
-        spec = _tool_for(file, explicit)
-        if spec is None:
-            rc = max(rc, 2)
-            continue
-        rc = max(rc, _run_tool(spec, file, args))
+        with loading_session():
+            spec = _tool_for(file, explicit)
+            if spec is None:
+                rc = max(rc, 2)
+                continue
+            rc = max(rc, _run_tool(spec, file, args))
     return rc
 
 

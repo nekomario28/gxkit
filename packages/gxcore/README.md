@@ -30,4 +30,14 @@ def main(argv=None):
     return run(TOOL, argv)
 ```
 
+## Inspection ownership
+
+Routing and inspection share one module execution within an invocation; a later
+invocation reads the current source. The loader must not reuse stale bytecode.
+
+A baseline records occurrences, not a set of display locations. Checks that
+report relationships supply stable identities independent of numeric prose and
+layout order. Baseline format 2 rejects older records: recreate an accepted
+baseline deliberately with `--write-baseline`, rather than guessing identities.
+
 MIT licensed.
