@@ -99,20 +99,8 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - run: uv build --all-packages -o dist
       - run: uvx twine check dist/*
-      - name: Every wheel carries its LICENSE and py.typed
-        run: |
-          python3 - <<'PY'
-          import glob, sys, zipfile
-          bad = []
-          for wheel in glob.glob("dist/*.whl"):
-              names = zipfile.ZipFile(wheel).namelist()
-              if not any(n.endswith("licenses/LICENSE") for n in names):
-                  bad.append(f"{wheel}: no LICENSE")
-              if not any(n.endswith("py.typed") for n in names):
-                  bad.append(f"{wheel}: no py.typed")
-          print("\n".join(bad) if bad else "all wheels carry LICENSE + py.typed")
-          sys.exit(1 if bad else 0)
-          PY
+      - name: The dist matches the pyproject files (names, versions, LICENSE, py.typed)
+        run: uv run python scripts/release.py --check dist
       - name: Install the built sdists in a clean env and smoke-test
         run: |
           uv venv /tmp/smoke --python 3.13
