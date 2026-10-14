@@ -1,0 +1,17 @@
+# Reproducible checkouts across platforms: text is LF in the repository, binary
+# assets are never converted. This removes a whole class of "it differs only on
+# Windows" failures (see the encoding lesson in docs/BUILDING.md).
+* text=auto eol=lf
+
+*.png binary
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.webm binary
+*.ogv binary
+*.avi binary
+
+*.svg text eol=lf
