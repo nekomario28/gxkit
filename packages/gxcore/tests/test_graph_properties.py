@@ -16,6 +16,7 @@ from gxcore.graph import (
     find_cycle,
     reachable,
     shortest_path,
+    strongly_connected_components,
     topological_sort,
     traps,
     weak_components,
@@ -137,3 +138,17 @@ def test_topological_sort_includes_nodes_you_pass_in():
     position = {node: i for i, node in enumerate(order)}
     assert position[1] < position[2]
     assert topological_sort({1: [1]}) is None
+
+
+def test_strongly_connected_components_match_networkx():
+    rng = random.Random(202)
+    for _ in range(300):
+        edges = _random_edges(rng)
+        g = _digraph(edges)
+        got = strongly_connected_components(edges)
+        assert {frozenset(c) for c in got} == {
+            frozenset(c) for c in nx.strongly_connected_components(g)
+        }
+        # every node lands in exactly one component
+        flat = [node for component in got for node in component]
+        assert sorted(flat) == sorted(edges)

@@ -43,6 +43,7 @@ storyboard: Tangle.storyboard.png
   6 modules, 7 dependencies
   roots: api
   layers (top→bottom): api | service | domain | infra | util
+  cyclic groups: {api, domain, service, util}
 inspect: 6 problems (5 errors)
   [1] error api        cycle: dependency cycle: api → service → domain → util → api
   [2] error domain     forbidden-dependency: 'domain' must not depend on 'infra'

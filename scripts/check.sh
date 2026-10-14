@@ -34,6 +34,7 @@ if [ "$FULL" = 1 ]; then
   step rm -rf dist
   step uv build --all-packages -o dist
   step uvx twine check dist/*
+  step uv run python scripts/release.py --check dist
 fi
 
 printf '\n\033[1;32mAll gates passed.\033[0m\n'

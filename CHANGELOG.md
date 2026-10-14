@@ -10,11 +10,16 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.3).
 
 ### Added
+- `gxcore.graph.strongly_connected_components` (Kosaraju, iterative; cross-checked
+  against NetworkX). `depsgx` reports **cyclic groups** and `schemagx` **cyclic
+  tables** — the full component, not just one cycle.
 - `gxcore.graph.topological_sort` — a build order (cross-checked against
   NetworkX); `depsgx` reports a **build order** and `schemagx` a **create order**
   when the graph is acyclic.
 - `scripts/release.py` prints the publish plan in dependency order (`gxcore`
-  first, `gxkit-cli` last), pinned by a test.
+  first, `gxkit-cli` last) and `--check` validates a built `dist/` against the
+  `pyproject` files (names, versions, LICENSE, `py.typed`, sdists), pinned by
+  tests; `scripts/check.sh --full` runs it.
 - `gxkit` umbrella: `gxkit inspect <file>` (detect and route), `gxkit tools`,
   `gxkit codes`.
 - `.gxkit.toml` config: ignore a code or change its severity.

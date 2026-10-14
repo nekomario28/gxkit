@@ -219,3 +219,64 @@ def topological_sort(edges: Adjacency[_H], nodes: Iterable[_H] | None = None) ->
             if indegree[v] == 0:
                 queue.append(v)
     return out if len(out) == len(ordered) else None
+
+
+def strongly_connected_components(edges: Adjacency[_H]) -> list[list[_H]]:
+    """The graph's strongly connected components, each a list of nodes.
+
+    Every node appears in exactly one component; a node with no cycle is its own.
+    Kosaraju's algorithm, iterative (a deep chain must not hit the recursion
+    limit). Deterministic for a given input.
+    """
+    e = _norm(edges)
+    nodes: list[_H] = []
+    seen: set[_H] = set()
+    for u, vs in e.items():
+        if u not in seen:
+            seen.add(u)
+            nodes.append(u)
+        for v in vs:
+            if v not in seen:
+                seen.add(v)
+                nodes.append(v)
+
+    # first pass: the DFS finishing order
+    visited: set[_H] = set()
+    finish: list[_H] = []
+    for start in nodes:
+        if start in visited:
+            continue
+        visited.add(start)
+        stack: list[tuple[_H, Iterator[_H]]] = [(start, iter(e.get(start, ())))]
+        while stack:
+            node, it = stack[-1]
+            advanced = False
+            for w in it:
+                if w not in visited:
+                    visited.add(w)
+                    stack.append((w, iter(e.get(w, ()))))
+                    advanced = True
+                    break
+            if not advanced:
+                finish.append(node)
+                stack.pop()
+
+    # second pass: on the reversed graph, in reverse finishing order
+    rev = reverse(e)
+    assigned: set[_H] = set()
+    components: list[list[_H]] = []
+    for start in reversed(finish):
+        if start in assigned:
+            continue
+        component: list[_H] = []
+        queue = [start]
+        assigned.add(start)
+        while queue:
+            u = queue.pop()
+            component.append(u)
+            for w in rev.get(u, ()):
+                if w not in assigned:
+                    assigned.add(w)
+                    queue.append(w)
+        components.append(component)
+    return components

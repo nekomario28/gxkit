@@ -40,6 +40,7 @@ schema: 5 tables, 7 foreign keys
 storyboard: Tangled_schema.storyboard.png
   5 tables, 7 foreign keys
   roots: users
+  cyclic tables: {posts, tags}
 inspect: 10 problems (4 errors)
   [1] error -          dangling-foreign-key: 'ghost.id' references unknown table 'ghost'
   [2] error legacy     dangling-foreign-key: 'legacy.owner' references unknown column 'owner'

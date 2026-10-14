@@ -12,7 +12,9 @@ uvx twine check dist/*
 ```
 
 `scripts/check.sh --full` does both. To see the publish order — `gxcore` first,
-the tools, then `gxkit-cli` last — run `python scripts/release.py`.
+the tools, then `gxkit-cli` last — run `uv run python scripts/release.py`; to
+validate a built `dist/` against the `pyproject` files, run
+`uv run python scripts/release.py --check dist`.
 
 Every wheel must carry its `LICENSE` and declare `License-Expression: MIT` (see
 [`LICENSING.md`](LICENSING.md)); `scripts/prepublish_check.py` guards the repo

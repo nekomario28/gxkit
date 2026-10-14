@@ -8,7 +8,7 @@ that needs deferred constraints, and tables nothing points at. Cycles come from
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.graph import reverse, topological_sort
+from gxcore.graph import reverse, strongly_connected_components, topological_sort
 
 from .model import Schema
 from .render import compute_layout, node_box
@@ -30,6 +30,11 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
     order = topological_sort(edges)
     if order is not None and len(order) > 1:
         report.details.append("create order: " + " → ".join(reversed(order)))
+    cyclic = [c for c in strongly_connected_components(edges) if len(c) > 1]
+    if cyclic:
+        report.details.append(
+            "cyclic tables: " + " | ".join("{" + ", ".join(sorted(c)) + "}" for c in cyclic)
+        )
     out: list[Problem] = []
 
     for child, parent in schema.foreign_keys:
