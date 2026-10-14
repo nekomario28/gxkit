@@ -103,7 +103,8 @@ an error). A corpus of valid and invalid shaders pins the GLSL surface
 (`schemagx` cycles/orphans, `protogx` reachability/deadlocks) is cross-checked
 against NetworkX the same way; and `framegx` is exercised on every codec ffmpeg
 offers (H.264, MPEG-4, VP8/VP9, Theora, GIF), each skipped when the encoder is
-absent.
+absent. Routing is checked against the *real* example files (not fake classes),
+and a tool's drawn pixels are held against the boxes it reports.
 
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.

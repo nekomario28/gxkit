@@ -19,9 +19,15 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 ### Tests
 - `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
   `gxcore.layout` against Shapely on random inputs; the domain tools' graph
-  reading (`schemagx`, `protogx`) is cross-checked against NetworkX too.
+  reading (`schemagx`, `protogx`) is cross-checked against NetworkX too, as is
+  `levelgx`'s one-way grid (reachability, distances, soft-lock).
 - `gxcore.diagram`'s layout invariants (determinism, non-overlap, on-canvas)
-  are property-tested on random graphs.
+  are property-tested on random graphs; `docgx`'s reported text boxes are held
+  against the pixels actually drawn.
+- `gxkit`'s auto-routing is checked against every real example file, not fake
+  classes; `chartgx`'s plot classifier against each real plot kind.
+- The loader's abnormal cases (missing, directory, syntax error, `sys.exit`,
+  raise) and its discovery precedence are pinned.
 - A GLSL corpus pins the surface `shadergx` claims to support; `framegx` is
   exercised on every codec ffmpeg offers (H.264, MPEG-4, VP8/VP9, Theora, GIF)
   plus audio, silence and odd dimensions; one CLI contract test per tool.
