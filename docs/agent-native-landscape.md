@@ -57,7 +57,7 @@ Two ways this arrives:
    nothing detects it. Only `FigureLint` exists, and it lints academic figures,
    not correctness. → **built in `gxkit` as `chartgx`.**
 
-> **Status (v0.2.0):** `gxkit` implements this pattern for ten domains —
+> **Status (v0.2.1):** `gxkit` implements this pattern for ten domains —
 > charts, game levels, state machines, permissions, module graphs, schemas,
 > pages, protocols and fragment shaders — over one core (`gxcore`). See the
 > repository README for the current list.
@@ -84,6 +84,27 @@ Gathered from ManimGX and `ismail` (whose `AGENTS.md` is unusually good):
   tool.
 - **"Their words, not ours"** (`ismail`). Never make the person learn the tool's
   vocabulary; the agent installs and runs it.
+
+## Adjacent tools, and what gxkit is not
+
+gxkit is a *semantic* inspector, so it overlaps a different neighbour in each
+domain and beats each on one axis: it decides **what is wrong**, with a stable
+code, not merely **what changed**.
+
+| Neighbour | What it does | Where gxkit differs |
+| --- | --- | --- |
+| Visual-regression / snapshot tools (Playwright, Percy, Chromatic, pytest-mpl, reg-viz) | diff an image against a golden baseline | no baseline: it judges the artifact against a **rule** ("a bar baseline must start at 0"), and works on a first render |
+| LLM / VLM reviewers | look at the picture and describe it | deterministic, offline, stable codes, gateable; no hallucination budget |
+| Code linters / type checkers (ruff, mypy, eslint) | inspect source | inspect the **artifact the source produces** — pixels, graphs, reachability |
+| Domain linters (buf, sqruff, glslangValidator, d2/mermaid) | validate syntax/shape in one format | one contract across ten domains; catches *semantic* faults (a black frame, a soft-lock, an unused uniform), not only compile errors |
+| ffprobe / media-info | report metadata | decide "frozen / black / silent / wrong length / no motion" |
+| MCP browser / devtools harnesses, CLI-Anything | drive a tool for the agent | judge the result; the loop, not the driver |
+
+Wrong tool when: you want a pixel diff against a baseline (use a VRT tool), a
+formal proof (use TLA+/Alloy), or you are inspecting a domain with no rule set
+— there, add a tool (`docs/BUILDING.md`). gxkit does not render: the host
+renderer (matplotlib, ffmpeg, GL, the grid) produces the artifact; gxkit reads
+it.
 
 ## Method / provenance
 
