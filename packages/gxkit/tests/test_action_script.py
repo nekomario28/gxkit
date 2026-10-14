@@ -9,9 +9,17 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "inspect_path.sh"
+
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="the `bash` on Windows CI is the WSL stub; the action uses Git Bash",
+)
 
 
 def _run(target, tmp_path, *, tool="", flags="", exit_code=0):

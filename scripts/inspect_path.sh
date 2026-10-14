@@ -21,7 +21,11 @@ else
 fi
 
 if [ -d "$TARGET" ]; then
-  mapfile -t files < <(find "$TARGET" -name '*.py' | sort)
+  # No `mapfile`: macOS ships bash 3.2, which does not have it.
+  files=()
+  while IFS= read -r f; do
+    files+=("$f")
+  done < <(find "$TARGET" -name '*.py' | sort)
   if [ "${#files[@]}" -eq 0 ]; then
     echo "::error::no *.py artifacts under $TARGET — refusing to report success"
     exit 1
