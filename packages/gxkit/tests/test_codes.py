@@ -51,3 +51,10 @@ def test_for_tool_and_flat():
     assert for_tool("nope") == {}
     assert "chartgx" in flat()["truncated-baseline"]
     assert sorted(flat()["soft-lock"]) == ["levelgx"]
+
+
+def test_codebook_keys_are_exactly_the_tools_plus_gxcore():
+    from gxkit.registry import TOOLS
+
+    expected = {"gxcore", *(t.name for t in TOOLS)}
+    assert set(CODEBOOK) == expected, f"unexpected codebook key(s): {set(CODEBOOK) ^ expected}"

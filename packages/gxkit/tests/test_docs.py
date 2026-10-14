@@ -216,3 +216,63 @@ def test_readme_names_the_right_domain_count():
     assert stated, "the README never states the number of domains"
     expected = _NUMBER_WORDS[len(TOOL_PACKAGES)]
     assert stated == {expected}, f"README says {sorted(stated)}, but there are {len(TOOL_PACKAGES)}"
+
+
+# --------------------------------------------------------------------------- #
+# what a tool ships, and the action's documented inputs
+# --------------------------------------------------------------------------- #
+
+REQUIRED_TOOL_FILES = ("README.md", "AGENTS.md", "llms.txt", "SKILL.md", "LICENSE")
+
+
+def test_every_tool_ships_its_agent_docs():
+    for name in TOOL_PACKAGES:
+        for filename in REQUIRED_TOOL_FILES:
+            path = ROOT / "packages" / name / filename
+            assert path.exists(), (
+                f"{name}/{filename} is missing (README claims every tool ships it)"
+            )
+
+
+def test_each_tool_doc_installs_its_own_package():
+    for name in TOOL_PACKAGES:
+        for filename in ("README.md", "AGENTS.md", "llms.txt"):
+            text = (ROOT / "packages" / name / filename).read_text(encoding="utf-8")
+            for sub in re.findall(r"subdirectory=packages/([A-Za-z0-9_]+)", text):
+                assert sub == name, f"packages/{name}/{filename} installs packages/{sub}"
+
+
+def test_readme_action_example_uses_declared_inputs():
+    action = (ROOT / "action.yml").read_text(encoding="utf-8")
+    declared = set(re.findall(r"^  ([a-z_]+):$", action.split("\nruns:", 1)[0], re.M))
+    assert declared == {"path", "tool", "args"}, f"unexpected action inputs: {sorted(declared)}"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    example = re.search(r"uses: nekomario28/gxkit@[0-9v.]+(.*?)```", readme, re.S)
+    assert example is not None, "the README has no action example"
+    used = set(re.findall(r"^\s+([a-z_]+):", example.group(1), re.M)) - {"with"}
+    assert used <= declared, (
+        f"the README action example uses undeclared input(s): {used - declared}"
+    )
+    for inp in declared:
+        assert inp in readme, f"the README does not document the {inp!r} input"
+
+
+def test_every_tool_skill_names_itself():
+    for name in TOOL_PACKAGES:
+        text = (ROOT / "packages" / name / "SKILL.md").read_text(encoding="utf-8")
+        match = re.search(r"^name:\s*(\S+)", text, re.M)
+        assert match is not None and match.group(1) == name, f"{name}/SKILL.md name is wrong"
+
+
+def test_tool_docs_only_name_their_own_codes():
+    from gxkit.codes import CODEBOOK
+
+    shared = set(CODEBOOK["gxcore"])  # emitted by the shared layout component
+    for name in TOOL_PACKAGES:
+        allowed = set(CODEBOOK[name]) | shared
+        for filename in ("README.md", "SKILL.md", "AGENTS.md", "llms.txt"):
+            text = (ROOT / "packages" / name / filename).read_text(encoding="utf-8")
+            for token in re.findall(r"`([a-z][a-z0-9]*-[a-z0-9-]+)`", text):
+                assert token in allowed, (
+                    f"packages/{name}/{filename} names {token!r}, which {name} does not emit"
+                )

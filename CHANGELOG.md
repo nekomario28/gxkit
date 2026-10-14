@@ -30,6 +30,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   artifact fails), so the action cannot rot untested.
 
 ### Tests
+- **What each tool ships** is enforced: `README.md`/`AGENTS.md`/`llms.txt`/
+  `SKILL.md`/`LICENSE`, a `SKILL.md` name matching the tool, and only that tool's
+  own codes named in its docs; the `CODEBOOK` keys must equal the tools plus
+  `gxcore`; the README action example may only use declared inputs.
 - **Documented example output is checked against the tools**: every root/`per-tool
   README` example is run and its `inspect:` counts and each shown `[n] severity
   code` must match (it caught five stale examples).
@@ -55,6 +59,9 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   non-blank — the images a human reviews are not left untested.
 
 ### Fixed
+- `docgx` and `protogx` were missing `AGENTS.md`, though the README and
+  `PLAN.md` promise every tool ships it; added, and a guard now enforces the
+  required per-tool files.
 - The architecture figure's own text said "nine inspect tools" after the tenth
   tool landed; the count is now derived from the tool list, and a test pins the
   committed SVG to the generator so a stale label cannot survive again.
