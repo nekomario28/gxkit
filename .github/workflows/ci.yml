@@ -123,6 +123,35 @@ jobs:
           name: dist
           path: dist/*
 
+  action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: The published action passes on a clean artifact
+        uses: $/
+        with:
+          path: packages/levelgx/examples/good_level.py
+      - name: The published action fails on a faulty artifact
+        id: faulty
+        continue-on-error: true
+        uses: $/
+        with:
+          path: packages/levelgx/examples/softlock_level.py
+      - name: It really failed (a green run would mean the gate is fake)
+        if: steps.faulty.outcome != 'failure'
+        run: |
+          echo "::error::the action did not fail on a faulty artifact"
+          exit 1
+      - name: The action accepts an explicit tool and flags
+        uses: $/
+        with:
+          path: packages/schemagx/examples/good_schema.py
+          tool: schemagx
+          args: "--json"
+
   security:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -11,10 +11,13 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - `.gxkit.toml` config: ignore a code or change its severity.
 - A reusable GitHub Action (`uses: nekomario28/gxkit@vX.Y.Z`).
 - `docs/RELEASING.md`; PyPI metadata and a `gxcore` version pin.
+- `scripts/check.sh` — one command that runs every gate CI runs.
 
 ### Changed
 - mypy runs in `--strict`; `ruff format --check` is a CI gate; a macOS leg was
   added to the test matrix.
+- CI exercises the **published action** itself (clean artifact passes, faulty
+  artifact fails), so the action cannot rot untested.
 
 ### Tests
 - `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
@@ -31,6 +34,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A GLSL corpus pins the surface `shadergx` claims to support; `framegx` is
   exercised on every codec ffmpeg offers (H.264, MPEG-4, VP8/VP9, Theora, GIF)
   plus audio, silence and odd dimensions; one CLI contract test per tool.
+- Every tool's **storyboard and render** are exercised end to end and asserted
+  non-blank — the images a human reviews are not left untested.
 
 ### Fixed
 - `Shader.assembled` no longer treats a `#version` inside a comment as a real

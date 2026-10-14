@@ -4,10 +4,12 @@
 
 ```sh
 uv sync --all-packages
-uv run pytest
-uvx ruff check packages scripts --select F,E9,B
-python scripts/prepublish_check.py
+scripts/check.sh          # the whole gate: lint, format, --strict types, tests, audit
 ```
+
+`scripts/check.sh --full` also builds the distributions and runs `twine check`.
+That script is what CI blocks on; a green local run is the prerequisite for a
+PR.
 
 ## Add a tool
 
@@ -22,4 +24,4 @@ lines.
 - New problem codes are added to `packages/gxkit/src/gxkit/codes.py` — a test
   enforces this.
 - The tool ships `README.md`, `AGENTS.md`, `llms.txt`, `SKILL.md` and `LICENSE`.
-- `uv run pytest`, ruff and `scripts/prepublish_check.py` are green.
+- `scripts/check.sh` is green.
