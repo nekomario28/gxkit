@@ -26,6 +26,32 @@ def test_cycle():
     assert_fires(inspect_graph(g), "cycle", ERROR)
 
 
+def test_reports_each_independent_cyclic_component_and_keeps_fixed_ones_quiet():
+    first = [("a", "b"), ("b", "a")]
+    second = [("c", "d"), ("d", "c")]
+    for edges, expected in [
+        (first + second, 2),
+        ([*first, ("c", "d")], 1),
+        ([("a", "b"), *second], 1),
+        ([("a", "b"), ("c", "d")], 0),
+    ]:
+        graph = ModuleGraph(modules=["a", "b", "c", "d"], depends=edges, roots=["a", "c"])
+        cycles = [p for p in inspect_graph(graph).problems if p.code == "cycle"]
+        assert len(cycles) == expected
+        if expected == 2:
+            assert sum(p.target in {"a", "b"} for p in cycles) == 1
+            assert sum(p.target in {"c", "d"} for p in cycles) == 1
+
+
+def test_reports_one_representative_not_every_circuit_within_a_component():
+    graph = ModuleGraph(
+        modules=["a", "b", "c"],
+        depends=[("a", "b"), ("b", "a"), ("a", "c"), ("c", "a")],
+        roots=["a"],
+    )
+    assert len([p for p in inspect_graph(graph).problems if p.code == "cycle"]) == 1
+
+
 def test_dangling_dependency():
     g = ModuleGraph(modules=["a"], depends=[("a", "ghost")], roots=["a"], name="x")
     assert_fires(inspect_graph(g), "dangling-dependency", ERROR)

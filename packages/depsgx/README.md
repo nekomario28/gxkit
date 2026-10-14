@@ -72,8 +72,10 @@ inspect: 6 problems (5 errors)
 ## Why it can be trusted
 
 Every check is proven to fire on a graph with the fault and to stay quiet on one
-without (`tests/`). Cycles come from `gxcore.graph.find_cycle` and dead code
-from reachability out of the roots — the same graph analysis that finds
+without (`tests/`). Cycles come from `gxcore.graph.strongly_connected_components`
+followed by `find_cycle`: one witness per cyclic component, so an earlier cycle
+cannot hide an independent one. This does not enumerate every circuit within a
+component. Dead code comes from reachability out of the roots — the same graph analysis that finds
 soft-locks in a game level.
 
 MIT licensed.
