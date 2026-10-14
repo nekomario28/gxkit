@@ -56,6 +56,7 @@ can ignore a code or change its severity; `--no-config` skips it.
 | a network topology | `netgx` | a public entry that reaches sensitive data |
 | an environment / config | `envgx` | a secret that carries a default |
 | a build pipeline | `pipegx` | a `needs` that names no step |
+| a random-seed manifest | `seedgx` | two streams that share a seed |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

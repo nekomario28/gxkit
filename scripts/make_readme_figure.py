@@ -40,6 +40,7 @@ TOOLS = [
     ("netgx", "networks", "public-reaches-sensitive"),
     ("envgx", "config", "secret-with-default"),
     ("pipegx", "pipelines", "cycle"),
+    ("seedgx", "seeds", "duplicate-seed"),
 ]
 
 

@@ -18,9 +18,9 @@ ship — with a storyboard image as the evidence.
 <img alt="python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
 </p>
 
-<p align="center"><img src="docs/assets/hero.gif" width="340" alt="A white core cube with fourteen coloured domain cubes orbiting it — one core, fourteen domains"></p>
+<p align="center"><img src="docs/assets/hero.gif" width="340" alt="A white core cube with fifteen coloured domain cubes orbiting it — one core, fifteen domains"></p>
 
-<p align="center"><sub>One core, fourteen domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
+<p align="center"><sub>One core, fifteen domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
 
 ![gxkit: one shared core, an inspect tool for every artifact domain](docs/assets/architecture.svg)
 
@@ -77,6 +77,7 @@ uv run gxkit codes              # every problem code and its severity
 | `netgx` | network topologies | a public entry that reaches sensitive data |
 | `envgx` | environment / config | a secret that carries a default |
 | `pipegx` | build pipelines | a `needs` that names no step |
+| `seedgx` | random-seed manifests | two streams that share a seed |
 
 Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`; the
 repository root has [`SKILL.md`](SKILL.md), the family skill that routes to them
@@ -108,7 +109,7 @@ $ echo $?
 ```
 
 The text says which cell; the storyboard image boxes it. That is the whole
-idea, repeated for fourteen domains.
+idea, repeated for fifteen domains.
 
 ## One core, thin tools
 
@@ -151,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nekomario28/gxkit@v0.7.0
+      - uses: nekomario28/gxkit@v0.8.0
         with:
           path: artifacts/          # a file, or a directory of *.py artifacts
           args: --json              # optional extra flags

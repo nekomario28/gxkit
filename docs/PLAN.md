@@ -146,6 +146,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P12 — `pipegx`.** Build pipelines: a `needs` that names no step, a cycle, a
   duplicate artifact, a goal nothing produces. *done*
 
+- **P13 — `seedgx`.** Random-seed manifests: a stream with no seed, a seed out
+  of range, two streams sharing a seed. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

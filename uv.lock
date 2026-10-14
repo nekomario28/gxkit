@@ -26,6 +26,7 @@ members = [
     "pipegx",
     "protogx",
     "schemagx",
+    "seedgx",
     "shadergx",
 ]
 
@@ -854,6 +855,7 @@ dependencies = [
     { name = "pipegx" },
     { name = "protogx" },
     { name = "schemagx" },
+    { name = "seedgx" },
     { name = "shadergx" },
 ]
 
@@ -873,6 +875,7 @@ requires-dist = [
     { name = "pipegx", editable = "packages/pipegx" },
     { name = "protogx", editable = "packages/protogx" },
     { name = "schemagx", editable = "packages/schemagx" },
+    { name = "seedgx", editable = "packages/seedgx" },
     { name = "shadergx", editable = "packages/shadergx" },
 ]
 
@@ -2007,6 +2010,21 @@ wheels = [
 name = "schemagx"
 version = "0.1.0"
 source = { editable = "packages/schemagx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
+]
+
+[[package]]
+name = "seedgx"
+version = "0.1.0"
+source = { editable = "packages/seedgx" }
 dependencies = [
     { name = "gxcore" },
     { name = "pillow" },

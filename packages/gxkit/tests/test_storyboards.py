@@ -34,6 +34,7 @@ EXAMPLES = {
     "netgx": ("good_network.py", "broken_network.py"),
     "envgx": ("good_env.py", "broken_env.py"),
     "pipegx": ("good_pipeline.py", "broken_pipeline.py"),
+    "seedgx": ("good_seed.py", "broken_seed.py"),
 }
 
 

@@ -124,6 +124,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("Pipeline",),
         ("STEPS", "GOALS"),
     ),
+    ToolSpec(
+        "seedgx",
+        "random-seed manifests",
+        "seedgx.tool",
+        ("seed", "SEED", "spec", "manifest", "seeds"),
+        ("SeedSpec",),
+        ("STREAMS", "DETERMINISTIC"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

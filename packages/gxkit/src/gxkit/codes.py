@@ -170,6 +170,14 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "no-steps": "info",
         "no-goals": "info",
     },
+    "seedgx": {
+        "missing-seed": "error",
+        "seed-out-of-range": "error",
+        "duplicate-stream": "error",
+        "duplicate-seed": "warn",
+        "non-deterministic": "info",
+        "no-streams": "info",
+    },
 }
 
 

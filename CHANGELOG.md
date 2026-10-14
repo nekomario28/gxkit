@@ -3,6 +3,15 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.0] — seedgx, the fifteenth tool
+
+See the [v0.8.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.8.0).
+
+### Added
+- `seedgx` — inspect a random-seed manifest: a stream with no seed, a seed
+  outside `0..2**32-1`, two streams sharing a seed, a duplicate stream, a
+  non-deterministic manifest.
+
 ## [0.7.0] — pipegx, the fourteenth tool
 
 See the [v0.7.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.7.0).

@@ -23,3 +23,4 @@ that the docs agree) live in `packages/gxkit/tests/`.
 | `netgx` | network topologies | `netgx.tool` | 6 | `broken_network.py`, `good_network.py` |
 | `envgx` | environment / config | `envgx.tool` | 8 | `broken_env.py`, `good_env.py` |
 | `pipegx` | build pipelines | `pipegx.tool` | 7 | `broken_pipeline.py`, `good_pipeline.py` |
+| `seedgx` | random-seed manifests | `seedgx.tool` | 6 | `broken_seed.py`, `good_seed.py` |
