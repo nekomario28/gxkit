@@ -3,6 +3,30 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.1] — publish-readiness audit fixes
+
+See the [v0.9.1 release](https://github.com/nekomario28/gxkit/releases/tag/v0.9.1).
+
+A `publish-readiness-audit` pass over the tree and the full history found no
+blockers and turned its two low-severity items into permanent guards.
+
+### Fixed
+- **Author attribution.** `gh pr merge --squash` authored one commit with the
+  GitHub *profile* display name, so it read `Yuu` instead of `nekomario28`.
+  Added a `.mailmap` and a guard that fails on any author outside the allowlist.
+
+### Added (guards)
+- `test_authors_are_canonicalised_through_the_mailmap` — a new unattributed
+  author must be listed, not silently accepted.
+- `test_the_readme_agent_prompt_is_installable` — the README's paste-into-agent
+  prompt names `llms.txt`, whose install line must point at a real package.
+- `test_the_coverage_floor_names_every_distribution` — `--cov-fail-under=100`
+  and the full `--cov=` set must be present in `scripts/check.sh` and CI.
+- `test_ffmpeg_bound_modules_are_not_excluded_from_coverage` — a `# pragma: no
+  cover` in `framegx`'s ffmpeg-bound modules would turn a missing capability
+  back into a silent pass; the 100% floor is what binds it (verified: 62%
+  without ffmpeg, 92% without the GL render tests).
+
 ## [0.9.0] — crongx, the sixteenth tool
 
 See the [v0.9.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.9.0).

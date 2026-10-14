@@ -124,6 +124,13 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
   environment, not the code: "12 collection errors on Python 3.10" turned out to
   be a venv built for another interpreter. Re-run in a clean, authoritative
   environment before you believe a defect.
+- **Let the coverage floor bind the optional capabilities.** A test that needs
+  ffmpeg or a GL context skips on a runner without it — so make the lines only
+  it covers the reason the floor fails when it does. Verified here: without
+  ffmpeg `framegx` coverage is 62% and `--cov-fail-under=100` fails; without the
+  GL render tests `shadergx` is 92% and fails. Do not add `# pragma: no cover`
+  to those lines; that is what turns a missing capability back into a silent
+  pass.
 
 ## 6. Pitfalls learned from the family
 

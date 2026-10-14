@@ -1,0 +1,7 @@
+# Canonical author identities.
+#
+# `gh pr merge --squash` authors the squash commit with the GitHub *profile*
+# display name, so one commit here is attributed to "Yuu". Map it back so
+# `git shortlog`, the contributors graph and `%aN` all agree with the local
+# identity. Anything not listed surfaces in the author guard.
+nekomario28 <206304251+nekomario28@users.noreply.github.com> Yuu <206304251+nekomario28@users.noreply.github.com>
