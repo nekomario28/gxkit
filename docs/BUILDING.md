@@ -167,6 +167,16 @@ is clutter.
 routing table as code — see `packages/gxkit`). Name the tool explicitly as the
 escape hatch.
 
+**Expose the codes as data, ship a config, wire a CI gate.** A `codes` command
+whose entries a test cross-checks against the source (so it cannot drift); a
+`.gxkit.toml` so an adopter can silence a code without editing the tool; and a
+reusable action that runs `inspect` as the gate — the exit code is the
+integration point. See [`PLAN.md`](PLAN.md) and [`RELEASING.md`](RELEASING.md).
+
+**A setup prompt, and an agent doc it can follow.** Two lines a person pastes
+into Claude Code / Codex / Cursor, naming `llms.txt` and saying install-then-use;
+the file must itself contain an explicit **Install** step or the chain breaks.
+
 The license must travel with the package: declare an SPDX expression
 (`license = "MIT"`) **and** a `LICENSE` file so the wheel carries it
 (`license-files`); the deprecated free-text `License: MIT` ships no file.
