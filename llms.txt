@@ -28,6 +28,9 @@ owns one domain; the review loop is written once.
   responses, unreachable states. `packages/protogx`
 - **shadergx** — fragment shaders: a compile error, a black / constant / NaN
   frame, and uniforms that never reach the output. `packages/shadergx`
+- **framegx** — rendered animations: a black or frozen picture, the wrong
+  length, or missing/silent sound — the output a scene inspector cannot see.
+  `packages/framegx`
 
 That is the whole planned set.
 
@@ -62,6 +65,7 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/schem
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/docgx" docgx inspect page.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/protogx" protogx inspect proto.py
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/shadergx" shadergx inspect shader.py
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/framegx" framegx inspect clip.py
 ```
 
 Needs Python 3.10+; `chartgx` also needs matplotlib and numpy.

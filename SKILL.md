@@ -37,6 +37,7 @@ output, so the tool renders it, reads the pixels, and reports problems as codes.
 | `Schema(tables, foreign_keys)` | `schemagx` | a foreign-key cycle |
 | `Page(title, blocks)` | `docgx` | text that overflows the canvas |
 | GLSL fragment shader | `shadergx` | a uniform that never reaches the output |
+| a rendered animation | `framegx` | a frozen or black render |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

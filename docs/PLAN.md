@@ -1,6 +1,6 @@
 # Plan — an agent-native review loop, and the tools built on it
 
-Status: complete. All planned tools landed (P0–P4). This file is the durable
+Status: complete. All planned tools landed (P0–P5). This file is the durable
 plan; keep it current if new tools are added.
 
 How to add a tool (the checklist, the contract, the extraction rule) is in
@@ -116,14 +116,13 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   cannot see the pixels — a uniform that is set but never reaches the output
   (grounded in the GLSL compiler removing unused uniforms). Tests skip where no
   GL context exists. *done*
-- **P3 — `shadergx`.** Shader / GPU graphics: render a fixed test pattern,
-  inspect for all-black / NaN (via float target), constant output, expected vs
-  actual coverage. Needs a headless GL stack; budget for it.
-- **P4 — `docgx`.** Document / slide layout: build HTML or Typst, render, then
-  reuse the text-overlap / clipping / overflow checks from `gxcore.layout`.
-  Mostly a new loader + renderer.
-- **P5 — publish.** Names checked on PyPI/npm, core released, tools released,
-  root `llms.txt` directory.
+- **P5 — `framegx`, and pair with ManimGX.** The rendered *file*: black, frozen,
+  wrong length, missing or silent sound — the failures a scene-level inspector
+  cannot see. ManimGX makes the animation and checks the scene; `framegx` checks
+  the encoded result, so `manimgx render scene.py && framegx inspect clip.py`
+  closes the loop. Uses ffmpeg. *done*
+- **P6 — publish.** The repository is public with tags and releases; PyPI/npm
+  names are not yet claimed.
 
 ## Definition of done
 

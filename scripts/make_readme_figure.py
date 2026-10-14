@@ -35,6 +35,7 @@ TOOLS = [
     ("schemagx", "schemas", "cyclic-foreign-key"),
     ("authzgx", "permissions", "escalation"),
     ("shadergx", "shaders", "black-output"),
+    ("framegx", "animations", "frozen"),
 ]
 
 
@@ -49,8 +50,8 @@ def esc(s: str) -> str:
 
 
 def build() -> str:
-    cx, cy, R = 712.0, 316.0, 222.0
-    bw, bh = 146.0, 58.0
+    cx, cy, R = 712.0, 320.0, 232.0
+    bw, bh = 140.0, 58.0
 
     p: list[str] = []
     p.append(
@@ -98,8 +99,8 @@ def build() -> str:
              'and a storyboard image as evidence</text>')
 
     # ---- right: the core and its tools ------------------------------------ #
-    p.append(f'<text x="712" y="46" font-size="15" fill="{MUTED}" text-anchor="middle">'
-             'one core \u00b7 nine domains</text>')
+    p.append(f'<text x="712" y="44" font-size="15" fill="{MUTED}" text-anchor="middle">'
+             f'one core \u00b7 {len(TOOLS)} domains</text>')
 
     pos = []
     for i in range(len(TOOLS)):

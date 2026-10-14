@@ -44,10 +44,16 @@ Every tool has the same contract, so an agent learns it once:
 | `schemagx` | schemas | a foreign-key cycle |
 | `docgx` | pages / slides | text that overflows the canvas |
 | `shadergx` | fragment shaders | a uniform that never reaches the output |
+| `framegx` | rendered animations | a render that is frozen or black |
 
 Each tool also ships `README.md`, `AGENTS.md`, `llms.txt` and `SKILL.md`; the
 repository root has [`SKILL.md`](SKILL.md), the family skill that routes to them
 all.
+
+> **Pairs with ManimGX.** A renderer makes the 3D animation; gxkit checks the
+> result. ManimGX's `inspect` reads the *scene* before rendering; `framegx`
+> reads the *encoded file* after — black, frozen, wrong length, silent. So
+> `manimgx render scene.py && framegx inspect clip.py` closes the loop.
 
 ## See it catch something
 
@@ -68,7 +74,7 @@ $ echo $?
 ```
 
 The text says which cell; the storyboard image boxes it. That is the whole
-idea, repeated for nine domains.
+idea, repeated for ten domains.
 
 ## One core, thin tools
 
@@ -103,6 +109,7 @@ matplotlib, and `shadergx` needs a GL context (Mesa/EGL or a GPU).
 uv sync --all-packages
 uv run pytest
 uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
+uv run framegx  inspect packages/framegx/examples/frozen_clip.py   # exit 1
 python scripts/prepublish_check.py      # no credentials or machine paths
 python scripts/make_readme_figure.py    # regenerate the architecture figure
 python scripts/make_math_figure.py      # regenerate the 3D soft-lock figure

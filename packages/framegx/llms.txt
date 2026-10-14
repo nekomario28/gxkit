@@ -1,0 +1,41 @@
+# framegx
+
+> Inspect a rendered animation for black, frozen, wrong-length or sound-less output. Reports problems with stable codes and exit codes, and writes a contact-sheet storyboard.
+
+framegx is one of the `gxkit` agent-native review tools. ManimGX checks the
+scene before rendering; framegx checks the rendered file — the part a scene
+inspector cannot see.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/framegx" framegx --help
+uv tool install ./packages/framegx      # from a clone
+```
+
+Needs Python 3.10+ and `ffmpeg` / `ffprobe` on PATH.
+
+## Use
+
+```sh
+framegx inspect clip.py            # report + contact sheet, exit 1 on any error
+framegx inspect clip.py --json
+framegx inspect clip.py --no-storyboard
+```
+
+A clip file defines `video` (a `framegx.Video`) or module-level `PATH` /
+`EXPECTED_DURATION` / `EXPECTED_FPS` / `EXPECTED_SIZE` / `EXPECT_AUDIO`.
+
+```python
+import framegx as f
+
+video = f.Video("out.mp4", expected_duration=9.0, expect_audio=True)
+```
+
+## Checks
+
+error: `missing-file`, `probe-error`, `no-frames`, `all-black`, `frozen`.
+warn: `single-color`, `no-motion`, `duration-mismatch`, `wrong-fps`,
+`wrong-size`, `no-audio`, `silent-audio`.
+
+Full documentation is in `README.md`.

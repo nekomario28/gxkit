@@ -1,0 +1,26 @@
+[project]
+name = "framegx"
+version = "0.1.0"
+description = "Inspect a rendered animation for black, frozen, wrong-length or sound-less output — codes, exit codes, contact-sheet storyboards."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "gxcore",
+    "numpy>=1.23",
+    "Pillow>=9",
+]
+
+[project.scripts]
+framegx = "framegx.tool:main"
+
+[tool.uv.sources]
+gxcore = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/framegx"]
