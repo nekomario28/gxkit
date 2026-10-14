@@ -13,6 +13,7 @@ members = [
     "apigx",
     "authzgx",
     "chartgx",
+    "crongx",
     "depsgx",
     "docgx",
     "envgx",
@@ -528,6 +529,21 @@ toml = [
 ]
 
 [[package]]
+name = "crongx"
+version = "0.1.0"
+source = { editable = "packages/crongx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
+]
+
+[[package]]
 name = "cycler"
 version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
@@ -844,6 +860,7 @@ dependencies = [
     { name = "apigx" },
     { name = "authzgx" },
     { name = "chartgx" },
+    { name = "crongx" },
     { name = "depsgx" },
     { name = "docgx" },
     { name = "envgx" },
@@ -864,6 +881,7 @@ requires-dist = [
     { name = "apigx", editable = "packages/apigx" },
     { name = "authzgx", editable = "packages/authzgx" },
     { name = "chartgx", editable = "packages/chartgx" },
+    { name = "crongx", editable = "packages/crongx" },
     { name = "depsgx", editable = "packages/depsgx" },
     { name = "docgx", editable = "packages/docgx" },
     { name = "envgx", editable = "packages/envgx" },

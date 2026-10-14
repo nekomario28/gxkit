@@ -289,6 +289,7 @@ DOCUMENTED_EXAMPLES = {
     "envgx": "broken_env.py",
     "pipegx": "broken_pipeline.py",
     "seedgx": "broken_seed.py",
+    "crongx": "broken_schedule.py",
 }
 
 
@@ -356,6 +357,11 @@ _NUMBER_WORDS = {
     13: "thirteen",
     14: "fourteen",
     15: "fifteen",
+    16: "sixteen",
+    17: "seventeen",
+    18: "eighteen",
+    19: "nineteen",
+    20: "twenty",
 }
 
 

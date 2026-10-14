@@ -149,6 +149,9 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P13 — `seedgx`.** Random-seed manifests: a stream with no seed, a seed out
   of range, two streams sharing a seed. *done*
 
+- **P14 — `crongx`.** Schedules: two runs holding the same resource at once,
+  a duplicate run, a negative time. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

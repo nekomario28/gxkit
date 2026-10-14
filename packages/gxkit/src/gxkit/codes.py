@@ -178,6 +178,14 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "non-deterministic": "info",
         "no-streams": "info",
     },
+    "crongx": {
+        "overlap": "error",
+        "duplicate-run": "error",
+        "negative-start": "error",
+        "negative-duration": "error",
+        "zero-duration": "info",
+        "no-runs": "info",
+    },
 }
 
 

@@ -21,6 +21,16 @@ gxkit codes                   # every problem code and its severity
 Or name the tool: `gxkit inspect levelgx level.py`. A `.gxkit.toml` up the tree
 can ignore a code or change its severity; `--no-config` skips it.
 
+### Write the model from the source of truth
+
+An inspection that runs against a hand-copied model passes when the model goes stale. Generate
+it from the artifact where you can - the environment variables the code reads, the imports, the
+route table - and keep a `--check` mode that fails when the written model no longer matches what
+the sources imply. Hand-write only what encodes a decision rather than a fact: a state machine,
+a protocol, a network's intent. On `rust-browser-lab` this turned an `unused-variable` report
+into three real bugs in one sitting - a launch that truncated the saved session, a trim policy
+that could never fire, and a content-process entry point compiled out of the release build.
+
 ## The contract (every tool, identical)
 
 ```sh
@@ -105,6 +115,7 @@ existence has to be an assertion.**
 | an environment / config | `envgx` | a secret that carries a default |
 | a build pipeline | `pipegx` | a `needs` that names no step |
 | a random-seed manifest | `seedgx` | two streams that share a seed |
+| a schedule of runs | `crongx` | two runs that hold a resource at once |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

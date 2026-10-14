@@ -132,6 +132,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("SeedSpec",),
         ("STREAMS", "DETERMINISTIC"),
     ),
+    ToolSpec(
+        "crongx",
+        "schedules",
+        "crongx.tool",
+        ("schedule", "SCHEDULE", "cron", "plan"),
+        ("Schedule",),
+        ("RUNS",),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

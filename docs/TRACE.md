@@ -24,3 +24,4 @@ that the docs agree) live in `packages/gxkit/tests/`.
 | `envgx` | environment / config | `envgx.tool` | 8 | `broken_env.py`, `good_env.py` |
 | `pipegx` | build pipelines | `pipegx.tool` | 7 | `broken_pipeline.py`, `good_pipeline.py` |
 | `seedgx` | random-seed manifests | `seedgx.tool` | 6 | `broken_seed.py`, `good_seed.py` |
+| `crongx` | schedules | `crongx.tool` | 6 | `broken_schedule.py`, `good_schedule.py` |

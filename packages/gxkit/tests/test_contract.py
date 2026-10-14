@@ -33,6 +33,7 @@ EXAMPLES = {
     "envgx": ("good_env.py", "broken_env.py"),
     "pipegx": ("good_pipeline.py", "broken_pipeline.py"),
     "seedgx": ("good_seed.py", "broken_seed.py"),
+    "crongx": ("good_schedule.py", "broken_schedule.py"),
 }
 
 

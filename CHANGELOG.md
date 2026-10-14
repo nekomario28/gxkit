@@ -3,6 +3,15 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.0] — crongx, the sixteenth tool
+
+See the [v0.9.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.9.0).
+
+### Added
+- `crongx` — inspect a schedule of timed runs: two runs holding the same
+  resource at once, a duplicate run, a negative start or duration, a run that
+  never runs; the interval overlap is cross-checked against `gxcore.geometry`.
+
 ## [0.8.0] — seedgx, the fifteenth tool
 
 See the [v0.8.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.8.0).
