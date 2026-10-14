@@ -19,6 +19,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import convert_items
+
 TYPES = ("str", "int", "float", "bool")
 
 
@@ -63,25 +65,16 @@ def _as_variable(value: object) -> Variable | None:
 
 def _as_environment(value: object) -> Environment | None:
     if isinstance(value, Environment):
+        value.variables = convert_items(value.variables, _as_variable, field="variables")
         return value
     if isinstance(value, dict) and "variables" in value:
-        variables = [_as_variable(item) for item in value["variables"]]
-        if any(variable is None for variable in variables):
-            return None
         return Environment(
-            variables=[variable for variable in variables if variable is not None],
+            variables=convert_items(value["variables"], _as_variable, field="variables"),
             references=[str(r) for r in value.get("references", [])],
             name=str(value.get("name", "env")),
         )
     if isinstance(value, (list, tuple)):
-        built: list[Variable] = []
-        for item in value:
-            variable = _as_variable(item)
-            if variable is None:
-                return None
-            built.append(variable)
-        if built:
-            return Environment(variables=built)
+        return Environment(variables=convert_items(value, _as_variable, field="variables"))
     return None
 
 
@@ -107,11 +100,11 @@ def load_environment(path: str | Path) -> tuple[Environment, object]:
     if env is None:
         declaration = getattr(module, "VARIABLES", None)
         if declaration is not None:
-            variables = [
-                variable
-                for variable in (_from_declaration(k, v) for k, v in dict(declaration).items())
-                if variable is not None
-            ]
+            variables = convert_items(
+                list(dict(declaration).items()),
+                lambda item: _from_declaration(item[0], item[1]),
+                field="VARIABLES",
+            )
             env = Environment(
                 variables=variables,
                 references=[str(r) for r in getattr(module, "REFERENCES", [])],

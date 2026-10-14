@@ -26,7 +26,13 @@ schedule = c.Schedule(
 ```
 
 A run is `(name, start, duration, resource)` or a mapping with those keys. Or
-module-level `RUNS` / `NAME`.
+module-level `RUNS` / `NAME`. Omitted tuple fields keep the `Run` defaults.
+
+Occupancy is half-open: adjacent runs do not collide, and zero duration occupies
+nothing. Start, duration and their sum must be finite before interval comparison.
+Negative times are errors; invalid or empty intervals do not produce overlaps.
+A malformed member rejects the artifact with its field/index (exit 2); it is
+never discarded while the remaining runs are inspected.
 
 ## The contract
 
@@ -55,13 +61,15 @@ inspect: 4 problems (4 errors)
 | `duplicate-run` | error | the same run name declared twice |
 | `negative-start` | error | a run starts before zero |
 | `negative-duration` | error | a run has a negative duration |
+| `non-finite-time` | error | start, duration or computed end is not finite |
 | `zero-duration` | info | a run has zero duration (it never runs) |
 | `no-runs` | info | the schedule declares no runs |
 
 ## Why it can be trusted
 
-Every check is proven to fire on a schedule with the fault and to stay quiet on
-one without (`tests/`); the interval overlap is cross-checked against the shared
-box-overlap definition on random runs.
+Tests pin each check's firing and quiet cases. Positive finite intervals are
+cross-checked against box overlap; separate regressions cover empty, negative,
+non-finite and adjacent intervals. These are declaration checks, not a proof
+that a real scheduler acquires and releases resources correctly.
 
 MIT licensed.

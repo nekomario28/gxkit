@@ -18,7 +18,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, TypeVar
 
 DEFAULT_BUILDERS = (
     "build",
@@ -30,6 +30,29 @@ DEFAULT_BUILDERS = (
     "make_level",
     "level_from_rows",
 )
+
+
+T = TypeVar("T")
+
+
+class InvalidArtifact(ValueError):
+    """A recognised declaration contains invalid data; do not try another shape."""
+
+
+def convert_items(values: object, convert: Callable[[Any], T | None], *, field: str) -> list[T]:
+    """Convert every declared member or reject it with its field and index."""
+    if not isinstance(values, (list, tuple)):
+        raise InvalidArtifact(f"{field}: expected a list or tuple")
+    result: list[T] = []
+    for index, value in enumerate(values):
+        try:
+            item = convert(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise InvalidArtifact(f"{field}[{index}]: {exc}") from exc
+        if item is None:
+            raise InvalidArtifact(f"{field}[{index}]: invalid declaration {value!r}")
+        result.append(item)
+    return result
 
 
 _MODULES: ContextVar[dict[Path, ModuleType] | None] = ContextVar("gx_modules", default=None)
@@ -81,6 +104,8 @@ def resolve(
             return value
         try:
             return convert(value)
+        except InvalidArtifact:
+            raise
         except Exception:
             return None
 

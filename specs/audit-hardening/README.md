@@ -10,16 +10,16 @@ consumer run. A green coverage percentage is supplemental evidence, not the goal
 ## Next Agent Prompt
 
 You are implementing this hardening plan on `fix/audit-gates`, based on `3f89316`.
-Resume at [strict inputs](slices/02-inputs.md), then proceed through the checklist
+Resume at [behavioral guards](slices/03-guards.md), then proceed through the checklist
 without stopping at intermediate commits. Update this prompt and the evidence
 ledger after each checkpoint. Do not add tools or release tags. Preserve clean
 inputs, stable existing codes, optional storyboards and the 100% statement floor.
 
-Status: shared gates implemented and focused regressions pass. No blockers. Baseline v1 will be rejected;
+Status: shared gates and strict input/boundary repairs pass the local gates. No blockers. Baseline v1 will be rejected;
 users explicitly recreate accepted debt using `--write-baseline` (no migration).
 
 - [x] [1. Shared gates](slices/01-gates.md): A01, A02, A03.
-- [ ] [2. Strict inputs and boundaries](slices/02-inputs.md): A04–A09, A11.
+- [x] [2. Strict inputs and boundaries](slices/02-inputs.md): A04–A09, A11.
 - [ ] [3. Behavioral guards](slices/03-guards.md): A10 and mutation proofs.
 - [ ] [4. Consumer and CI verification](slices/04-verification.md).
 
@@ -53,6 +53,12 @@ Shared gate checkpoint: exit/directory test red in all three exit variants,
 execution-counter test red (2 vs 1), duplicate-occurrence test red, and replaced
 partner baseline test red; each now green. Same-size/source-edit regression also
 went red before bypassing bytecode. Existing suite: 1335 pass; lint/types pass.
+
+Input checkpoint: five public-CLI member tests went red, then green after
+strict conversion. Boundary regressions exposed tuple-default, empty-interval,
+non-finite-time, fractional/boolean/string seed and API path-boundary defects;
+now green. Empty-set reference regressions will also be mutation-proven before
+closeout. Strict local gate: 100% statements; lint/types/security checks pass.
 
 Record named red/green regression results here, not full terminal transcripts.
 Full logs belong outside the repository. Decisions belong in [choices](choices.md).

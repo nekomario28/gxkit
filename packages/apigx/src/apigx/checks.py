@@ -52,7 +52,9 @@ def inspect_api(api: API, name: str | None = None) -> Report:
                     label=label,
                 )
             )
-        if api.base and not endpoint.path.startswith(api.base):
+        base = api.base.rstrip("/")
+        under_base = endpoint.path == base or endpoint.path.startswith(base + "/")
+        if api.base and not under_base:
             out.append(
                 Problem(
                     WARN,

@@ -7,14 +7,16 @@
         deterministic=True,
     )
 
-A run is reproducible when every stream is seeded, no two streams share a seed,
-and the seed is a real 32-bit value.
+This manifest checks declarations, not runtime reproducibility. Seeds must be
+integers in the unsigned 32-bit range; their meaning depends on the RNG.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from gxcore.loading import InvalidArtifact, convert_items
 
 SEED_MAX = 2**32 - 1
 
@@ -35,6 +37,14 @@ class SeedSpec:
         return [stream.name for stream in self.streams]
 
 
+def _seed(value: object) -> int | None:
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise InvalidArtifact("seed: expected an integer or None (no coercion)")
+    return value
+
+
 def _as_stream(value: object) -> Stream | None:
     if isinstance(value, Stream):
         return value
@@ -45,34 +55,27 @@ def _as_stream(value: object) -> Stream | None:
         if name is None:
             return None
         seed = value.get("seed")
-        return Stream(str(name), int(seed) if seed is not None else None)
+        return Stream(str(name), _seed(seed))
     if isinstance(value, (tuple, list)) and value:
+        if len(value) > 2:
+            return None
         seed = value[1] if len(value) > 1 else None
-        return Stream(str(value[0]), int(seed) if seed is not None else None)
+        return Stream(str(value[0]), _seed(seed))
     return None
 
 
 def _as_spec(value: object) -> SeedSpec | None:
     if isinstance(value, SeedSpec):
+        value.streams = convert_items(value.streams, _as_stream, field="streams")
         return value
     if isinstance(value, dict) and "streams" in value:
-        streams = [_as_stream(item) for item in value["streams"]]
-        if any(stream is None for stream in streams):
-            return None
         return SeedSpec(
-            streams=[stream for stream in streams if stream is not None],
+            streams=convert_items(value["streams"], _as_stream, field="streams"),
             deterministic=bool(value.get("deterministic", True)),
             name=str(value.get("name", "seed")),
         )
     if isinstance(value, (list, tuple)):
-        built: list[Stream] = []
-        for item in value:
-            stream = _as_stream(item)
-            if stream is None:
-                return None
-            built.append(stream)
-        if built:
-            return SeedSpec(streams=built)
+        return SeedSpec(streams=convert_items(value, _as_stream, field="streams"))
     return None
 
 
@@ -91,7 +94,7 @@ def load_spec(path: str | Path) -> tuple[SeedSpec, object]:
         streams = getattr(module, "STREAMS", None)
         if streams is not None:
             spec = SeedSpec(
-                streams=[s for s in (_as_stream(item) for item in streams) if s is not None],
+                streams=convert_items(streams, _as_stream, field="STREAMS"),
                 deterministic=bool(getattr(module, "DETERMINISTIC", True)),
             )
     if spec is None:

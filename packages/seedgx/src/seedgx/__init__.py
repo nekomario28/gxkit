@@ -28,4 +28,4 @@ __all__ = [
     "render_image",
     "spec_from_parts",
 ]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

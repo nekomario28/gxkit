@@ -28,7 +28,7 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
     seen: set[tuple[str, str]] = set()
     for src, dst in net.edges:
         for node in (src, dst):
-            if declared and node not in declared:
+            if node not in declared:
                 out.append(
                     Problem(
                         ERROR, "dangling-edge", f"edge {src} → {dst} names unknown node {node!r}"

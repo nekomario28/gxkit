@@ -1,8 +1,4 @@
-"""seedgx's domain knowledge: is this run reproducible?
-
-A run is reproducible when every stream is seeded with a real 32-bit value and no
-two streams share a seed (shared seeds correlate their randomness).
-"""
+"""seedgx checks seed declarations, not actual RNG/runtime reproducibility."""
 
 from __future__ import annotations
 
@@ -53,6 +49,16 @@ def inspect_spec(spec: SeedSpec, name: str | None = None) -> Report:
                     label=stream.name,
                 )
             )
+        elif not isinstance(stream.seed, int) or isinstance(stream.seed, bool):
+            out.append(
+                Problem(
+                    ERROR,
+                    "invalid-seed",
+                    f"stream {stream.name!r} needs an integer seed, not {stream.seed!r}",
+                    target=target,
+                    label=stream.name,
+                )
+            )
         elif stream.seed < 0 or stream.seed > SEED_MAX:
             out.append(
                 Problem(
@@ -70,7 +76,7 @@ def inspect_spec(spec: SeedSpec, name: str | None = None) -> Report:
                         WARN,
                         "duplicate-seed",
                         f"stream {stream.name!r} reuses the seed of {seen_seeds[stream.seed]!r} "
-                        "— their randomness is correlated",
+                        "— matching RNGs may generate the same sequence",
                         target=target,
                         label=stream.name,
                     )

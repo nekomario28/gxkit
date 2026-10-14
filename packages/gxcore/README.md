@@ -35,6 +35,9 @@ def main(argv=None):
 Routing and inspection share one module execution within an invocation; a later
 invocation reads the current source. The loader must not reuse stale bytecode.
 
+Recognised collection declarations convert every member or reject the artifact
+with a field/index. A conversion error must not trigger another shape's fallback.
+
 A baseline records occurrences, not a set of display locations. Checks that
 report relationships supply stable identities independent of numeric prose and
 layout order. Baseline format 2 rejects older records: recreate an accepted

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from apigx import API, Endpoint, api_from_parts, inspect_api, load_api
 from gxcore import ERROR, INFO, WARN
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires, assert_quiet
 
 
@@ -106,7 +108,8 @@ def test_endpoint_and_api_converters():
     api = API()
     assert _as_api(api) is api
     assert _as_api([("GET", "/v1/x")]).routes() == [("GET", "/v1/x")]
-    assert _as_api([42]) is None
+    with pytest.raises(InvalidArtifact, match=r"endpoints\[0\]"):
+        _as_api([42])
     assert _as_api(42) is None
 
 

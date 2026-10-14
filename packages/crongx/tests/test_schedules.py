@@ -5,9 +5,11 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
+import pytest
 from crongx import Run, Schedule, inspect_schedule, load_schedule, schedule_from_parts
 from gxcore import ERROR, INFO
 from gxcore.geometry import overlap as box_overlap
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires, assert_quiet
 
 
@@ -113,8 +115,10 @@ def test_converters():
     schedule = Schedule(runs=[run])
     assert _as_schedule(schedule) is schedule
     assert _as_schedule([("a",)]) is not None
-    assert _as_schedule([42]) is None
-    assert _as_schedule({"runs": [42]}) is None
+    with pytest.raises(InvalidArtifact, match=r"runs\[0\]"):
+        _as_schedule([42])
+    with pytest.raises(InvalidArtifact, match=r"runs\[0\]"):
+        _as_schedule({"runs": [42]})
     assert _as_schedule(42) is None
 
 

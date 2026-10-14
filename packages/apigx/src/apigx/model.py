@@ -20,6 +20,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import convert_items
+
 MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
 
 
@@ -68,31 +70,24 @@ def _as_endpoint(value: object) -> Endpoint | None:
             statuses=[int(s) for s in value.get("statuses", [])],
             deprecated=bool(value.get("deprecated", False)),
         )
-    if isinstance(value, (tuple, list)) and len(value) >= 2:
+    if isinstance(value, (tuple, list)) and len(value) == 2:
         return Endpoint(str(value[0]), str(value[1]))
     return None
 
 
 def _as_api(value: object) -> API | None:
     if isinstance(value, API):
+        value.endpoints = convert_items(value.endpoints, _as_endpoint, field="endpoints")
         return value
     if isinstance(value, dict) and "endpoints" in value:
-        endpoints = [e for e in (_as_endpoint(v) for v in value["endpoints"]) if e]
         return API(
-            endpoints=endpoints,
+            endpoints=convert_items(value["endpoints"], _as_endpoint, field="endpoints"),
             base=str(value.get("base", "/v1")),
             name=str(value.get("name", "api")),
             auth_schemes=list(value.get("auth_schemes", [])),
         )
     if isinstance(value, (list, tuple)):
-        built: list[Endpoint] = []
-        for item in value:
-            endpoint = _as_endpoint(item)
-            if endpoint is None:
-                return None
-            built.append(endpoint)
-        if built:
-            return API(endpoints=built)
+        return API(endpoints=convert_items(value, _as_endpoint, field="endpoints"))
     return None
 
 

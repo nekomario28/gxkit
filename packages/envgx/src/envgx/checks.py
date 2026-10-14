@@ -75,7 +75,7 @@ def inspect_environment(env: Environment, name: str | None = None) -> Report:
             )
 
     for reference in env.references:
-        if declared and reference not in declared:
+        if reference not in declared:
             out.append(
                 Problem(
                     ERROR,
