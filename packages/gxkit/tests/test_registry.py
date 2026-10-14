@@ -102,3 +102,16 @@ def test_inspect_undetectable_exits_2(tmp_path, capsys):
     src.write_text("hello = 1\n")
     assert main(["inspect", str(src)]) == 2
     assert "could not tell" in capsys.readouterr().err
+
+
+def test_inspect_a_directory_runs_each_artifact(capsys):
+    examples = (__import__("pathlib").Path(__file__).resolve().parents[2]
+                / "levelgx" / "examples")
+    rc = main(["inspect", str(examples), "--no-storyboard"])
+    assert rc == 1                       # the soft-lock example is in there
+    assert "levelgx" in capsys.readouterr().err
+
+
+def test_inspect_empty_directory_exits_2(tmp_path, capsys):
+    assert main(["inspect", str(tmp_path)]) == 2
+    assert "no *.py artifacts" in capsys.readouterr().err

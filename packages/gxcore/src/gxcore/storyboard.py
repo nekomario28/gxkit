@@ -73,7 +73,10 @@ def annotate(
     for n, p in enumerate(sorted(problems, key=sort_key), start=1):
         if p.bbox is None:
             continue
-        key = tuple(round(v) for v in p.bbox)
+        key: tuple[float, float, float, float] = (
+            float(round(p.bbox[0])), float(round(p.bbox[1])),
+            float(round(p.bbox[2])), float(round(p.bbox[3])),
+        )
         groups.setdefault(key, []).append(n)
         representative.setdefault(key, p)
 

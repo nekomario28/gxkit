@@ -75,7 +75,7 @@ def load_shader(path: str | Path) -> tuple[Shader, object]:
             shader = Shader(
                 fragment=fragment,
                 uniforms=dict(getattr(module, "UNIFORMS", getattr(module, "uniforms", {}))),
-                size=tuple(size),
+                size=(int(size[0]), int(size[1])),
                 time=float(getattr(module, "TIME", getattr(module, "time", 0.0))),
             )
     if shader is None:
@@ -95,4 +95,4 @@ def shader_from_source(
     name: str = "shader",
 ) -> Shader:
     return Shader(fragment=fragment, uniforms=dict(uniforms or {}),
-                  size=tuple(size), time=time, name=name)
+                  size=(int(size[0]), int(size[1])), time=time, name=name)

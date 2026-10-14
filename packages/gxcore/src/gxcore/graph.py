@@ -10,16 +10,17 @@ means.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from typing import Hashable, Iterable, Iterator, Mapping
+from typing import Hashable, Iterable, Iterator, Mapping, TypeVar
 
-Adjacency = Mapping[Hashable, Iterable[Hashable]]
+_H = TypeVar("_H", bound=Hashable)
+Adjacency = Mapping[_H, Iterable[_H]]
 
 
-def _norm(edges: Adjacency) -> dict[Hashable, list[Hashable]]:
+def _norm(edges: Adjacency[_H]) -> dict[_H, list[_H]]:
     return {u: list(vs) for u, vs in edges.items()}
 
 
-def reachable(edges: Adjacency, starts: Iterable[Hashable]) -> set[Hashable]:
+def reachable(edges: Adjacency[_H], starts: Iterable[_H]) -> set[_H]:
     """Everything reachable forward from ``starts``."""
     e = _norm(edges)
     seen = set(starts)
@@ -33,15 +34,15 @@ def reachable(edges: Adjacency, starts: Iterable[Hashable]) -> set[Hashable]:
     return seen
 
 
-def reverse(edges: Adjacency) -> dict[Hashable, list[Hashable]]:
-    r: dict[Hashable, list[Hashable]] = defaultdict(list)
+def reverse(edges: Adjacency[_H]) -> dict[_H, list[_H]]:
+    r: dict[_H, list[_H]] = defaultdict(list)
     for u, vs in _norm(edges).items():
         for v in vs:
             r[v].append(u)
     return dict(r)
 
 
-def can_reach(edges: Adjacency, targets: Iterable[Hashable]) -> set[Hashable]:
+def can_reach(edges: Adjacency[_H], targets: Iterable[_H]) -> set[_H]:
     """Everything from which some target is reachable (reverse BFS)."""
     r = reverse(edges)
     seen = set(targets)
@@ -55,7 +56,7 @@ def can_reach(edges: Adjacency, targets: Iterable[Hashable]) -> set[Hashable]:
     return seen
 
 
-def distances(edges: Adjacency, start: Hashable) -> dict[Hashable, int]:
+def distances(edges: Adjacency[_H], start: _H) -> dict[_H, int]:
     """Shortest-path distance from ``start`` to every reachable node."""
     e = _norm(edges)
     dist = {start: 0}
@@ -69,12 +70,12 @@ def distances(edges: Adjacency, start: Hashable) -> dict[Hashable, int]:
     return dist
 
 
-def shortest_path(edges: Adjacency, start: Hashable, target: Hashable) -> list[Hashable] | None:
+def shortest_path(edges: Adjacency[_H], start: _H, target: _H) -> list[_H] | None:
     """A shortest path ``start -> target`` as a list of nodes, or None."""
     if start == target:
         return [start]
     e = _norm(edges)
-    parent: dict[Hashable, Hashable] = {start: start}
+    parent: dict[_H, _H] = {start: start}
     q = deque([start])
     while q:
         u = q.popleft()
@@ -91,10 +92,10 @@ def shortest_path(edges: Adjacency, start: Hashable, target: Hashable) -> list[H
 
 
 def traps(
-    edges: Adjacency,
-    starts: Iterable[Hashable],
-    targets: Iterable[Hashable],
-) -> set[Hashable]:
+    edges: Adjacency[_H],
+    starts: Iterable[_H],
+    targets: Iterable[_H],
+) -> set[_H]:
     """Reachable nodes from which no target can be reached.
 
     This is the soft-lock set: the agent can get in, but the goal is gone. It is
@@ -106,26 +107,27 @@ def traps(
     return r - safe - targets
 
 
-def unreachable(edges: Adjacency, starts: Iterable[Hashable], nodes: Iterable[Hashable]) -> set[Hashable]:
-    return set(nodes) - reachable(edges, starts)
+def unreachable(edges: Adjacency[_H], starts: Iterable[_H], nodes: Iterable[_H]) -> set[_H]:
+    reached = reachable(edges, starts)
+    return set(nodes) - reached
 
 
-def terminals(edges: Adjacency, nodes: Iterable[Hashable]) -> list[Hashable]:
+def terminals(edges: Adjacency[_H], nodes: Iterable[_H]) -> list[_H]:
     """Nodes with no outgoing edge."""
     e = _norm(edges)
     return [n for n in nodes if not e.get(n)]
 
 
-def weak_components(edges: Adjacency) -> list[set[Hashable]]:
+def weak_components(edges: Adjacency[_H]) -> list[set[_H]]:
     """Connected components ignoring edge direction."""
-    und: dict[Hashable, set[Hashable]] = defaultdict(set)
+    und: dict[_H, set[_H]] = defaultdict(set)
     for u, vs in _norm(edges).items():
         und[u]
         for v in vs:
             und[u].add(v)
             und[v].add(u)
-    seen: set[Hashable] = set()
-    out: list[set[Hashable]] = []
+    seen: set[_H] = set()
+    out: list[set[_H]] = []
     for node in und:
         if node in seen:
             continue
@@ -143,7 +145,7 @@ def weak_components(edges: Adjacency) -> list[set[Hashable]]:
     return out
 
 
-def find_cycle(edges: Adjacency) -> list[Hashable] | None:
+def find_cycle(edges: Adjacency[_H]) -> list[_H] | None:
     """Any cycle, as a node list ending where it starts, or None.
 
     Iterative on purpose: a deep chain (thousands of modules) must not hit the
@@ -151,13 +153,13 @@ def find_cycle(edges: Adjacency) -> list[Hashable] | None:
     """
     e = _norm(edges)
     WHITE, GREY, BLACK = 0, 1, 2
-    color: dict[Hashable, int] = defaultdict(int)
+    color: dict[_H, int] = defaultdict(int)
     for start in list(e):
         if color[start] != WHITE:
             continue
         color[start] = GREY
-        path: list[Hashable] = [start]
-        stack: list[tuple[Hashable, Iterator[Hashable]]] = [(start, iter(e.get(start, ())))]
+        path: list[_H] = [start]
+        stack: list[tuple[_H, Iterator[_H]]] = [(start, iter(e.get(start, ())))]
         while stack:
             node, it = stack[-1]
             advanced = False

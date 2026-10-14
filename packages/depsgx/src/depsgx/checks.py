@@ -20,7 +20,7 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
     name = name or graph.name
     declared = set(graph.modules)
     edges = graph.edges()
-    reverse_edges = reverse(edges)
+    reverse_edges: dict[str, list[str]] = reverse(edges)
 
     report = Report(
         name=name,
@@ -52,12 +52,12 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
         if src != dst:
             acyclic.setdefault(src, []).append(dst)
             acyclic.setdefault(dst, [])
-    cycle = find_cycle(acyclic)
+    cycle: list[str] | None = find_cycle(acyclic)
     if cycle:
         out.append(Problem(ERROR, "cycle",
                            f"dependency cycle: {' → '.join(cycle)}", target=cycle[0]))
 
-    forbidden = {tuple(f) for f in graph.forbidden}
+    forbidden = {(f[0], f[1]) for f in graph.forbidden}
     for src, dst in graph.depends:
         if (src, dst) in forbidden:
             out.append(Problem(ERROR, "forbidden-dependency",

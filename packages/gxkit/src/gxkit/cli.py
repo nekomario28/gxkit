@@ -83,22 +83,9 @@ def _cmd_codes(args: argparse.Namespace) -> int:
     return _codes_table(args.json, args.tool)
 
 
-def _cmd_inspect(args: argparse.Namespace) -> int:
-    positional = list(args.path)
-    explicit = None
-    # "<tool> <file>" when the first name is a known tool, or when a second
-    # positional is clearly the file (a .py path) — so an unknown tool name
-    # reports "unknown tool" instead of being mistaken for the file.
-    if len(positional) >= 2 and (positional[0] in BY_NAME or positional[1].endswith(".py")
-                                 or Path(positional[1]).exists()):
-        explicit, positional = positional[0], positional[1:]
-    path = Path(positional[0])
-    spec = _tool_for(path, explicit)
-    if spec is None:
-        return 2
-
+def _run_tool(spec, file: Path, args: argparse.Namespace) -> int:
     tool = importlib.import_module(spec.module).TOOL
-    forwarded = ["inspect", str(path)]
+    forwarded = ["inspect", str(file)]
     if args.output:
         forwarded += ["-o", args.output]
     if args.json:
@@ -109,6 +96,35 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         forwarded.append("--no-config")
     print(f"gxkit: {spec.name} — {spec.inspects}", file=sys.stderr)
     return run(tool, forwarded)
+
+
+def _cmd_inspect(args: argparse.Namespace) -> int:
+    positional = list(args.path)
+    explicit = None
+    # "<tool> <file>" when the first name is a known tool, or when a second
+    # positional is clearly the file (a .py path) — so an unknown tool name
+    # reports "unknown tool" instead of being mistaken for the file.
+    if len(positional) >= 2 and (positional[0] in BY_NAME or positional[1].endswith(".py")
+                                 or Path(positional[1]).exists()):
+        explicit, positional = positional[0], positional[1:]
+
+    target = Path(positional[0])
+    if target.is_dir():
+        files = sorted(target.rglob("*.py"))
+        if not files:
+            print(f"gxkit: no *.py artifacts under {target}", file=sys.stderr)
+            return 2
+    else:
+        files = [target]
+
+    rc = 0
+    for file in files:
+        spec = _tool_for(file, explicit)
+        if spec is None:
+            rc = max(rc, 2)
+            continue
+        rc = max(rc, _run_tool(spec, file, args))
+    return rc
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -126,7 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
     codes.set_defaults(func=_cmd_codes)
 
     ins = sub.add_parser("inspect", help="detect the artifact's tool and inspect it")
-    ins.add_argument("path", nargs="+", help="[<tool>] <file.py>")
+    ins.add_argument("path", nargs="+", help="[<tool>] <file.py|directory>")
     ins.add_argument("-o", "--output", help="storyboard path")
     ins.add_argument("--json", action="store_true")
     ins.add_argument("--no-storyboard", action="store_true")

@@ -78,7 +78,7 @@ def inspect_machine(machine: Machine, name: str | None = None) -> Report:
                                f"state {src!r} has more than one {ev!r} transition — the flow "
                                "is non-deterministic", target=src))
 
-    cycle = find_cycle(edges)
+    cycle: list[str] | None = find_cycle(edges)
     if cycle:
         path = " → ".join(cycle)
         report.details.append(f"cycle: {path}")

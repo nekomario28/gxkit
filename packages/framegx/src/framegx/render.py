@@ -38,23 +38,26 @@ def cell_box(i: int, n: int = COLS) -> tuple[float, float, float, float]:
 
 def contact_sheet(video: Video) -> Image.Image:
     media = video.resolved_path or Path(video.path)
+    frames = None
     try:
         frames = sample_frames(media, video.sample_fps)
     except VideoError:
         frames = None
 
-    n = 0 if frames is None or frames.shape[0] == 0 else frames.shape[0]
-    img = Image.new("RGB", sheet_size(max(1, n)), BG)
-    draw = ImageDraw.Draw(img)
     try:
         font = ImageFont.load_default(size=12)
     except Exception:
         font = ImageFont.load_default()
 
-    if n == 0:
-        draw.text((MARGIN, MARGIN), "no frames could be decoded", fill=(200, 80, 80), font=font)
+    if frames is None or frames.shape[0] == 0:
+        img = Image.new("RGB", sheet_size(1), BG)
+        ImageDraw.Draw(img).text((MARGIN, MARGIN), "no frames could be decoded",
+                                 fill=(200, 80, 80), font=font)
         return img
 
+    n = int(frames.shape[0])
+    img = Image.new("RGB", sheet_size(n), BG)
+    draw = ImageDraw.Draw(img)
     for i in range(n):
         box = cell_box(i, n)
         frame = Image.fromarray(frames[i]).convert("RGB").resize((CELL_W, CELL_H))

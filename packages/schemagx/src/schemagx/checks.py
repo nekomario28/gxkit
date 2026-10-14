@@ -68,7 +68,7 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
             out.append(Problem(INFO, "missing-primary-key",
                                f"table {table!r} has no primary key", target=table))
 
-    reverse_edges = reverse(edges)
+    reverse_edges: dict[str, list[str]] = reverse(edges)
     for table in schema.table_names():
         if table in schema.roots:
             continue

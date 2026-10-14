@@ -73,9 +73,9 @@ def load_graph(path: str | Path) -> tuple[ModuleGraph, object]:
         if depends is not None:
             graph = ModuleGraph(
                 modules=list(getattr(module, "MODULES", getattr(module, "modules", []))),
-                depends=[tuple(d) for d in depends],
+                depends=[(d[0], d[1]) for d in depends],
                 roots=list(getattr(module, "ROOTS", getattr(module, "roots", []))),
-                forbidden=[tuple(f) for f in getattr(module, "FORBIDDEN", getattr(module, "forbidden", []))],
+                forbidden=[(f[0], f[1]) for f in getattr(module, "FORBIDDEN", getattr(module, "forbidden", []))],
                 layers=[list(g) for g in getattr(module, "LAYERS", getattr(module, "layers", []))],
             )
     if graph is None:
@@ -98,9 +98,9 @@ def modules_from_parts(
 ) -> ModuleGraph:
     return ModuleGraph(
         modules=list(modules or []),
-        depends=[tuple(d) for d in (depends or [])],
+        depends=[(d[0], d[1]) for d in (depends or [])],
         roots=list(roots or []),
-        forbidden=[tuple(f) for f in (forbidden or [])],
+        forbidden=[(f[0], f[1]) for f in (forbidden or [])],
         layers=[list(g) for g in (layers or [])],
         name=name,
     )

@@ -57,7 +57,7 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
                                    f"inheritance names unknown role {role!r}"))
 
     # role inheritance must be acyclic
-    cycle = find_cycle(model.role_edges())
+    cycle: list[str] | None = find_cycle(model.role_edges())
     if cycle:
         out.append(Problem(ERROR, "cyclic-inheritance",
                            f"role inheritance is cyclic: {_arrow(model, cycle)}",

@@ -158,12 +158,18 @@ def _hex_to_rgb(c: str) -> tuple[int, int, int] | None:
 
 def _is_red(c: str) -> bool:
     rgb = _hex_to_rgb(c)
-    return bool(rgb) and rgb[0] > 120 and rgb[1] < 90 and rgb[2] < 90
+    if rgb is None:
+        return False
+    r, g, b = rgb
+    return r > 120 and g < 90 and b < 90
 
 
 def _is_green(c: str) -> bool:
     rgb = _hex_to_rgb(c)
-    return bool(rgb) and rgb[1] > 100 and rgb[0] < 110 and rgb[2] < 110
+    if rgb is None:
+        return False
+    r, g, b = rgb
+    return g > 100 and r < 110 and b < 110
 
 
 # --------------------------------------------------------------------------- #

@@ -94,7 +94,7 @@ def load_schema(path: str | Path) -> tuple[Schema, object]:
             schema = Schema(
                 tables={k: dict(v) for k, v in dict(tables).items()},
                 primary_keys=dict(getattr(module, "PRIMARY_KEYS", getattr(module, "primary_keys", {}))),
-                foreign_keys=[tuple(f) for f in getattr(module, "FOREIGN_KEYS", getattr(module, "foreign_keys", []))],
+                foreign_keys=[(f[0], f[1]) for f in getattr(module, "FOREIGN_KEYS", getattr(module, "foreign_keys", []))],
                 roots=list(getattr(module, "ROOTS", getattr(module, "roots", []))),
             )
     if schema is None:
@@ -117,7 +117,7 @@ def schema_from_parts(
     return Schema(
         tables={k: dict(v) for k, v in (tables or {}).items()},
         primary_keys=dict(primary_keys or {}),
-        foreign_keys=[tuple(f) for f in (foreign_keys or [])],
+        foreign_keys=[(f[0], f[1]) for f in (foreign_keys or [])],
         roots=list(roots or []),
         name=name,
     )

@@ -17,7 +17,7 @@ INK = (24, 24, 28)
 BACKGROUND = (255, 255, 255)
 
 
-def _font(size: int) -> ImageFont.FreeTypeFont:
+def _font(size: int):
     return ImageFont.load_default(size=max(6, int(size)))
 
 

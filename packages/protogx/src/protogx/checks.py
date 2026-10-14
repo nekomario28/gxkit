@@ -93,7 +93,7 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                 out.append(Problem(ERROR, "no-exit",
                                    f"state {s!r} can never reach a terminal state", target=s))
 
-    cycle = find_cycle(edges)
+    cycle: list[str] | None = find_cycle(edges)
     if cycle:
         report.details.append("cycle: " + " → ".join(cycle))
         out.append(Problem(INFO, "cycle", f"a cycle returns through {' → '.join(cycle)}",
