@@ -31,7 +31,7 @@ jobs:
       - name: Pre-publication check
         run: python3 scripts/prepublish_check.py
 
-      - run: uv sync --all-packages
+      - run: uv sync --all-packages --locked
       - run: uv run pytest
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
@@ -55,5 +55,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --all-packages
+      - run: uv sync --all-packages --locked
       - run: uv run mypy packages/*/src

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from gxcore import Tool, run
+from gxcore.toolkit import distribution_version
 
 from .checks import inspect_figure
 from .loader import load_figure
@@ -65,7 +66,7 @@ TOOL = Tool(
     inspect=inspect,
     render=render,
     to_image=to_image,
-    version="0.1.0",
+    version=distribution_version("chartgx"),
 )
 
 

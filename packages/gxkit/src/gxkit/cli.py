@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 from gxcore.cli import run
+from gxcore.toolkit import distribution_version
 
 from .codes import CODEBOOK
 from .registry import BY_NAME, TOOLS, detect
@@ -101,21 +102,32 @@ def _run_tool(spec, file: Path, args: argparse.Namespace) -> int:
 def _cmd_inspect(args: argparse.Namespace) -> int:
     positional = list(args.path)
     explicit = None
-    # "<tool> <file>" when the first name is a known tool, or when a second
-    # positional is clearly the file (a .py path) — so an unknown tool name
-    # reports "unknown tool" instead of being mistaken for the file.
-    if len(positional) >= 2 and (positional[0] in BY_NAME or positional[1].endswith(".py")
-                                 or Path(positional[1]).exists()):
+    if positional and positional[0] in BY_NAME:
         explicit, positional = positional[0], positional[1:]
+    elif (len(positional) >= 2 and not Path(positional[0]).exists()
+          and not positional[0].endswith(".py")):
+        # looks like a mistyped tool name beside a real path
+        print(f"gxkit: unknown tool {positional[0]!r}; try `gxkit tools`", file=sys.stderr)
+        return 2
+    if not positional:
+        print("gxkit: inspect needs a file or a directory", file=sys.stderr)
+        return 2
 
-    target = Path(positional[0])
-    if target.is_dir():
-        files = sorted(target.rglob("*.py"))
-        if not files:
-            print(f"gxkit: no *.py artifacts under {target}", file=sys.stderr)
-            return 2
-    else:
-        files = [target]
+    files: list[Path] = []
+    for raw in positional:
+        target = Path(raw)
+        if target.is_dir():
+            found = sorted(target.rglob("*.py"))
+            if not found:
+                print(f"gxkit: no *.py artifacts under {target}", file=sys.stderr)
+                return 2
+            files += found
+        else:
+            files.append(target)
+
+    if len(files) > 1 and (args.json or args.output):
+        print("gxkit: --json and -o take a single artifact", file=sys.stderr)
+        return 2
 
     rc = 0
     for file in files:
@@ -128,8 +140,12 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="gxkit", description=__doc__.splitlines()[0])
-    p.add_argument("--version", action="version", version="gxkit 0.1.0")
+    p = argparse.ArgumentParser(
+        prog="gxkit",
+        description="Route an artifact to the gxkit tool that inspects it.",
+    )
+    p.add_argument("--version", action="version",
+                   version=f"gxkit {distribution_version('gxkit-cli', '0.1.0')}")
     sub = p.add_subparsers(dest="command", required=True)
 
     tools = sub.add_parser("tools", help="list the tools and what they inspect")

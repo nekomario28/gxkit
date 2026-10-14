@@ -137,6 +137,14 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **A checker's cache can lie.** mypy's incremental cache hid two real type
   errors that a fresh CI run caught. Clear it (`rm -rf .mypy_cache`) before
   believing a local `Success`; let CI be the authority.
+- **Never read the CLI description or version from a literal.**
+  `argparse(description=__doc__.splitlines()[0])` crashes under `python -O`
+  (`__doc__` is `None`), and a hardcoded version drifts from `pyproject.toml`.
+  Read the version from the installed distribution; a test enforces agreement.
+- **Guard the dispatcher's own arguments** — a tool name with no artifact, two
+  targets beside a single-target flag.
+- **CI must be pinned to the lock** (`uv sync --locked`), or CI silently drifts
+  from what developers run.
 
 ## 7. What every tool ships
 

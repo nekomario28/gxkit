@@ -14,7 +14,7 @@ from gxkit.cli import main
 
 def test_catalogue_covers_every_tool():
     names = [t.name for t in TOOLS]
-    assert names == sorted(names) or set(names) == {
+    assert set(names) == {
         "chartgx", "levelgx", "flowgx", "protogx", "authzgx",
         "depsgx", "schemagx", "docgx", "shadergx", "framegx",
     }
@@ -95,6 +95,18 @@ def test_inspect_explicit_unknown_tool_exits_2(tmp_path, capsys):
     src.write_text("x = 1\n")
     assert main(["inspect", "nope", str(src)]) == 2
     assert "unknown tool" in capsys.readouterr().err
+
+
+def test_inspect_a_tool_without_a_file_exits_2(capsys):
+    assert main(["inspect", "levelgx"]) == 2
+    assert "needs a file" in capsys.readouterr().err
+
+
+def test_inspect_two_files_with_json_is_refused(tmp_path, capsys):
+    a = tmp_path / "a.py"; a.write_text("x = 1\n")
+    b = tmp_path / "b.py"; b.write_text("y = 1\n")
+    assert main(["inspect", str(a), str(b), "--json"]) == 2
+    assert "single artifact" in capsys.readouterr().err
 
 
 def test_inspect_undetectable_exits_2(tmp_path, capsys):

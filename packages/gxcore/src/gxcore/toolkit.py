@@ -23,6 +23,17 @@ from typing import Any, Callable
 from .cli import Tool, run
 
 
+def distribution_version(name: str, fallback: str = "0.0.0") -> str:
+    """The installed version of a distribution, so `--version` cannot drift
+    from `pyproject.toml`."""
+    try:
+        from importlib.metadata import version
+
+        return version(name)
+    except Exception:
+        return fallback
+
+
 @dataclass
 class Scene:
     artifact: Any
@@ -36,7 +47,7 @@ def scene_tool(
     load: Callable[[Path], tuple[Any, Any]],
     inspect: Callable[[Any], Any],
     to_image: Callable[[Any], Any],
-    version: str = "0.1.0",
+    version: str | None = None,
     origin: str = "top-left",
 ) -> tuple[Callable[[list[str] | None], int], Tool]:
     def _load(path: Path) -> Scene:
@@ -66,7 +77,7 @@ def scene_tool(
         inspect=_inspect,
         render=_render,
         to_image=_to_image,
-        version=version,
+        version=version or distribution_version(name),
         origin=origin,
     )
 
