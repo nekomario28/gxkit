@@ -21,6 +21,7 @@ step python3 scripts/prepublish_check.py
 step uv sync --all-packages --locked
 step uv run ruff check packages scripts
 step uv run ruff format --check packages scripts
+step uvx --from shellcheck-py shellcheck scripts/*.sh
 step uv run mypy packages/*/src
 step uv run pytest \
   --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \

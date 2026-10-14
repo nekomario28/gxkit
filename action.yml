@@ -40,26 +40,8 @@ runs:
         TARGET: ${{ inputs.path }}
         FLAGS: ${{ inputs.args }}
         TOOL: ${{ inputs.tool }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        set -uo pipefail
+        # `uv tool install` puts the executable in ~/.local/bin.
         export PATH="$HOME/.local/bin:$PATH"
-        if [ -n "$TOOL" ]; then CMD="$TOOL inspect"; else CMD="gxkit inspect"; fi
-        if [ -d "$TARGET" ]; then
-          mapfile -t files < <(find "$TARGET" -name '*.py' | sort)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "::error::no *.py artifacts under $TARGET — refusing to report success"
-            exit 1
-          fi
-        elif [ -f "$TARGET" ]; then
-          files=("$TARGET")
-        else
-          echo "::error::path not found: $TARGET"
-          exit 1
-        fi
-        rc=0
-        for f in "${files[@]}"; do
-          echo "::group::$CMD $f"
-          $CMD $FLAGS "$f" || rc=1
-          echo "::endgroup::"
-        done
-        exit $rc
+        bash "$ACTION_PATH/scripts/inspect_path.sh"

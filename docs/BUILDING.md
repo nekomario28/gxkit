@@ -182,6 +182,15 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Cover every statement, and be explicit about the exceptions.** A 100% floor
   is the only one that stops new dark corners; `# pragma: no cover` only for a
   platform/version fallback. Delete a vestigial guard rather than cover it.
+- **A gate must fail closed on an empty scope.** A reusable action that loops
+  over `find … *.py` reports success when it finds nothing — a false green. Assert
+  the zero-input case fails, and keep a test for it.
+- **Move a runner's shell into a script.** Inline `run: |` cannot be linted or
+  unit-tested; extract it to a checked-in script, `shellcheck` it, and drive it
+  from the workflow and a test.
+- **Scope a linter ignore inline, with a reason.** When a deliberate choice
+  disagrees with a linter (local `uses: ./` vs zizmor's `$/`), annotate that one
+  line (`# zizmor: ignore[rule] -- why`) instead of disabling the rule or drifting.
 - **Assert layout invariants, not a golden image.** Determinism, non-overlap,
   on-canvas and "something was drawn" catch a layout drift that a screenshot
   baseline would bless.

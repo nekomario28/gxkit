@@ -86,6 +86,7 @@ jobs:
       - run: uv sync --all-packages --locked
       - run: uv run ruff check packages scripts
       - run: uv run ruff format --check packages scripts
+      - run: uvx --from shellcheck-py shellcheck scripts/*.sh
       - run: uv run mypy packages/*/src
 
   package:
@@ -132,13 +133,13 @@ jobs:
           persist-credentials: false
       - run: mkdir -p empty-artifacts
       - name: The published action passes on a clean artifact
-        uses: $/  # `$` is GitHub's self-repository reference (zizmor prefers it over `./`)
+        uses: ./  # zizmor: ignore[self-repository] -- deliberate: run the action in this checkout
         with:
           path: packages/levelgx/examples/good_level.py
       - name: The published action fails on a faulty artifact
         id: faulty
         continue-on-error: true
-        uses: $/
+        uses: ./  # zizmor: ignore[self-repository]
         with:
           path: packages/levelgx/examples/softlock_level.py
       - name: It really failed (a green run would mean the gate is fake)
@@ -147,7 +148,7 @@ jobs:
           echo "::error::the action did not fail on a faulty artifact"
           exit 1
       - name: The action accepts an explicit tool and flags
-        uses: $/
+        uses: ./  # zizmor: ignore[self-repository]
         with:
           path: packages/schemagx/examples/good_schema.py
           tool: schemagx
@@ -155,7 +156,7 @@ jobs:
       - name: The action refuses a directory with no artifacts
         id: empty
         continue-on-error: true
-        uses: $/
+        uses: ./  # zizmor: ignore[self-repository]
         with:
           path: empty-artifacts
       - name: It really failed on the empty directory
@@ -166,7 +167,7 @@ jobs:
       - name: The action refuses a missing path
         id: missing
         continue-on-error: true
-        uses: $/
+        uses: ./  # zizmor: ignore[self-repository]
         with:
           path: does/not/exist
       - name: It really failed on the missing path

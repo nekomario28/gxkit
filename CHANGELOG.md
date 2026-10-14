@@ -18,6 +18,9 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - mypy runs in `--strict`; `ruff format --check` is a CI gate; a macOS leg was
   added to the test matrix.
+- Shell scripts are checked with `shellcheck` in `scripts/check.sh` and CI; the
+  Action's inspect logic moved to `scripts/inspect_path.sh` so it is lintable and
+  unit-tested, and the workflow references the local action with `./`.
 - The coverage gate is **100%** (statements), with `# pragma: no cover` reserved
   for platform/version fallbacks; the full number needs ffmpeg and a GL context,
   which the Ubuntu CI leg installs.
