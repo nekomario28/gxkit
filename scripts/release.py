@@ -26,8 +26,6 @@ try:
 except ModuleNotFoundError:  # Python 3.10
     import tomli as tomllib
 
-from gxcore.graph import topological_sort
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
@@ -56,6 +54,10 @@ def internal(dependencies):
 
 def publish_order() -> list[str]:
     """Distribution names, dependencies first: `gxcore`, the tools, `gxkit-cli`."""
+    # imported here so `--check` stays stdlib-only (it runs where gxcore is not
+    # installed, e.g. the packaging CI job).
+    from gxcore.graph import topological_sort
+
     edges = {name: internal(deps) for _, name, _, deps in projects()}
     ordered = topological_sort(edges)
     return list(reversed(ordered)) if ordered else []
