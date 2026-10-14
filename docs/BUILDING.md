@@ -173,6 +173,12 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Keep strictness in the repo's config.** `strict = true` for mypy and the
   lint/format rules belong in `pyproject.toml`, not only in a CI command line, so
   the gate cannot quietly weaken; gate `ruff format --check` too.
+- **Assert layout invariants, not a golden image.** Determinism, non-overlap,
+  on-canvas and "something was drawn" catch a layout drift that a screenshot
+  baseline would bless.
+- **Cross-check the reading, not only the primitive.** The tool that calls
+  `reachable()`/`find_cycle()` must reach the same verdict as NetworkX on random
+  models, and a *sound* random artifact must report zero problems.
 
 ## 7. What every tool ships
 
