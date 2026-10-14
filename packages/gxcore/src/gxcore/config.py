@@ -22,7 +22,7 @@ from typing import Any
 
 try:
     import tomllib
-except ModuleNotFoundError:  # Python 3.10
+except ModuleNotFoundError:  # pragma: no cover  (Python 3.10 only)
     import tomli as tomllib
 
 from .model import Report
