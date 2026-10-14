@@ -5,6 +5,19 @@
 gxkit is a shared engine (`gxcore`) plus ten domain tools. An artifact goes in;
 the one that fits is chosen and run.
 
+## Install
+
+```sh
+# the whole family behind one `gxkit` command
+uv tool install "git+https://github.com/nekomario28/gxkit#subdirectory=packages/gxkit"
+
+# or one tool, without installing
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx --help
+```
+
+`chartgx` also needs matplotlib; `shadergx` needs a GL context; `framegx` needs
+ffmpeg.
+
 ## One entry point
 
 ```sh

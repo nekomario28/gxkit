@@ -5,6 +5,13 @@ AI check its own work *before* you have to. Write the artifact as code,
 `inspect` it, get problems with stable codes and an exit code, fix them, and
 ship — with a storyboard image as the evidence.
 
+> **Set up with a prompt.** Paste into Claude Code, Codex, or Cursor — the agent
+> installs and runs it:
+>
+> ```
+> Follow https://raw.githubusercontent.com/nekomario28/gxkit/main/llms.txt. Install gxkit, then inspect <your file>.
+> ```
+
 <p>
 <a href="https://github.com/nekomario28/gxkit/actions/workflows/ci.yml"><img alt="ci" src="https://github.com/nekomario28/gxkit/actions/workflows/ci.yml/badge.svg"></a>
 <img alt="license: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg">
