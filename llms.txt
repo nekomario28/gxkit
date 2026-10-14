@@ -11,7 +11,11 @@ the one that fits is chosen and run.
 gxkit tools              # what can be inspected
 gxkit inspect chart.py   # detect the artifact and route it to its tool
 gxkit inspect levelgx level.py   # or name the tool explicitly
+gxkit codes              # every problem code and its severity (--json too)
 ```
+
+A `.gxkit.toml` up the tree can ignore a code or change its severity. Run it in
+CI with the repository's reusable action (`uses: nekomario28/gxkit@vX.Y.Z`).
 
 ## Tools
 

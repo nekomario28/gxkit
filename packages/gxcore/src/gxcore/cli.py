@@ -26,6 +26,8 @@ from typing import Any, Callable, Optional
 from .model import Report
 from .report import human, to_json
 from .storyboard import annotate, storyboard_path
+from .config import apply as apply_config
+from .config import load as load_config
 
 Load = Callable[[Path], Any]
 Inspect = Callable[[Any], Report]
@@ -55,6 +57,7 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
     ins.add_argument("-o", "--output", help="storyboard path")
     ins.add_argument("--no-storyboard", action="store_true", help="skip the storyboard image")
     ins.add_argument("--json", action="store_true", help="print the report as JSON")
+    ins.add_argument("--no-config", action="store_true", help="ignore .gxkit.toml")
 
     ren = sub.add_parser("render", help="write the artifact as a PNG")
     ren.add_argument("file", help="the file that builds the artifact")
@@ -66,6 +69,8 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
 def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
     artifact = tool.load(Path(args.file))
     report = tool.inspect(artifact)
+    if not getattr(args, "no_config", False):
+        apply_config(report, load_config(Path(args.file).resolve().parent), tool.name)
 
     sb: Path | None = None
     if not args.no_storyboard and tool.to_image is not None:

@@ -1,0 +1,55 @@
+name: gxkit inspect
+description: Detect an artifact and run the gxkit tool that inspects it — a CI gate for creative artifacts.
+author: nekomario28
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  path:
+    description: An artifact file, or a directory to scan for *.py artifacts.
+    required: true
+  tool:
+    description: Name one tool (e.g. chartgx) instead of installing the whole family.
+    required: false
+    default: ""
+  args:
+    description: Extra flags for `gxkit inspect` (e.g. --json).
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@v5
+    - name: Install gxkit
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -n "${{ inputs.tool }}" ]; then
+          uv tool install "${{ github.action_path }}/packages/${{ inputs.tool }}"
+        else
+          uv tool install "${{ github.action_path }}/packages/gxkit"
+        fi
+    - name: Inspect
+      shell: bash
+      env:
+        TARGET: ${{ inputs.path }}
+        FLAGS: ${{ inputs.args }}
+        TOOL: ${{ inputs.tool }}
+      run: |
+        set -uo pipefail
+        export PATH="$HOME/.local/bin:$PATH"
+        if [ -n "$TOOL" ]; then CMD="$TOOL inspect"; else CMD="gxkit inspect"; fi
+        if [ -d "$TARGET" ]; then
+          mapfile -t files < <(find "$TARGET" -name '*.py' | sort)
+        else
+          files=("$TARGET")
+        fi
+        rc=0
+        for f in "${files[@]}"; do
+          echo "::group::$CMD $f"
+          $CMD $FLAGS "$f" || rc=1
+          echo "::endgroup::"
+        done
+        exit $rc

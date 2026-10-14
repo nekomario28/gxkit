@@ -124,8 +124,13 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P6 — `gxkit`, the umbrella.** One entry point: `gxkit inspect <file>`
   detects the artifact's tool and runs it, `gxkit tools` lists the catalogue. The
   family skill's routing promise, made executable. *done*
-- **P7 — publish.** The repository is public with tags and releases; PyPI/npm
-  names are not yet claimed.
+- **P7 — distribution and operation.** `gxkit codes` (a machine-readable
+  catalogue, cross-checked against the source), `.gxkit.toml` config (ignore a
+  code, change a severity), a reusable GitHub Action, and release tooling
+  (`uv build` + `twine check`; see [`RELEASING.md`](RELEASING.md)). The umbrella
+  publishes as **`gxkit-cli`** — `gxkit` is taken on PyPI. *done*
+- **P8 — publish.** The repository is public with tags, releases and an action;
+  PyPI/npm names are claimed (all free except `gxkit`).
 
 ## Definition of done
 

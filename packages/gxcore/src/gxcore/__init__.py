@@ -16,6 +16,7 @@ from .cli import Tool, run
 from .graph import can_reach, distances, find_cycle, reachable, reverse, shortest_path, terminals, traps, unreachable, weak_components
 from .layout import TextBox
 from .loading import load_from_file, load_module, resolve
+from .config import Config, apply as apply_config, load as load_config
 
 __all__ = [
     "ERROR",
@@ -46,5 +47,8 @@ __all__ = [
     "load_from_file",
     "load_module",
     "resolve",
+    "Config",
+    "load_config",
+    "apply_config",
 ]
 __version__ = "0.4.0"

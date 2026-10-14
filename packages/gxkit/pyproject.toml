@@ -1,5 +1,5 @@
 [project]
-name = "gxkit"
+name = "gxkit-cli"
 version = "0.1.0"
 description = "One entry point for the gxkit family: detect an artifact and route it to the tool that inspects it."
 readme = "README.md"

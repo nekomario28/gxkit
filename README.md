@@ -38,6 +38,7 @@ Every tool has the same contract, so an agent learns it once:
 ```sh
 uv run gxkit tools              # what can be inspected
 uv run gxkit inspect chart.py   # detect the artifact and route it
+uv run gxkit codes              # every problem code and its severity
 ```
 
 ## Tools
@@ -114,6 +115,33 @@ uv tool install "git+https://github.com/nekomario28/gxkit#subdirectory=packages/
 
 Replace `chartgx` with any tool above. Needs Python 3.10+; `chartgx` also needs
 matplotlib, and `shadergx` needs a GL context (Mesa/EGL or a GPU).
+
+## Use in CI
+
+A reusable action runs `gxkit inspect` and fails the job on an `error`:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: nekomario28/gxkit@v0.1.2
+  with:
+    path: artifacts/          # a file, or a directory of *.py artifacts
+    args: --json              # optional extra flags
+    # tool: chartgx           # optional: install just one tool
+```
+
+## Configure
+
+A `.gxkit.toml` anywhere up the tree from the artifact is read by every tool:
+
+```toml
+ignore = ["no-units"]           # drop a note everywhere
+[severity]
+dual-axis = "error"             # promote a warning to a failure
+[chartgx]
+ignore = ["red-green"]          # ...or only for one tool
+```
+
+Pass `--no-config` to ignore it.
 
 ## Develop
 

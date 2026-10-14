@@ -7,7 +7,8 @@ An artifact goes in; the right `*gx` tool is chosen and run. See `gxkit tools`.
 """
 
 from .registry import BY_NAME, TOOLS, ToolSpec, detect
+from .codes import CODEBOOK, flat, for_tool
 from .cli import main
 
-__all__ = ["TOOLS", "BY_NAME", "ToolSpec", "detect", "main"]
+__all__ = ["TOOLS", "BY_NAME", "ToolSpec", "detect", "CODEBOOK", "flat", "for_tool", "main"]
 __version__ = "0.1.0"

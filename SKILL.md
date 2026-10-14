@@ -15,9 +15,11 @@ output, so the tool renders it, reads the pixels, and reports problems as codes.
 ```sh
 gxkit inspect artifact.py     # detect the artifact and route to its tool
 gxkit tools                   # list what can be inspected
+gxkit codes                   # every problem code and its severity
 ```
 
-Or name the tool: `gxkit inspect levelgx level.py`.
+Or name the tool: `gxkit inspect levelgx level.py`. A `.gxkit.toml` up the tree
+can ignore a code or change its severity; `--no-config` skips it.
 
 ## The contract (every tool, identical)
 

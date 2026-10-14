@@ -19,6 +19,7 @@ from pathlib import Path
 
 from gxcore.cli import run
 
+from .codes import CODEBOOK
 from .registry import BY_NAME, TOOLS, detect
 
 
@@ -59,6 +60,29 @@ def _cmd_tools(args: argparse.Namespace) -> int:
     return _tools_table(args.json)
 
 
+def _codes_table(as_json: bool, tool: str | None) -> int:
+    if tool:
+        if tool not in CODEBOOK:
+            print(f"gxkit: unknown tool {tool!r}; try `gxkit tools`", file=sys.stderr)
+            return 2
+        book = {tool: CODEBOOK[tool]}
+    else:
+        book = CODEBOOK
+    if as_json:
+        print(json.dumps(book, indent=2))
+        return 0
+    for name, codes in book.items():
+        print(f"{name}:")
+        width = max((len(c) for c in codes), default=0)
+        for code, severity in sorted(codes.items()):
+            print(f"  {code:<{width}}  {severity}")
+    return 0
+
+
+def _cmd_codes(args: argparse.Namespace) -> int:
+    return _codes_table(args.json, args.tool)
+
+
 def _cmd_inspect(args: argparse.Namespace) -> int:
     positional = list(args.path)
     explicit = None
@@ -81,6 +105,8 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         forwarded.append("--json")
     if args.no_storyboard:
         forwarded.append("--no-storyboard")
+    if args.no_config:
+        forwarded.append("--no-config")
     print(f"gxkit: {spec.name} — {spec.inspects}", file=sys.stderr)
     return run(tool, forwarded)
 
@@ -94,11 +120,17 @@ def build_parser() -> argparse.ArgumentParser:
     tools.add_argument("--json", action="store_true")
     tools.set_defaults(func=_cmd_tools)
 
+    codes = sub.add_parser("codes", help="list every problem code and its severity")
+    codes.add_argument("tool", nargs="?", help="one tool, or all")
+    codes.add_argument("--json", action="store_true")
+    codes.set_defaults(func=_cmd_codes)
+
     ins = sub.add_parser("inspect", help="detect the artifact's tool and inspect it")
     ins.add_argument("path", nargs="+", help="[<tool>] <file.py>")
     ins.add_argument("-o", "--output", help="storyboard path")
     ins.add_argument("--json", action="store_true")
     ins.add_argument("--no-storyboard", action="store_true")
+    ins.add_argument("--no-config", action="store_true", help="ignore .gxkit.toml")
     ins.set_defaults(func=_cmd_inspect)
     return p
 
