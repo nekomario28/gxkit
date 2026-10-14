@@ -14,7 +14,7 @@ package = false
 members = ["packages/*"]
 
 [dependency-groups]
-dev = ["pytest>=7", "mypy>=1.10", "ruff>=0.6"]
+dev = ["pytest>=7", "pytest-cov>=5", "mypy>=1.10", "ruff>=0.6"]
 
 [tool.ruff]
 line-length = 100

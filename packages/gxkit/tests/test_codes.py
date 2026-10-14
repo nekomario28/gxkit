@@ -14,8 +14,7 @@ PROBLEM = re.compile(r'Problem\(\s*(ERROR|WARN|INFO)\s*,\s*"([a-z0-9-]+)"')
 def _emitted() -> dict[str, set[str]]:
     seen: dict[str, set[str]] = {}
     for path in PACKAGES.rglob("*.py"):
-        text = str(path)
-        if "/tests/" in text or "/.venv" in text:
+        if {"tests", ".venv"} & set(path.parts):
             continue
         for match in PROBLEM.finditer(path.read_text()):
             seen.setdefault(match.group(2), set()).add(match.group(1).lower())
