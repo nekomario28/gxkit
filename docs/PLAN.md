@@ -121,7 +121,10 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
   cannot see. ManimGX makes the animation and checks the scene; `framegx` checks
   the encoded result, so `manimgx render scene.py && framegx inspect clip.py`
   closes the loop. Uses ffmpeg. *done*
-- **P6 — publish.** The repository is public with tags and releases; PyPI/npm
+- **P6 — `gxkit`, the umbrella.** One entry point: `gxkit inspect <file>`
+  detects the artifact's tool and runs it, `gxkit tools` lists the catalogue. The
+  family skill's routing promise, made executable. *done*
+- **P7 — publish.** The repository is public with tags and releases; PyPI/npm
   names are not yet claimed.
 
 ## Definition of done

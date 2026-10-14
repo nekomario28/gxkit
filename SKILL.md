@@ -10,6 +10,15 @@ description: Use when an artifact an agent produced must be checked before it sh
 The point is a loop an agent can close **on its own**: it cannot see its own
 output, so the tool renders it, reads the pixels, and reports problems as codes.
 
+## Start here
+
+```sh
+gxkit inspect artifact.py     # detect the artifact and route to its tool
+gxkit tools                   # list what can be inspected
+```
+
+Or name the tool: `gxkit inspect levelgx level.py`.
+
 ## The contract (every tool, identical)
 
 ```sh

@@ -53,6 +53,9 @@ inspect: 2 problems (1 error)
 - `--json` for machines; `--no-storyboard` skips the contact sheet; `-o` names it.
 - The storyboard is a **contact sheet** of sampled frames, with a frozen run boxed.
 
+(`framegx render` writes that contact sheet: framegx inspects a video, it does
+not produce one.)
+
 ## Checks
 
 | code | severity | what it means |

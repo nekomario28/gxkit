@@ -2,8 +2,16 @@
 
 > Agent-native review loops for creative artifacts. Write the artifact as code, `inspect` it, get problems with stable codes and exit codes, fix them, and ship — with a storyboard image as evidence.
 
-gxkit is a shared engine (`gxcore`) plus the domain tools built on it. Each tool
-owns one domain; the review loop is written once.
+gxkit is a shared engine (`gxcore`) plus ten domain tools. An artifact goes in;
+the one that fits is chosen and run.
+
+## One entry point
+
+```sh
+gxkit tools              # what can be inspected
+gxkit inspect chart.py   # detect the artifact and route it to its tool
+gxkit inspect levelgx level.py   # or name the tool explicitly
+```
 
 ## Tools
 
@@ -31,6 +39,8 @@ owns one domain; the review loop is written once.
 - **framegx** — rendered animations: a black or frozen picture, the wrong
   length, or missing/silent sound — the output a scene inspector cannot see.
   `packages/framegx`
+- **gxkit** — the umbrella: `gxkit inspect <file>` detects the artifact's tool
+  and runs it. `packages/gxkit`
 
 That is the whole planned set.
 

@@ -33,6 +33,13 @@ Every tool has the same contract, so an agent learns it once:
 - **A storyboard image** with each located problem boxed and numbered, so the
   text report and the picture agree.
 
+**One entry point.** You don't have to know which tool fits:
+
+```sh
+uv run gxkit tools              # what can be inspected
+uv run gxkit inspect chart.py   # detect the artifact and route it
+```
+
 ## Tools
 
 | tool | inspects | the check only it makes |
@@ -55,7 +62,8 @@ all.
 > **Pairs with ManimGX.** A renderer makes the 3D animation; gxkit checks the
 > result. ManimGX's `inspect` reads the *scene* before rendering; `framegx`
 > reads the *encoded file* after — black, frozen, wrong length, silent. So
-> `manimgx render scene.py && framegx inspect clip.py` closes the loop.
+> `manimgx render scene.py && framegx inspect clip.py` closes the loop. gxkit is
+> an independent project, not affiliated with ManimGX or Academa.
 
 ## See it catch something
 
@@ -100,6 +108,8 @@ lines. See [`docs/BUILDING.md`](docs/BUILDING.md).
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx" chartgx inspect chart.py
 # or put it on PATH
 uv tool install "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx"
+# or install the whole family behind one `gxkit` command
+uv tool install "git+https://github.com/nekomario28/gxkit#subdirectory=packages/gxkit"
 ```
 
 Replace `chartgx` with any tool above. Needs Python 3.10+; `chartgx` also needs

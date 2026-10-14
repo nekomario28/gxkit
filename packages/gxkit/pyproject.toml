@@ -1,0 +1,44 @@
+[project]
+name = "gxkit"
+version = "0.1.0"
+description = "One entry point for the gxkit family: detect an artifact and route it to the tool that inspects it."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "gxcore",
+    "chartgx",
+    "levelgx",
+    "flowgx",
+    "authzgx",
+    "depsgx",
+    "schemagx",
+    "docgx",
+    "protogx",
+    "shadergx",
+    "framegx",
+]
+
+[project.scripts]
+gxkit = "gxkit.cli:main"
+
+[tool.uv.sources]
+gxcore = { workspace = true }
+chartgx = { workspace = true }
+levelgx = { workspace = true }
+flowgx = { workspace = true }
+authzgx = { workspace = true }
+depsgx = { workspace = true }
+schemagx = { workspace = true }
+docgx = { workspace = true }
+protogx = { workspace = true }
+shadergx = { workspace = true }
+framegx = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gxkit"]

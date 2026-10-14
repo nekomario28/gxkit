@@ -162,6 +162,11 @@ its output — so the reader sees value rather than a claim. A second figure ear
 its place only if it carries distinct information; an image that only decorates
 is clutter.
 
+**One entry point, once there are several tools.** A `tools` list and an
+`inspect <file>` that detects the artifact and routes to the right tool (the
+routing table as code — see `packages/gxkit`). Name the tool explicitly as the
+escape hatch.
+
 The license must travel with the package: declare an SPDX expression
 (`license = "MIT"`) **and** a `LICENSE` file so the wheel carries it
 (`license-files`); the deprecated free-text `License: MIT` ships no file.

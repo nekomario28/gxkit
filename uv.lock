@@ -17,6 +17,7 @@ members = [
     "framegx",
     "gxcore",
     "gxkit",
+    "gxkit-workspace",
     "levelgx",
     "protogx",
     "schemagx",
@@ -598,6 +599,39 @@ requires-dist = [{ name = "pillow", specifier = ">=9" }]
 
 [[package]]
 name = "gxkit"
+version = "0.1.0"
+source = { editable = "packages/gxkit" }
+dependencies = [
+    { name = "authzgx" },
+    { name = "chartgx" },
+    { name = "depsgx" },
+    { name = "docgx" },
+    { name = "flowgx" },
+    { name = "framegx" },
+    { name = "gxcore" },
+    { name = "levelgx" },
+    { name = "protogx" },
+    { name = "schemagx" },
+    { name = "shadergx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "authzgx", editable = "packages/authzgx" },
+    { name = "chartgx", editable = "packages/chartgx" },
+    { name = "depsgx", editable = "packages/depsgx" },
+    { name = "docgx", editable = "packages/docgx" },
+    { name = "flowgx", editable = "packages/flowgx" },
+    { name = "framegx", editable = "packages/framegx" },
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "levelgx", editable = "packages/levelgx" },
+    { name = "protogx", editable = "packages/protogx" },
+    { name = "schemagx", editable = "packages/schemagx" },
+    { name = "shadergx", editable = "packages/shadergx" },
+]
+
+[[package]]
+name = "gxkit-workspace"
 version = "0.0.0"
 source = { virtual = "." }
 

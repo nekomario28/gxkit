@@ -1,5 +1,5 @@
 [project]
-name = "gxkit"
+name = "gxkit-workspace"
 version = "0.0.0"
 description = "Agent-native review loops for creative artifacts: inspect, exit codes, storyboards."
 requires-python = ">=3.10"
