@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nekomario28/gxkit@v0.3.0
+      - uses: nekomario28/gxkit@v0.4.0
         with:
           path: artifacts/          # a file, or a directory of *.py artifacts
           args: --json              # optional extra flags

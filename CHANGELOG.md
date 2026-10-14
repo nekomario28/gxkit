@@ -5,9 +5,14 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.4.0] — apigx, the eleventh tool
+
+See the [v0.4.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.4.0).
+
 ### Added
-- `apigx` — inspect an HTTP API contract for duplicate routes, unauthenticated
-  mutations and unversioned paths (the eleventh domain tool).
+- `apigx` — inspect an HTTP API contract: duplicate routes, a mutation with no
+  authentication, a path outside the versioned base, an endpoint documenting no
+  error, a deprecated route.
 
 ## [0.3.0] — deeper analysis, checked releases
 
