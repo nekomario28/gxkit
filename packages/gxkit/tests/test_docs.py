@@ -105,6 +105,37 @@ def test_every_tool_llms_txt_has_the_essentials():
         assert f"subdirectory=packages/{name}" in text, f"{name}/llms.txt has no install line"
 
 
+def test_changelog_links_every_released_version():
+    text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    versions = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", text, re.M)
+    linked = set(re.findall(r"releases/tag/v(\d+\.\d+\.\d+)", text))
+    assert versions, "the CHANGELOG has no released versions"
+    assert not (missing := [v for v in versions if v not in linked]), (
+        f"CHANGELOG versions with no release link: {missing}"
+    )
+
+
+def test_plan_names_every_tool():
+    text = (ROOT / "docs" / "PLAN.md").read_text(encoding="utf-8")
+    for name in TOOL_PACKAGES:
+        assert name in text, f"docs/PLAN.md never mentions {name}"
+
+
+def test_every_doc_is_referenced_from_somewhere():
+    referenced: set[pathlib.Path] = set()
+    for path in _docs_text():
+        if path.suffix != ".md":
+            continue
+        for target in re.findall(r"\]\(([^)#]+)", path.read_text(encoding="utf-8")):
+            referenced.add((path.parent / target.strip()).resolve())
+    orphans = [
+        str(p.relative_to(ROOT))
+        for p in (ROOT / "docs").rglob("*.md")
+        if p.resolve() not in referenced
+    ]
+    assert not orphans, f"docs not linked from anywhere: {orphans}"
+
+
 def test_no_stale_tool_count_in_the_readme():
     # a hardcoded "nine" was left behind after the tenth tool landed
     assert "nine inspect tools" not in (ROOT / "README.md").read_text(encoding="utf-8").lower()

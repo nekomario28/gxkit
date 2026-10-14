@@ -7,6 +7,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.2.3] — covered, baselined, hardened
 
+See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.3).
+
 ### Added
 - `gxkit` umbrella: `gxkit inspect <file>` (detect and route), `gxkit tools`,
   `gxkit codes`.
@@ -32,6 +34,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   artifact fails), so the action cannot rot untested.
 
 ### Tests
+- **Docs are reachable and linked**: every released version in the `CHANGELOG`
+  has a release link, `docs/PLAN.md` names every tool, every `docs/*.md` is
+  referenced from somewhere, every internal `#heading` link resolves, and every
+  `README` example matches the tool's real output.
 - **What each tool ships** is enforced: `README.md`/`AGENTS.md`/`llms.txt`/
   `SKILL.md`/`LICENSE`, a `SKILL.md` name matching the tool, and only that tool's
   own codes named in its docs; the `CODEBOOK` keys must equal the tools plus
@@ -68,6 +74,7 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   non-blank — the images a human reviews are not left untested.
 
 ### Fixed
+- The `CHANGELOG` sections for 0.2.3 and 0.1.x had no link to their release.
 - `docs/LICENSING.md`'s dependency table listed the wrong packages (Pillow was
   missing `chartgx` and `framegx`; numpy wrongly credited `chartgx`).
 - `docgx` and `protogx` were missing `AGENTS.md`, though the README and
@@ -97,6 +104,8 @@ See the [v0.2.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.
 
 ## [0.1.2] — robustness
 
+See the [v0.1.2 release](https://github.com/nekomario28/gxkit/releases/tag/v0.1.2).
+
 ### Added
 - `framegx` — inspect a rendered animation (black, frozen, wrong length, silent).
 - Security note (the loader runs the artifact file).
@@ -108,11 +117,15 @@ See the [v0.2.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.
 
 ## [0.1.1] — audit
 
+See the [v0.1.1 release](https://github.com/nekomario28/gxkit/releases/tag/v0.1.1).
+
 ### Added
 - SPDX `License-Expression` and a `LICENSE` in every wheel; `docs/LICENSING.md`.
 - Direct tests for `gxcore.diagram`, `gxcore.toolkit`, `graph.shortest_path`.
 
 ## [0.1.0] — the family
+
+See the [v0.1.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.1.0).
 
 ### Added
 - `gxcore` and the first tools: `chartgx`, `levelgx`, `flowgx`, `authzgx`,
