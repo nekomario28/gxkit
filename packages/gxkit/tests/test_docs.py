@@ -107,6 +107,24 @@ def test_every_tool_llms_txt_has_the_essentials():
         assert f"subdirectory=packages/{name}" in text, f"{name}/llms.txt has no install line"
 
 
+def test_every_tool_agents_md_has_the_essentials():
+    for name in TOOL_PACKAGES:
+        text = (ROOT / "packages" / name / "AGENTS.md").read_text(encoding="utf-8")
+        assert name in text, f"{name}/AGENTS.md never names itself"
+        assert "inspect" in text, f"{name}/AGENTS.md does not mention inspect"
+        assert "exit code 1" in text.lower(), f"{name}/AGENTS.md does not state the exit code"
+
+
+def test_every_tool_skill_md_names_a_code():
+    from gxkit.codes import CODEBOOK
+
+    for name in TOOL_PACKAGES:
+        text = (ROOT / "packages" / name / "SKILL.md").read_text(encoding="utf-8")
+        assert any(code in text for code in CODEBOOK[name]), (
+            f"{name}/SKILL.md names none of its problem codes"
+        )
+
+
 def test_changelog_links_every_released_version():
     text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     versions = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", text, re.M)

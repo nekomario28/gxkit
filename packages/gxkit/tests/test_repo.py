@@ -37,6 +37,8 @@ def test_security_points_at_the_reporting_path():
     text = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
     assert "security/advisories" in text, "SECURITY.md has no reporting path"
     assert "Supported versions" in text, "SECURITY.md states no supported versions"
+    assert "gxcore" in text and "gxkit-cli" in text, "SECURITY.md names no distributions"
+    assert "3.10" in text, "SECURITY.md states no Python range"
 
 
 def test_every_html_image_in_the_readme_has_alt_text():

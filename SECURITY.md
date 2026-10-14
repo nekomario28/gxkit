@@ -50,4 +50,6 @@ an artifact you would not run as a script on that runner.
 
 ## Supported versions
 
-The latest release of each package.
+The **latest release** of every distribution: `gxcore`, each `*gx` tool, and the
+`gxkit-cli` umbrella. Only the latest minor line of each is supported; older tags
+are not. Python **3.10–3.13**.
