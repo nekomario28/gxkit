@@ -98,6 +98,10 @@ def _run_tool(spec: ToolSpec, file: Path, args: argparse.Namespace) -> int:
         forwarded.append("--no-storyboard")
     if args.no_config:
         forwarded.append("--no-config")
+    if args.baseline:
+        forwarded += ["--baseline", args.baseline]
+    if args.write_baseline:
+        forwarded += ["--write-baseline", args.write_baseline]
     print(f"gxkit: {spec.name} — {spec.inspects}", file=sys.stderr)
     return run(tool, forwarded)
 
@@ -131,8 +135,8 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         else:
             files.append(target)
 
-    if len(files) > 1 and (args.json or args.output):
-        print("gxkit: --json and -o take a single artifact", file=sys.stderr)
+    if len(files) > 1 and (args.json or args.output or args.baseline or args.write_baseline):
+        print("gxkit: --json, -o and a baseline take a single artifact", file=sys.stderr)
         return 2
 
     rc = 0
@@ -170,6 +174,8 @@ def build_parser() -> argparse.ArgumentParser:
     ins.add_argument("--json", action="store_true")
     ins.add_argument("--no-storyboard", action="store_true")
     ins.add_argument("--no-config", action="store_true", help="ignore .gxkit.toml")
+    ins.add_argument("--baseline", help="compare against a stored baseline report")
+    ins.add_argument("--write-baseline", help="write this report as the baseline")
     ins.set_defaults(func=_cmd_inspect)
     return p
 

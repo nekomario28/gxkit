@@ -515,7 +515,3 @@ def _guard(fn: Any, *args: Any) -> None:
         fn(*args)
     except Exception:
         return
-    try:
-        fn()
-    except Exception:
-        return

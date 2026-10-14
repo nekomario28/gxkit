@@ -39,3 +39,13 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["packages"]
 addopts = "-q"
+
+[tool.coverage.report]
+# `if __name__ == "__main__":` is a process entry point, not a branch to test;
+# everything else must be exercised or explicitly marked `# pragma: no cover`
+# with a reason (a platform or version fallback that cannot be run here).
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+]

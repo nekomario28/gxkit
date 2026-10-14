@@ -12,10 +12,15 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A reusable GitHub Action (`uses: nekomario28/gxkit@vX.Y.Z`).
 - `docs/RELEASING.md`; PyPI metadata and a `gxcore` version pin.
 - `scripts/check.sh` — one command that runs every gate CI runs.
+- **Baselines** (`inspect --baseline` / `--write-baseline`): a stored report makes
+  a run a diff (new / fixed / unchanged) that fails only on new errors.
 
 ### Changed
 - mypy runs in `--strict`; `ruff format --check` is a CI gate; a macOS leg was
   added to the test matrix.
+- The coverage gate is **100%** (statements), with `# pragma: no cover` reserved
+  for platform/version fallbacks; the full number needs ffmpeg and a GL context,
+  which the Ubuntu CI leg installs.
 - CI exercises the **published action** itself (clean artifact passes, faulty
   artifact fails), so the action cannot rot untested.
 

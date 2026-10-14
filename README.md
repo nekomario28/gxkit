@@ -40,6 +40,17 @@ Every tool has the same contract, so an agent learns it once:
 - **A storyboard image** with each located problem boxed and numbered, so the
   text report and the picture agree.
 
+**Keep history.** Compare a run to an accepted state, so CI fails only on *new*
+errors and old debt is visible as it shrinks:
+
+```sh
+<tool> inspect artifact.py --write-baseline .gxkit-baseline.json   # accept today
+<tool> inspect artifact.py --baseline .gxkit-baseline.json         # new / fixed / unchanged
+```
+
+The baseline is plain JSON — commit it. Without one, `inspect` behaves exactly
+as before (any `error` fails).
+
 **One entry point.** You don't have to know which tool fits:
 
 ```sh

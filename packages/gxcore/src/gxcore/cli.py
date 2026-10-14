@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .baseline import Baseline, Diff, compare, summary
 from .config import apply as apply_config
 from .config import load as load_config
 from .model import Report
@@ -59,6 +60,8 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
     ins.add_argument("--no-storyboard", action="store_true", help="skip the storyboard image")
     ins.add_argument("--json", action="store_true", help="print the report as JSON")
     ins.add_argument("--no-config", action="store_true", help="ignore .gxkit.toml")
+    ins.add_argument("--baseline", help="compare against a stored baseline report")
+    ins.add_argument("--write-baseline", help="write this report as the baseline")
 
     ren = sub.add_parser("render", help="write the artifact as a PNG")
     ren.add_argument("file", help="the file that builds the artifact")
@@ -73,6 +76,13 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
     if not getattr(args, "no_config", False):
         apply_config(report, load_config(Path(args.file).resolve().parent), tool.name)
 
+    diff: Diff | None = None
+    if args.baseline:
+        diff = compare(report, Baseline.load(args.baseline))
+    if args.write_baseline:
+        Baseline.of(report).save(args.write_baseline)
+        print(f"{tool.name}: baseline written to {args.write_baseline}", file=sys.stderr)
+
     sb: Path | None = None
     if not args.no_storyboard and tool.to_image is not None:
         # A storyboard the tool cannot draw (e.g. shadergx with no GL context)
@@ -85,10 +95,15 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
             sb = None
 
     if args.json:
-        print(to_json(report, sb))
+        print(to_json(report, sb, diff))
     else:
-        print(human(args.file, report, sb))
-    return 1 if report.errors else 0
+        text = human(args.file, report, sb)
+        if diff is not None:
+            text = f"{text}\n{summary(diff)}"
+        print(text)
+    # With a baseline, only *new* errors fail — pre-existing debt does not.
+    failing = diff.new_errors if diff is not None else report.errors
+    return 1 if failing else 0
 
 
 def _cmd_render(tool: Tool, args: argparse.Namespace) -> int:

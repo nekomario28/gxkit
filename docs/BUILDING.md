@@ -44,6 +44,8 @@ Every tool ships the same surface, because an agent must not re-learn it:
 - a **storyboard PNG** with a numbered box per located problem, and the numbers
   **matching the text report**.
 - a broken input file reports an error, **never a traceback**.
+- **`--baseline` / `--write-baseline`** — a stored baseline (`gxcore.baseline`)
+  turns a run into a diff: new / fixed / unchanged, failing only on new `error`s.
 - `render` to a PNG for the plain picture.
 
 ## 3. Structure: one core, thin tools

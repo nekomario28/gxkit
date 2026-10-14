@@ -34,6 +34,9 @@ can ignore a code or change its severity; `--no-config` skips it.
   on the code, never on prose.
 - **A storyboard image** with each located problem boxed and numbered, matching
   the text report.
+- **A baseline** (`--baseline` / `--write-baseline`) records an accepted state so
+  a re-run reports new / fixed / unchanged and fails only on **new** errors.
+  Commit the `.gxkit-baseline.json` it writes.
 
 ## Route to the tool
 

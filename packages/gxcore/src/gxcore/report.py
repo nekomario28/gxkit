@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from .model import Report
 
@@ -34,8 +35,14 @@ def human(source: str | Path, report: Report, storyboard: str | Path | None = No
     return "\n".join(lines)
 
 
-def to_json(report: Report, storyboard: str | Path | None = None) -> str:
+def to_json(
+    report: Report,
+    storyboard: str | Path | None = None,
+    baseline: Any | None = None,
+) -> str:
     payload = report.as_dict()
     if storyboard is not None:
         payload["storyboard"] = str(storyboard)
+    if baseline is not None:
+        payload["baseline"] = baseline.as_dict()
     return json.dumps(payload, indent=2, ensure_ascii=False)

@@ -15,7 +15,7 @@ from gxcore.testing import assert_fires, assert_quiet
 pytest.importorskip("moderngl")
 
 from shadergx import Shader, inspect_shader, load_shader
-from shadergx.gl import ShaderError, context
+from shadergx.gl import ShaderError, context, render_array
 
 
 @pytest.fixture(autouse=True)
@@ -81,6 +81,12 @@ def test_bad_size():
     assert_fires(inspect_shader(s), "bad-size", ERROR)
 
 
+def test_render_array_rejects_a_zero_canvas():
+    s = Shader(fragment="void main(){ fragColor = vec4(1.0); }", size=(0, 0))
+    with pytest.raises(ShaderError):
+        render_array(s)
+
+
 def test_compile_error_message_is_one_line():
     s = shader("void main(){ fragColor = nope; }")
     msg = next(p.message for p in inspect_shader(s).problems if p.code == "compile-error")
@@ -96,3 +102,15 @@ def test_examples_load_and_are_diagnosed():
     assert_fires(inspect_shader(broken), "black-output", ERROR)
     assert_fires(inspect_shader(broken), "uniform-unused", WARN)
     assert_fires(inspect_shader(invalid), "compile-error", ERROR)
+
+
+def test_a_uniform_the_output_ignores_is_reported_by_the_value_probe():
+    # the compiler keeps the uniform (it is read in a branch), so the only way
+    # to learn the shader ignores it is to change its value and compare pixels.
+    s = shader(
+        "uniform float u_threshold;\n"
+        "void main(){ float v = uv.x; if (u_threshold > 100.0) { v = 1.0 - v; } "
+        "fragColor = vec4(v, 0.0, 0.0, 1.0); }",
+        uniforms={"u_threshold": 0.0},
+    )
+    assert_fires(inspect_shader(s), "uniform-unused", WARN)
