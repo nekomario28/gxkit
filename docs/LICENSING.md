@@ -58,3 +58,6 @@ The design is a generalisation of patterns others established:
   agent-native tooling already wraps.
 - **d2 / mermaid / vlmkit-anim** — diagram tooling whose place `gxkit` does not
   try to take.
+- **Inigo Quilez** (<https://iquilezles.org/articles/>) — raymarching / signed
+  distance functions and the cosine palette. The hero figure uses these
+  *techniques*; its code is original.

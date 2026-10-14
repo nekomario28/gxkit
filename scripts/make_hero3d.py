@@ -6,6 +6,17 @@ sin(1.5t))`. The picture is a distance field over that curve, sphere-traced on
 the GPU by gxkit's own `shadergx`, shaded with a Lambert term plus a rim light
 and coloured by position along the knot. Deterministic: same script, same image.
 
+References — techniques, not copied code:
+
+* Raymarching / sphere tracing, signed distance functions, and the cosine
+  palette `a + b·cos(2π(c·t + d))`: Inigo Quilez, <https://iquilezles.org/articles/>
+  ("Raymarching SDFs", "Palettes").
+* The (2,3) torus-knot parametrisation: standard (see "Torus knot").
+* Distance to a parametric curve by sampling its segments: a standard
+  approximation of the curve's distance field.
+
+All code here is original; only these published techniques are used.
+
 Needs a GL context (Mesa/EGL or a GPU), because it renders through `shadergx`:
 
     uv run python scripts/make_hero3d.py   # writes docs/assets/hero-3d.png
