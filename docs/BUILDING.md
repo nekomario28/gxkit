@@ -94,6 +94,11 @@ And, per tool, three abuse tests: **malformed input** (empty, syntax error,
 **property test** over random well-formed artifacts must return a `Report`
 not raise; and **lint + types run in CI**, not only by hand.
 
+Beyond that: **cross-check any hand-rolled algorithm** (reachability, cycles,
+shortest paths) against a reference library such as NetworkX on random inputs,
+and keep **one CLI contract test per tool** — faulty exits 1, honest exits 0,
+`--json` parses with an error.
+
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
 
