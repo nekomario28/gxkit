@@ -25,8 +25,7 @@ uv publish dist/*.whl dist/*.tar.gz
 ```
 
 Publish **`gxcore` first** (the tools depend on it), then the tools, then the
-`gxkit-cli` umbrella. The tools' `dependencies` name `gxcore` without a version
-pin; before the first real release, pin it (e.g. `gxcore>=0.4,<0.5`) so a
+`gxkit-cli` umbrella. The tools already pin it (`gxcore>=0.4,<0.5`) so a
 published tool does not resolve an unrelated `gxcore`.
 
 > **The name `gxkit` is taken on PyPI** (an unrelated package), so the umbrella
@@ -36,7 +35,7 @@ published tool does not resolve an unrelated `gxcore`.
 ## Check the names
 
 ```sh
-for p in gxcore chartgx levelgx flowgx authgx protogx authzgx depsgx schemagx docgx shadergx framegx gxkit; do
+for p in gxcore chartgx levelgx flowgx protogx authzgx depsgx schemagx docgx shadergx framegx gxkit-cli; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/$p/json")
   echo "$p -> $code (404 = free)"
 done

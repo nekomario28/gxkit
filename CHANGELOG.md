@@ -5,6 +5,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.3] — covered, baselined, hardened
+
 ### Added
 - `gxkit` umbrella: `gxkit inspect <file>` (detect and route), `gxkit tools`,
   `gxkit codes`.
@@ -55,6 +57,18 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   directive (which silently dropped the preamble).
 - `shadergx` tries the platform-default GL context (and CGL) so it can work on
   macOS instead of only EGL/WGL/GLX.
+
+## [0.2.2] — 100% covered, and baselines
+
+See the [v0.2.2 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.2).
+
+## [0.2.1] — strict everywhere, references checked
+
+See the [v0.2.1 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.1).
+
+## [0.2.0] — the umbrella, config, codes, a CI action
+
+See the [v0.2.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.0).
 
 ## [0.1.2] — robustness
 

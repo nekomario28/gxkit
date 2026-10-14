@@ -57,7 +57,7 @@ Two ways this arrives:
    nothing detects it. Only `FigureLint` exists, and it lints academic figures,
    not correctness. → **built in `gxkit` as `chartgx`.**
 
-> **Status (v0.2.1):** `gxkit` implements this pattern for ten domains —
+> **Status (v0.2.3):** `gxkit` implements this pattern for ten domains —
 > charts, game levels, state machines, permissions, module graphs, schemas,
 > pages, protocols and fragment shaders — over one core (`gxcore`). See the
 > repository README for the current list.

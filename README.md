@@ -117,8 +117,8 @@ the tools share:
 - **`loading`** and **`toolkit`** — load an artifact from a file; build a tool
   from three callables.
 
-A new tool is a loader, a checks module and a renderer; its `tool.py` is five
-lines. See [`docs/BUILDING.md`](docs/BUILDING.md).
+A new tool is a loader, a checks module and a renderer; its `tool.py` is about
+twenty lines. See [`docs/BUILDING.md`](docs/BUILDING.md).
 
 ## Install
 
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nekomario28/gxkit@v0.2.2
+      - uses: nekomario28/gxkit@v0.2.3
         with:
           path: artifacts/          # a file, or a directory of *.py artifacts
           args: --json              # optional extra flags

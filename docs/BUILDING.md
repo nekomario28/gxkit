@@ -197,6 +197,11 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Pin the encoding on text I/O.** `read_text()` / `write_text()` default to the
   platform encoding (cp1252 on Windows); an exact-match test on a non-ASCII asset
   or a JSON file with `ensure_ascii=False` then fails only on Windows.
+- **Guard drift across the whole tree.** A rename, a count or a release version
+  lives in many docs. A test that scans every tracked
+  `*.md`/`*.txt`/`*.yml`/`*.toml` for the canonical names and the release version
+  (and checks the version has a CHANGELOG entry) catches a misspelled tool name
+  in a publish loop and a `gxkit` where PyPI needs `gxkit-cli`.
 - **Assert layout invariants, not a golden image.** Determinism, non-overlap,
   on-canvas and "something was drawn" catch a layout drift that a screenshot
   baseline would bless.

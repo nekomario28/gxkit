@@ -69,3 +69,53 @@ def test_the_committed_architecture_svg_is_current():
 def test_no_stale_tool_count_in_the_readme():
     # a hardcoded "nine" was left behind after the tenth tool landed
     assert "nine inspect tools" not in (ROOT / "README.md").read_text(encoding="utf-8").lower()
+
+
+# --------------------------------------------------------------------------- #
+# drift guards: a name, a count and a version must not go stale in the prose
+# --------------------------------------------------------------------------- #
+
+EXTERNAL_GX_NAMES = {"manimgx"}  # another project we mention, not a gxkit tool
+
+
+def _docs_text():
+    for pattern in ("*.md", "*.txt", "*.yml", "*.toml"):
+        for path in ROOT.rglob(pattern):
+            if any(part in {".git", ".venv", "dist", "__pycache__"} for part in path.parts):
+                continue
+            yield path
+
+
+def test_no_unknown_tool_name_in_the_docs():
+    canonical = {"gxcore", "gxkit", *TOOL_PACKAGES}
+    unknown: dict[str, set[str]] = {}
+    for path in _docs_text():
+        found = set(re.findall(r"\b([a-z][a-z0-9]*gx)\b", path.read_text(encoding="utf-8")))
+        bad = found - canonical - EXTERNAL_GX_NAMES
+        if bad:
+            unknown[str(path.relative_to(ROOT))] = bad
+    assert not unknown, f"unknown tool name(s): {unknown}"
+
+
+def test_releasing_lists_every_package():
+    text = (ROOT / "docs" / "RELEASING.md").read_text(encoding="utf-8")
+    match = re.search(r"for p in (.+?); do", text)
+    assert match is not None
+    assert set(match.group(1).split()) == {"gxcore", "gxkit-cli", *TOOL_PACKAGES}
+
+
+def test_root_skill_routes_to_every_tool():
+    text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+    for name in TOOL_PACKAGES:
+        assert f"`{name}`" in text, f"SKILL.md does not mention {name}"
+
+
+def test_release_references_agree_and_are_changelogged():
+    refs: set[str] = set()
+    for path in (ROOT / "README.md", ROOT / "docs" / "agent-native-landscape.md"):
+        text = path.read_text(encoding="utf-8")
+        refs |= set(re.findall(r"gxkit@v(\d+\.\d+\.\d+)", text))
+        refs |= set(re.findall(r"Status \(v(\d+\.\d+\.\d+)\)", text))
+    assert len(refs) == 1, f"release references disagree: {sorted(refs)}"
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert f"## [{refs.pop()}]" in changelog
