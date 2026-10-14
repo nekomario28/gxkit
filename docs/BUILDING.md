@@ -89,6 +89,11 @@ A check that cannot fail is decoration. For **every** check, write:
 - one test that builds the defect and asserts `(severity, code)` fires;
 - one test that asserts a clean artifact stays quiet.
 
+And, per tool, three abuse tests: **malformed input** (empty, syntax error,
+`sys.exit()` on import) must exit 2 with a message and never a traceback; a
+**property test** over random well-formed artifacts must return a `Report`
+not raise; and **lint + types run in CI**, not only by hand.
+
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
 
