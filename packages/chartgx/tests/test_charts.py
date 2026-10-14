@@ -214,3 +214,30 @@ def test_report_has_details_and_stable_codes():
     assert r.details and r.details[0].startswith("ax[0]")
     assert {"empty-chart", "truncated-baseline"} & {c for _, c in codes(r)} == set()
     assert isinstance(r.as_dict()["problems"], list)
+
+
+# --------------------------------------------------------------------------- #
+# axis orientation
+# --------------------------------------------------------------------------- #
+
+
+def test_inverted_y_axis_is_flagged():
+    fresh()
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [1, 4, 9])
+    ax.set_ylim(10, 0)
+    ax.set_title("t")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y (m)")
+    assert_fires(report(fig), "inverted-axis", WARN)
+
+
+def test_a_normal_axis_is_quiet():
+    fresh()
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [1, 4, 9])
+    ax.set_ylim(0, 10)
+    ax.set_title("t")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y (m)")
+    assert_quiet(report(fig), "inverted-axis")

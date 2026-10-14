@@ -27,6 +27,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "constant-series": "warn",
         "clipped-data": "warn",
         "legend-covers": "warn",
+        "inverted-axis": "warn",
         "small-text": "info",
         "no-units": "info",
         "cut-value-axis": "info",

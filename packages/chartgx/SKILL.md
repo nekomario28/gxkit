@@ -43,6 +43,7 @@ uv tool install ./packages/chartgx
 | `constant-series` | warn | the data did not load / carries nothing |
 | `clipped-data` | warn | widen the limits |
 | `legend-covers` | warn | move the legend out of the data |
+| `inverted-axis` | warn | orient the value axis the right way |
 | `small-text` | info | raise font size |
 | `no-units` | info | units on the value axis |
 | `cut-value-axis` | info | fine for trends, not for magnitudes |

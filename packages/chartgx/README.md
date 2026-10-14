@@ -66,6 +66,7 @@ fig.tight_layout()
 | `constant-series` | warn | a series that never changes |
 | `clipped-data` | warn | data runs past the axis limits and is cut off |
 | `legend-covers` | warn | the legend hides the data |
+| `inverted-axis` | warn | a value axis that grows the wrong way |
 | `small-text` | info | text below the readable floor |
 | `no-units` | info | a value axis with no unit |
 | `cut-value-axis` | info | a line axis cut away from zero (fine for trends) |

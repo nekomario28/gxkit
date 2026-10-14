@@ -9,7 +9,7 @@ that the docs agree) live in `packages/gxkit/tests/`.
 
 | tool | inspects | module | codes | examples |
 | --- | --- | --- | --- | --- |
-| `chartgx` | matplotlib charts | `chartgx.tool` | 18 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
+| `chartgx` | matplotlib charts | `chartgx.tool` | 19 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
 | `levelgx` | game levels | `levelgx.tool` | 8 | `broken_level.py`, `good_level.py`, `softlock_level.py` |
 | `authzgx` | permission models | `authzgx.tool` | 12 | `escalate_auth.py`, `good_auth.py` |
 | `depsgx` | module dependency graphs | `depsgx.tool` | 9 | `broken_modules.py`, `good_modules.py` |

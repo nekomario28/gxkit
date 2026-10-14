@@ -336,6 +336,20 @@ def _check_log(ax: Any, i: int, out: list[Problem]) -> None:
                 continue
 
 
+def _check_inverted_axis(ax: Any, i: int, out: list[Problem]) -> None:
+    for axis, limits in (("y", ax.get_ylim()), ("x", ax.get_xlim())):
+        if limits[0] > limits[1]:
+            out.append(
+                Problem(
+                    WARN,
+                    "inverted-axis",
+                    f"the {axis}-axis is inverted ({limits[0]:g} at the near edge, "
+                    f"{limits[1]:g} at the far edge) — values grow the wrong way",
+                    target=f"ax[{i}]",
+                )
+            )
+
+
 def _check_dual_axis(ax: Any, i: int, primary: bool, out: list[Problem]) -> None:
     if _twins(ax) and primary:
         out.append(
@@ -497,6 +511,7 @@ def inspect_figure(fig: Any, name: str = "figure") -> Report:
         _guard(_check_constant, ax, i, out)
         _guard(_check_clipped_data, ax, i, out)
         _guard(_check_log, ax, i, out)
+        _guard(_check_inverted_axis, ax, i, out)
         _guard(_check_dual_axis, ax, i, not secondary, out)
         _guard(_check_series_colors, ax, i, kind, out)
         _guard(_check_pie, ax, i, kind, out)

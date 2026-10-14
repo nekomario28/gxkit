@@ -5,6 +5,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `chartgx`: `inverted-axis` (warn) — a value axis that grows the wrong way
+  (`ylim`/`xlim` reversed), which reads magnitudes upside down.
+
 ## [0.4.0] — apigx, the eleventh tool
 
 See the [v0.4.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.4.0).
