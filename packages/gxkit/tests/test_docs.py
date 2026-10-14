@@ -136,6 +136,38 @@ def test_no_unknown_tool_name_in_the_docs():
     assert not unknown, f"unknown tool name(s): {unknown}"
 
 
+def _slug(heading: str) -> str:
+    heading = re.sub(r"`([^`]*)`", r"\1", heading).strip().lower()
+    heading = re.sub(r"[^\w\s-]", "", heading)
+    return re.sub(r"\s+", "-", heading).strip("-")
+
+
+def _headings(path) -> set[str]:
+    text = path.read_text(encoding="utf-8")
+    return {_slug(m.group(1)) for m in re.finditer(r"^#{1,6}\s+(.*)$", text, re.M)}
+
+
+def test_no_broken_internal_anchor():
+    broken: list[str] = []
+    for path in _docs_text():
+        if path.suffix != ".md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", text):
+            target = target.strip()
+            if target.startswith(("http://", "https://", "mailto:")):
+                continue
+            file_part, _, anchor = target.partition("#")
+            if not anchor:
+                continue
+            target_path = path if not file_part else (path.parent / file_part)
+            if not target_path.exists():
+                broken.append(f"{path}: {target} (file missing)")
+            elif target_path.suffix == ".md" and anchor not in _headings(target_path):
+                broken.append(f"{path}: {target} (no such heading)")
+    assert not broken, broken
+
+
 def test_releasing_lists_every_package():
     text = (ROOT / "docs" / "RELEASING.md").read_text(encoding="utf-8")
     match = re.search(r"for p in (.+?); do", text)
