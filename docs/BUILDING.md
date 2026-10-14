@@ -180,6 +180,8 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Cross-check the reading, not only the primitive.** The tool that calls
   `reachable()`/`find_cycle()` must reach the same verdict as NetworkX on random
   models, and a *sound* random artifact must report zero problems.
+- **Route on the real files, not fake classes, and hold a reported box against
+  the drawn pixels** — both catch a defect that every unit check would pass.
 
 ## 7. What every tool ships
 
