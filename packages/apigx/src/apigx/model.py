@@ -1,0 +1,124 @@
+"""An HTTP API contract, declared as data.
+
+    import apigx as a
+
+    api = a.API(
+        base="/v1",
+        endpoints=[
+            a.Endpoint("GET", "/v1/users", statuses=[200, 404]),
+            a.Endpoint("POST", "/v1/users", auth=True, statuses=[201, 400]),
+        ],
+    )
+
+An `Endpoint` is a method and a path, plus whether it requires authentication,
+the status codes it documents, and whether it is deprecated. A mutating method
+(POST/PUT/PATCH/DELETE) with `auth=False` is a real bug.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from pathlib import Path
+
+MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+@dataclass
+class Endpoint:
+    method: str
+    path: str
+    auth: bool = True
+    statuses: list[int] = field(default_factory=list)
+    deprecated: bool = False
+
+    @property
+    def verb(self) -> str:
+        return self.method.upper()
+
+    @property
+    def mutating(self) -> bool:
+        return self.verb in MUTATING
+
+    def label(self) -> str:
+        return f"{self.verb} {self.path}"
+
+
+@dataclass
+class API:
+    endpoints: list[Endpoint] = field(default_factory=list)
+    base: str = "/v1"
+    name: str = "api"
+    auth_schemes: list[str] = field(default_factory=list)
+
+    def routes(self) -> list[tuple[str, str]]:
+        return [(e.verb, e.path) for e in self.endpoints]
+
+
+def _as_endpoint(value: object) -> Endpoint | None:
+    if isinstance(value, Endpoint):
+        return value
+    if isinstance(value, str):
+        method, _, path = value.partition(" ")
+        return Endpoint(method, path or "/")
+    if isinstance(value, dict):
+        return Endpoint(
+            method=str(value.get("method", "GET")),
+            path=str(value.get("path", "/")),
+            auth=bool(value.get("auth", True)),
+            statuses=[int(s) for s in value.get("statuses", [])],
+            deprecated=bool(value.get("deprecated", False)),
+        )
+    if isinstance(value, (tuple, list)) and len(value) >= 2:
+        return Endpoint(str(value[0]), str(value[1]))
+    return None
+
+
+def _as_api(value: object) -> API | None:
+    if isinstance(value, API):
+        return value
+    if isinstance(value, dict) and "endpoints" in value:
+        endpoints = [e for e in (_as_endpoint(v) for v in value["endpoints"]) if e]
+        return API(
+            endpoints=endpoints,
+            base=str(value.get("base", "/v1")),
+            name=str(value.get("name", "api")),
+            auth_schemes=list(value.get("auth_schemes", [])),
+        )
+    if isinstance(value, (list, tuple)):
+        built: list[Endpoint] = []
+        for item in value:
+            endpoint = _as_endpoint(item)
+            if endpoint is None:
+                return None
+            built.append(endpoint)
+        if built:
+            return API(endpoints=built)
+    return None
+
+
+def load_api(path: str | Path) -> tuple[API, object]:
+    from gxcore.loading import load_from_file
+
+    api, module = load_from_file(
+        path,
+        attrs=("api", "API", "contract", "ENDPOINTS", "endpoints"),
+        builders=("build", "make_api", "make"),
+        convert=_as_api,
+        description="api (an API)",
+    )
+    api.name = getattr(module, "NAME", Path(path).stem)
+    return api, module
+
+
+def api_from_parts(
+    endpoints: list[Endpoint] | None = None,
+    base: str = "/v1",
+    name: str = "api",
+    auth_schemes: list[str] | None = None,
+) -> API:
+    return API(
+        endpoints=list(endpoints or []),
+        base=base,
+        name=name,
+        auth_schemes=list(auth_schemes or []),
+    )

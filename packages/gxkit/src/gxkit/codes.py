@@ -134,6 +134,14 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "no-audio": "warn",
         "silent-audio": "warn",
     },
+    "apigx": {
+        "duplicate-route": "error",
+        "unauthenticated-mutation": "error",
+        "unversioned-path": "warn",
+        "no-error-status": "info",
+        "deprecated-endpoint": "info",
+        "no-endpoints": "info",
+    },
 }
 
 

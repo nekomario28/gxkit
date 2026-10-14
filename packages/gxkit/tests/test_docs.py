@@ -21,8 +21,10 @@ TOOL_PACKAGES = sorted(
 )
 
 
-def test_package_list_is_what_we_expect():
-    assert len(TOOL_PACKAGES) == 10
+def test_package_list_matches_the_codebook():
+    from gxkit.codes import CODEBOOK
+
+    assert set(TOOL_PACKAGES) == set(CODEBOOK) - {"gxcore"}
 
 
 def test_registry_lists_every_tool_package():
@@ -264,6 +266,7 @@ DOCUMENTED_EXAMPLES = {
     "docgx": "crowded_page.py",
     "shadergx": "broken_shader.py",
     "framegx": "frozen_clip.py",
+    "apigx": "broken_api.py",
 }
 
 
@@ -431,3 +434,7 @@ def test_licensing_table_matches_the_actual_imports():
             f"{dependency}: the table says {sorted(listed)}, the imports say "
             f"{sorted(_importers(module))}"
         )
+
+
+def test_documented_examples_cover_every_tool():
+    assert set(DOCUMENTED_EXAMPLES) == set(TOOL_PACKAGES)

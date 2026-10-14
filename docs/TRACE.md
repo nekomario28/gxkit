@@ -19,3 +19,4 @@ that the docs agree) live in `packages/gxkit/tests/`.
 | `framegx` | rendered animations | `framegx.tool` | 12 | `frozen_clip.py`, `good_clip.py` |
 | `protogx` | protocols | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py` |
 | `flowgx` | state machines | `flowgx.tool` | 11 | `broken_machine.py`, `good_machine.py` |
+| `apigx` | HTTP API contracts | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |

@@ -5,6 +5,14 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `apigx` — inspect an HTTP API contract for duplicate routes, unauthenticated
+  mutations and unversioned paths (the eleventh domain tool).
+
+## [0.3.0] — deeper analysis, checked releases
+
+See the [v0.3.0 release](https://github.com/nekomario28/gxkit/releases/tag/v0.3.0).
+
 ## [0.2.3] — covered, baselined, hardened
 
 See the [v0.2.3 release](https://github.com/nekomario28/gxkit/releases/tag/v0.2.3).

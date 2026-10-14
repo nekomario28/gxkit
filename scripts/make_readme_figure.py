@@ -36,6 +36,7 @@ TOOLS = [
     ("authzgx", "permissions", "escalation"),
     ("shadergx", "shaders", "black-output"),
     ("framegx", "animations", "frozen"),
+    ("apigx", "apis", "unauthenticated-mutation"),
 ]
 
 

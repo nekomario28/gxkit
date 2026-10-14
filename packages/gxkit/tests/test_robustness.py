@@ -16,19 +16,9 @@ import shutil
 import pytest
 from gxcore import Report
 from gxcore.cli import run
+from gxkit.registry import TOOLS
 
-TOOL_NAMES = [
-    "chartgx",
-    "levelgx",
-    "flowgx",
-    "protogx",
-    "authzgx",
-    "depsgx",
-    "schemagx",
-    "docgx",
-    "shadergx",
-    "framegx",
-]
+TOOL_NAMES = [tool.name for tool in TOOLS]
 
 MALFORMED = {
     "empty": "",

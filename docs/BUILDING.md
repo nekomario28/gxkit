@@ -226,6 +226,15 @@ this family makes network requests; say so, so the boundary is explicit.
 `uvx --from "<repo>#subdirectory=packages/<tool>" <tool> …` install path; and a
 `payload = [(clean example), (every-fault example)]` under `examples/`.
 
+**Adding a tool is a migration.** One bounded set (the packages and
+`gxkit.registry.TOOLS`) is encoded by many consumers: the registry and the
+codes, the generated architecture figure and `docs/TRACE.md`, the root
+README/SKILL/llms/PLAN prose, `docs/LICENSING.md` (a new import joins a row), the
+test maps that hardcode the set, the `gxkit` workspace sources, and the coverage
+flags in `scripts/check.sh`/CI. Give every consumer map a test that it equals the
+canonical set, then let the reds name the places you forgot — see the
+`contract-shape-migration` skill.
+
 **A figure, not decoration.** A README's first useful thing is one architecture
 figure, generated deterministically from the code by a repo-owned script (no
 hosted service, no CLI to install). Regenerate it and look at the rendered image

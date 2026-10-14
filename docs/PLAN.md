@@ -132,6 +132,10 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P8 — publish.** The repository is public with tags, releases and an action;
   PyPI/npm names are claimed (all free except `gxkit`).
 
+- **P9 — `apigx`.** HTTP API contracts: duplicate routes, a state-changing
+  method with no authentication, a path outside the versioned base. Added after
+  the ten-tool snapshot. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

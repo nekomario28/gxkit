@@ -2,7 +2,7 @@
 
 > Agent-native review loops for creative artifacts. Write the artifact as code, `inspect` it, get problems with stable codes and exit codes, fix them, and ship — with a storyboard image as evidence.
 
-gxkit is a shared engine (`gxcore`) plus ten domain tools. An artifact goes in;
+gxkit is a shared engine (`gxcore`) plus eleven domain tools. An artifact goes in;
 the one that fits is chosen and run.
 
 ## Install
@@ -56,6 +56,9 @@ CI with the repository's reusable action (`uses: nekomario28/gxkit@vX.Y.Z`).
 - **framegx** — rendered animations: a black or frozen picture, the wrong
   length, or missing/silent sound — the output a scene inspector cannot see.
   `packages/framegx`
+- **apigx** — HTTP API contracts: a duplicate route, a mutation with no
+  authentication, a path outside the versioned base, an endpoint documenting no
+  error. `packages/apigx`
 - **gxkit** — the umbrella: `gxkit inspect <file>` detects the artifact's tool
   and runs it. `packages/gxkit`
 

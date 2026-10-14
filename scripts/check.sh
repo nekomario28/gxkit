@@ -26,7 +26,7 @@ step uv run mypy packages/*/src
 step uv run pytest \
   --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \
   --cov=authzgx --cov=depsgx --cov=schemagx --cov=docgx --cov=shadergx \
-  --cov=framegx --cov=gxkit --cov-fail-under=100
+  --cov=framegx --cov=apigx --cov=gxkit --cov-fail-under=100
 step uvx zizmor .
 step uv run --with pip-audit pip-audit --skip-editable
 

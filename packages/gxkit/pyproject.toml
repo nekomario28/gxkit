@@ -31,6 +31,7 @@ dependencies = [
     "protogx",
     "shadergx",
     "framegx",
+    "apigx",
 ]
 
 [project.scripts]
@@ -48,6 +49,7 @@ docgx = { workspace = true }
 protogx = { workspace = true }
 shadergx = { workspace = true }
 framegx = { workspace = true }
+apigx = { workspace = true }
 
 [project.urls]
 Homepage = "https://github.com/nekomario28/gxkit"

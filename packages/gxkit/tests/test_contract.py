@@ -28,6 +28,7 @@ EXAMPLES = {
     "docgx": ("good_page.py", "crowded_page.py"),
     "shadergx": ("good_shader.py", "broken_shader.py"),
     "framegx": ("good_clip.py", "frozen_clip.py"),
+    "apigx": ("good_api.py", "broken_api.py"),
 }
 
 
@@ -60,3 +61,9 @@ def test_contract_faulty_exits_1_honest_exits_0(name, capsys):
     report = json.loads(capsys.readouterr().out)
     assert report["errors"] >= 1
     assert report["problems"], f"{name}: --json reported no problems"
+
+
+def test_the_examples_cover_every_tool():
+    from gxkit.registry import TOOLS
+
+    assert set(EXAMPLES) == {tool.name for tool in TOOLS}

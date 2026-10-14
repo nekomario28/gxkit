@@ -10,6 +10,7 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "apigx",
     "authzgx",
     "chartgx",
     "depsgx",
@@ -23,6 +24,21 @@ members = [
     "protogx",
     "schemagx",
     "shadergx",
+]
+
+[[package]]
+name = "apigx"
+version = "0.1.0"
+source = { editable = "packages/apigx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
+    { name = "pillow", specifier = ">=9" },
 ]
 
 [[package]]
@@ -806,6 +822,7 @@ name = "gxkit-cli"
 version = "0.1.0"
 source = { editable = "packages/gxkit" }
 dependencies = [
+    { name = "apigx" },
     { name = "authzgx" },
     { name = "chartgx" },
     { name = "depsgx" },
@@ -821,6 +838,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "apigx", editable = "packages/apigx" },
     { name = "authzgx", editable = "packages/authzgx" },
     { name = "chartgx", editable = "packages/chartgx" },
     { name = "depsgx", editable = "packages/depsgx" },

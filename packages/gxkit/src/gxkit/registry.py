@@ -92,6 +92,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("Machine",),
         ("MACHINE", "STATES", "TRANSITIONS", "ACCEPT"),
     ),
+    ToolSpec(
+        "apigx",
+        "HTTP API contracts",
+        "apigx.tool",
+        ("api", "API", "contract"),
+        ("API",),
+        ("ENDPOINTS", "BASE"),
+    ),
 )
 
 BY_NAME = {spec.name: spec for spec in TOOLS}

@@ -13,20 +13,15 @@ from gxkit.cli import main
 
 
 def test_catalogue_covers_every_tool():
-    names = [t.name for t in TOOLS]
-    assert set(names) == {
-        "chartgx",
-        "levelgx",
-        "flowgx",
-        "protogx",
-        "authzgx",
-        "depsgx",
-        "schemagx",
-        "docgx",
-        "shadergx",
-        "framegx",
-    }
-    assert len(names) == 10
+    import pathlib
+
+    packages = pathlib.Path(__file__).resolve().parents[2]
+    expected = sorted(
+        d.name
+        for d in packages.iterdir()
+        if (d / "pyproject.toml").exists() and d.name not in {"gxcore", "gxkit"}
+    )
+    assert sorted(t.name for t in TOOLS) == expected
 
 
 def test_detect_by_object_class():

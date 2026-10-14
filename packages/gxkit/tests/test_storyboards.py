@@ -30,6 +30,7 @@ EXAMPLES = {
     "docgx": ("good_page.py", "crowded_page.py"),
     "shadergx": ("good_shader.py", "broken_shader.py"),
     "framegx": ("good_clip.py", "frozen_clip.py"),
+    "apigx": ("good_api.py", "broken_api.py"),
 }
 
 
@@ -80,3 +81,9 @@ def test_storyboard_annotates_a_faulty_artifact(tmp_path):
     out = tmp_path / "softlock.storyboard.png"
     assert run(_tool("levelgx"), ["inspect", _example("levelgx", 1), "-o", str(out)]) == 1
     _assert_non_blank(out)
+
+
+def test_the_examples_cover_every_tool():
+    from gxkit.registry import TOOLS
+
+    assert set(EXAMPLES) == {tool.name for tool in TOOLS}
