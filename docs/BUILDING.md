@@ -134,6 +134,9 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 - **Stale core wheel.** In a multi-package workspace, installing one tool reuses
   a cached wheel of the shared core. When the core changes, bump its version, or
   the tool fails at import (`ModuleNotFoundError: gxcore.toolkit`).
+- **A checker's cache can lie.** mypy's incremental cache hid two real type
+  errors that a fresh CI run caught. Clear it (`rm -rf .mypy_cache`) before
+  believing a local `Success`; let CI be the authority.
 
 ## 7. What every tool ships
 
