@@ -225,3 +225,10 @@ A release also wants: PyPI metadata (authors, keywords, classifiers, URLs), a
 **dependency pin**, a type check if you ship `py.typed`, repository metadata
 (description, topics, homepage), and dependency updates (Dependabot). See
 [`RELEASING.md`](RELEASING.md).
+
+CI must be strict enough to be worth trusting — least privilege (`permissions`,
+`persist-credentials: false`), SHA-pinned actions, `concurrency` and timeouts, a
+Python + one-non-Linux matrix, a coverage floor, a packaging job that also
+installs the built sdist and smoke-tests the CLI, `zizmor` + `pip-audit`, and
+Dependabot with a cooldown. The `publish-readiness-audit` skill has the
+checklist.
