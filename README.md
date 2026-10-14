@@ -122,7 +122,7 @@ A reusable action runs `gxkit inspect` and fails the job on an `error`:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: nekomario28/gxkit@v0.1.2
+- uses: nekomario28/gxkit@v0.2.0
   with:
     path: artifacts/          # a file, or a directory of *.py artifacts
     args: --json              # optional extra flags

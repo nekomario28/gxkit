@@ -7,26 +7,29 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v4
         with:
-          # Full history: the pre-publication check scans `git log -p --all`, and
-          # a shallow clone would silently see only one commit.
+          # full history: the pre-publication check scans `git log -p --all`
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
 
-      # Fail on credentials or machine paths in tracked files before anything
-      # else; a public repo cannot un-leak a secret.
-      - name: Pre-publication check
-        run: python3 scripts/prepublish_check.py
-
-      # Best effort: give the runner Mesa's software GL so the shadergx tests
-      # actually run instead of skipping. If this fails, they skip and CI stays
-      # green.
-      - name: Headless GL (best effort)
+      # Best effort: Mesa software GL (so shadergx tests run) and ffmpeg (so
+      # framegx tests run). If either is unavailable, those tests skip.
+      - name: System tools (best effort)
         run: |
           sudo apt-get update -y || true
-          sudo apt-get install -y --no-install-recommends libegl1 libgl1-mesa-dri libgbm1 || true
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1-mesa-dri libgbm1 ffmpeg || true
+
+      - name: Pre-publication check
+        run: python3 scripts/prepublish_check.py
 
       - run: uv sync --all-packages
       - run: uv run pytest
@@ -34,3 +37,15 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
           GALLIUM_DRIVER: llvmpipe
           MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build --all-packages -o dist
+      - run: uvx twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
