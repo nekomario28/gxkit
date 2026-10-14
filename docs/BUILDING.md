@@ -202,6 +202,11 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
   `*.md`/`*.txt`/`*.yml`/`*.toml` for the canonical names and the release version
   (and checks the version has a CHANGELOG entry) catches a misspelled tool name
   in a publish loop and a `gxkit` where PyPI needs `gxkit-cli`.
+- **A fix without a guard comes back.** Every defect leaves a permanent guard
+  that has been *seen to fail* on the old state — a domain test, a whole-tree
+  scan, a lint rule, or a CI leg on the platform where it broke. The
+  `mistake-to-guard` skill is the procedure; `test_docs.py` is the whole-tree
+  kind.
 - **Assert layout invariants, not a golden image.** Determinism, non-overlap,
   on-canvas and "something was drawn" catch a layout drift that a screenshot
   baseline would bless.

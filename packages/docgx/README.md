@@ -40,14 +40,12 @@ $ docgx inspect crowded_page.py
 crowded_page.py: Crowded slide
 page: 1280x720
 storyboard: Crowded_slide.storyboard.png
-  1280x720, 3 blocks, 402 words
-inspect: 7 problems (2 errors)
-  [1] error  block 'detail detail …': cut off at the canvas edge
-  [2] error  block 'tiny note' and block 'detail detail …' overlap
-  [3] warn   no-title: the page has no title
-  [4] warn   too-much-text: 402 words on the page (limit 40)
-  [5] info   small-text: block 'tiny note' is 5pt — below the readable floor
-  [6] info   reading-order: blocks are declared out of top-to-bottom order
+  1280x720, 3 blocks, 405 words
+inspect: 6 problems (2 errors)
+  [1] error -          clipped-text: block 'detail detail detail detail detail detail detail de…' is cut off at the canvas edge
+  [2] error -          text-overlap: block 'detail detail detail detail detail detail detail de…' and block 'tiny note' overlap
+  [3] warn  -          no-title: the page has no title
+  ...
 ```
 
 - **Exit code 1** when any `error`-severity problem is found.

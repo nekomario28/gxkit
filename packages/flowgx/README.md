@@ -45,10 +45,10 @@ storyboard: Broken_review_workflow.storyboard.png
   6 states, 5 transitions
   accepting: published
 inspect: 4 problems (4 errors)
-  [1] error rejected  unreachable-state: state 'rejected' cannot be reached from 'draft'
-  [2] error limbo     dead-end: state 'limbo' has no outgoing transition and is not accepting — the flow gets stuck
-  [3] error changes   no-exit: state 'changes' cannot reach any accepting state — the flow can never complete from here
-  [4] error review    ambiguous-transition: state 'review' has more than one 'act' transition — the flow is non-deterministic
+  [1] error changes    no-exit: state 'changes' cannot reach any accepting state — the flow can never complete from here
+  [2] error limbo      dead-end: state 'limbo' has no outgoing transition and is not accepting — the flow gets stuck
+  [3] error rejected   unreachable-state: state 'rejected' cannot be reached from 'draft'
+  [4] error review     ambiguous-transition: state 'review' has more than one 'act' transition — the flow is non-deterministic
 ```
 
 - **Exit code 1** when any `error`-severity problem is found.

@@ -6,8 +6,12 @@ avoidable mistake; this makes each one a failing test.
 
 from __future__ import annotations
 
+import importlib
 import pathlib
 import re
+import shutil
+
+import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 TOOL_PACKAGES = sorted(
@@ -119,3 +123,69 @@ def test_release_references_agree_and_are_changelogged():
     assert len(refs) == 1, f"release references disagree: {sorted(refs)}"
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     assert f"## [{refs.pop()}]" in changelog
+
+
+# --------------------------------------------------------------------------- #
+# the documented example output must be what the tool prints today
+# ---------------------------------------------------------------------------
+
+DOCUMENTED_EXAMPLES = {
+    "chartgx": "bad_chart.py",
+    "levelgx": "softlock_level.py",
+    "flowgx": "broken_machine.py",
+    "protogx": "broken_protocol.py",
+    "authzgx": "escalate_auth.py",
+    "depsgx": "broken_modules.py",
+    "schemagx": "broken_schema.py",
+    "docgx": "crowded_page.py",
+    "shadergx": "broken_shader.py",
+    "framegx": "frozen_clip.py",
+}
+
+
+def _skip_without_capability(name: str) -> None:
+    if name == "shadergx":
+        gl = pytest.importorskip("shadergx.gl")
+        try:
+            gl.context()
+        except Exception:
+            pytest.skip("no GL context")
+    if name == "framegx" and not shutil.which("ffprobe"):
+        pytest.skip("no ffprobe")
+
+
+def _inspect_example(name: str):
+    tool = importlib.import_module(f"{name}.tool").TOOL
+    artifact = tool.load(ROOT / "packages" / name / "examples" / DOCUMENTED_EXAMPLES[name])
+    return tool.inspect(artifact)
+
+
+def _assert_readme_matches(name: str, readme_path) -> None:
+    readme = readme_path.read_text(encoding="utf-8")
+    summary = re.search(r"inspect: (\d+) problems? \((\d+) errors?\)", readme)
+    assert summary is not None, f"{name}: the README shows no `inspect:` summary"
+    report = _inspect_example(name)
+    ordered = report.sorted()
+    assert (len(ordered), report.errors) == (int(summary.group(1)), int(summary.group(2))), (
+        f"{name}: README says {summary.group(0)!r}, the tool prints "
+        f"{len(ordered)} problems ({report.errors} errors)"
+    )
+    for index, severity, code in re.findall(
+        r"\[(\d+)\]\s+(error|warn|info)\s+.*?\s([a-z][a-z0-9-]+):", readme
+    ):
+        assert int(index) <= len(ordered), f"{name}: README shows [{index}] out of range"
+        problem = ordered[int(index) - 1]
+        assert (problem.severity, problem.code) == (severity, code), (
+            f"{name}: README [{index}] says {severity}/{code}, the tool says "
+            f"{problem.severity}/{problem.code}"
+        )
+
+
+@pytest.mark.parametrize("name", list(DOCUMENTED_EXAMPLES))
+def test_readme_example_matches_the_tool(name):
+    _skip_without_capability(name)
+    _assert_readme_matches(name, ROOT / "packages" / name / "README.md")
+
+
+def test_root_readme_example_matches_levelgx():
+    _assert_readme_matches("levelgx", ROOT / "README.md")

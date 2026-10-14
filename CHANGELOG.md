@@ -30,6 +30,9 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   artifact fails), so the action cannot rot untested.
 
 ### Tests
+- **Documented example output is checked against the tools**: every root/`per-tool
+  README` example is run and its `inspect:` counts and each shown `[n] severity
+  code` must match (it caught five stale examples).
 - `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
   `gxcore.layout` against Shapely on random inputs; the domain tools' graph
   reading (`schemagx`, `protogx`) is cross-checked against NetworkX too, as is

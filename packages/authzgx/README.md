@@ -51,10 +51,11 @@ storyboard: Leaky_blog_permissions.storyboard.png
   3 principals, 4 roles, 5 permissions
   sensitive: delete, manage_users
   low: user
-inspect: 4 problems (2 errors)
-  [1] error perm:manage_users  escalation: low principal 'user' reaches sensitive permission
+  user effective: manage_users, read, write
+inspect: 5 problems (2 errors)
+  [1] error -          dangling-grant: grant names unknown role 'ghost'
+  [2] error perm:manage_users escalation: low principal 'user' reaches sensitive permission
       'manage_users' via user → editor → manage_users
-  [2] error  dangling-grant: grant names unknown role 'ghost'
   ...
 ```
 

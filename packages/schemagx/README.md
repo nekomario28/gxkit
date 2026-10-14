@@ -40,10 +40,10 @@ schema: 5 tables, 7 foreign keys
 storyboard: Tangled_schema.storyboard.png
   5 tables, 7 foreign keys
   roots: users
-inspect: 8 problems (3 errors)
-  [1] error           dangling-foreign-key: 'legacy.owner' references unknown table 'ghost'
-  [2] error posts     dangling-foreign-key: 'posts.draft_id' references unknown column 'draft_id'
-  [3] error tags      dangling-foreign-key: 'tags.missing' references unknown column 'missing'
+inspect: 10 problems (4 errors)
+  [1] error -          dangling-foreign-key: 'ghost.id' references unknown table 'ghost'
+  [2] error legacy     dangling-foreign-key: 'legacy.owner' references unknown column 'owner'
+  [3] error posts      dangling-foreign-key: 'posts.draft_id' references unknown column 'draft_id'
   ...
 ```
 

@@ -43,12 +43,10 @@ storyboard: Tangle.storyboard.png
   6 modules, 7 dependencies
   roots: api
   layers (top→bottom): api | service | domain | infra | util
-inspect: 7 problems (5 errors)
-  [1] error api     cycle: dependency cycle: api → service → domain → util → api
-  [2] error domain  forbidden-dependency: 'domain' must not depend on 'infra'
-  [3] error legacy  self-dependency: module 'legacy' depends on itself
-  [4] error util    layer-violation: 'util' (layer 4) depends on 'api' (layer 0) — ...
-  [5] error util    dangling-dependency: dependency names unknown module 'ghost'
+inspect: 6 problems (5 errors)
+  [1] error api        cycle: dependency cycle: api → service → domain → util → api
+  [2] error domain     forbidden-dependency: 'domain' must not depend on 'infra'
+  [3] error legacy     self-dependency: module 'legacy' depends on itself
   ...
 ```
 

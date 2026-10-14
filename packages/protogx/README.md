@@ -48,10 +48,11 @@ protocol: 5 states, 4 transitions
 storyboard: Broken_handshake.storyboard.png
   5 states, 4 transitions
   5 messages, 1 requests
-inspect: 8 problems (6 errors)
-  [1] error established  nondeterministic: state 'established' handles 'ACK' 2 ways — ...
-  [2] error -            missing-response: request 'SYN' expects 'SYN+ACK', which no transition handles
-  [3] error -            unhandled-message: message 'FIN' is declared but no transition handles it
+inspect: 9 problems (8 errors)
+  [1] error -          unhandled-message: message 'FIN' is declared but no transition handles it
+  [2] error -          unhandled-message: message 'RST' is declared but no transition handles it
+  [3] error -          unhandled-message: message 'SYN+ACK' is declared but no transition handles it
+  [4] error established nondeterministic: state 'established' handles 'ACK' 2 ways — ...
   ...
 ```
 

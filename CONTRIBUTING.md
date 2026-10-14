@@ -25,3 +25,5 @@ lines.
   enforces this.
 - The tool ships `README.md`, `AGENTS.md`, `llms.txt`, `SKILL.md` and `LICENSE`.
 - `scripts/check.sh` is green.
+- A fixed defect ships with a guard that fails on the old state (see the
+  `mistake-to-guard` skill).
