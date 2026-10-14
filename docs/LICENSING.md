@@ -33,11 +33,12 @@ licensed. Anyone may implement it; the MIT code is a reference.
 
 | dependency | license | used by |
 | --- | --- | --- |
-| Pillow | HPND (permissive) | gxcore, levelgx, flowgx, authzgx, depsgx, schemagx, docgx, protogx, shadergx |
+| Pillow | HPND (permissive) | gxcore, chartgx, levelgx, flowgx, authzgx, depsgx, schemagx, docgx, protogx, shadergx, framegx |
 | matplotlib | PSF-based (BSD-compatible) | chartgx |
-| numpy | BSD-3-Clause | chartgx, shadergx |
+| numpy | BSD-3-Clause | shadergx, framegx |
 | moderngl | MIT | shadergx |
 | glcontext | MIT | shadergx (via moderngl) |
+| ffmpeg | LGPL/GPL (system binary) | framegx (invoked as a subprocess, not linked) |
 | pytest | MIT | development only |
 
 No copyleft dependency is linked, so no obligation forces a different license.

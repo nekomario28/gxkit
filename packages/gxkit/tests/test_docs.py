@@ -276,3 +276,34 @@ def test_tool_docs_only_name_their_own_codes():
                 assert token in allowed, (
                     f"packages/{name}/{filename} names {token!r}, which {name} does not emit"
                 )
+
+
+# import name -> the dependency it stands for, for the licensing table
+_RUNTIME_IMPORTS = {
+    "Pillow": "PIL",
+    "matplotlib": "matplotlib",
+    "numpy": "numpy",
+    "moderngl": "moderngl",
+}
+
+
+def _importers(module: str) -> set[str]:
+    found: set[str] = set()
+    for pkg in sorted((ROOT / "packages").glob("*/src/*")):
+        text = "\n".join(p.read_text(encoding="utf-8") for p in pkg.rglob("*.py"))
+        if re.search(rf"(^|\n)\s*(import {module}\b|from {module}[ .])", text):
+            found.add(pkg.name)
+    return found
+
+
+def test_licensing_table_matches_the_actual_imports():
+    text = (ROOT / "docs" / "LICENSING.md").read_text(encoding="utf-8")
+    section = text.split("## Dependency licenses", 1)[1].split("## ", 1)[0]
+    rows = dict(re.findall(r"^\| (\w+) \| .*? \| (.*?) \|$", section, re.M))
+    for dependency, module in _RUNTIME_IMPORTS.items():
+        assert dependency in rows, f"the licensing table has no {dependency} row"
+        listed = {x.strip() for x in rows[dependency].split(",") if x.strip()}
+        assert listed == _importers(module), (
+            f"{dependency}: the table says {sorted(listed)}, the imports say "
+            f"{sorted(_importers(module))}"
+        )

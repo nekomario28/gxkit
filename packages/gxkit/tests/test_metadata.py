@@ -68,3 +68,24 @@ def test_every_package_exposes_exactly_its_own_command():
             assert scripts == [expected], (
                 f"{name}: expected the {expected!r} command, got {scripts}"
             )
+
+
+def test_every_package_ships_a_py_typed_marker():
+    for name, _ in _projects():
+        marker = PACKAGES / name / "src" / name / "py.typed"
+        assert marker.exists(), f"{name}: no src/{name}/py.typed"
+
+
+def test_all_license_files_are_identical():
+    root_license = (PACKAGES.parent / "LICENSE").read_text(encoding="utf-8")
+    for name, _ in _projects():
+        assert (PACKAGES / name / "LICENSE").read_text(encoding="utf-8") == root_license, name
+
+
+def test_public_exports_resolve():
+    import importlib
+
+    for name, _ in _projects():
+        module = importlib.import_module(name)
+        for symbol in getattr(module, "__all__", []):
+            assert hasattr(module, symbol), f"{name}.__all__ names missing {symbol!r}"
