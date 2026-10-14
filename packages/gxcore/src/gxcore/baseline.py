@@ -55,7 +55,7 @@ class Baseline:
 
     @classmethod
     def load(cls, path: str | Path) -> Baseline:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         if data.get("version") != BASELINE_VERSION:
             raise ValueError(
                 f"{path}: unsupported baseline version {data.get('version')!r} "
@@ -67,7 +67,7 @@ class Baseline:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = {"version": BASELINE_VERSION, "name": self.name, "problems": self.problems}
-        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 @dataclass

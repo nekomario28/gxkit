@@ -16,7 +16,7 @@ def _emitted() -> dict[str, set[str]]:
     for path in PACKAGES.rglob("*.py"):
         if {"tests", ".venv"} & set(path.parts):
             continue
-        for match in PROBLEM.finditer(path.read_text()):
+        for match in PROBLEM.finditer(path.read_text(encoding="utf-8")):
             seen.setdefault(match.group(2), set()).add(match.group(1).lower())
     return seen
 

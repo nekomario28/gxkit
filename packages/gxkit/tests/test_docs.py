@@ -28,12 +28,16 @@ def test_registry_lists_every_tool_package():
 
 
 def test_readme_lists_every_tool():
-    rows = re.findall(r"^\| `([a-z0-9]+gx)` \|", (ROOT / "README.md").read_text(), re.M)
+    rows = re.findall(
+        r"^\| `([a-z0-9]+gx)` \|", (ROOT / "README.md").read_text(encoding="utf-8"), re.M
+    )
     assert sorted(rows) == TOOL_PACKAGES
 
 
 def test_llms_txt_lists_every_tool():
-    names = re.findall(r"^- \*\*([a-z0-9]+gx)\*\*", (ROOT / "llms.txt").read_text(), re.M)
+    names = re.findall(
+        r"^- \*\*([a-z0-9]+gx)\*\*", (ROOT / "llms.txt").read_text(encoding="utf-8"), re.M
+    )
     assert sorted(names) == TOOL_PACKAGES
 
 
@@ -59,9 +63,9 @@ def test_readme_figure_covers_every_tool():
 
 def test_the_committed_architecture_svg_is_current():
     produced = _figure_module().build()
-    assert produced == (ROOT / "docs" / "assets" / "architecture.svg").read_text()
+    assert produced == (ROOT / "docs" / "assets" / "architecture.svg").read_text(encoding="utf-8")
 
 
 def test_no_stale_tool_count_in_the_readme():
     # a hardcoded "nine" was left behind after the tenth tool landed
-    assert "nine inspect tools" not in (ROOT / "README.md").read_text().lower()
+    assert "nine inspect tools" not in (ROOT / "README.md").read_text(encoding="utf-8").lower()

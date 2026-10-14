@@ -128,3 +128,11 @@ def test_json_includes_the_baseline_diff(tmp_path, capsys):
     assert run(tool, args) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["baseline"] == {"new": 1, "fixed": 0, "persisted": 0, "new_errors": 0}
+
+
+def test_save_and_load_roundtrip_non_ascii(tmp_path):
+    path = tmp_path / "b.json"
+    Baseline.of(_report(Problem(ERROR, "code", "エラー — 日本語", target="セルr2c3"))).save(path)
+    loaded = Baseline.load(path)
+    assert loaded.problems[0]["message"] == "エラー — 日本語"
+    assert loaded.problems[0]["target"] == "セルr2c3"

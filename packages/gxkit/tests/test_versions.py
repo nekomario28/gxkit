@@ -19,7 +19,7 @@ PACKAGES = pathlib.Path(__file__).resolve().parents[2]
 
 def _packages():
     for pyproject in sorted(PACKAGES.glob("*/pyproject.toml")):
-        data = tomllib.loads(pyproject.read_text())
+        data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
         yield pyproject.parent.name, data["project"]["name"], data["project"]["version"]
 
 
