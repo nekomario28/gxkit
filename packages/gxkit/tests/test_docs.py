@@ -189,3 +189,30 @@ def test_readme_example_matches_the_tool(name):
 
 def test_root_readme_example_matches_levelgx():
     _assert_readme_matches("levelgx", ROOT / "README.md")
+
+
+_NUMBER_WORDS = {
+    1: "one",
+    2: "two",
+    3: "three",
+    4: "four",
+    5: "five",
+    6: "six",
+    7: "seven",
+    8: "eight",
+    9: "nine",
+    10: "ten",
+    11: "eleven",
+    12: "twelve",
+    13: "thirteen",
+    14: "fourteen",
+    15: "fifteen",
+}
+
+
+def test_readme_names_the_right_domain_count():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    stated = set(re.findall(r"\b([a-z]+) domains\b", readme))
+    assert stated, "the README never states the number of domains"
+    expected = _NUMBER_WORDS[len(TOOL_PACKAGES)]
+    assert stated == {expected}, f"README says {sorted(stated)}, but there are {len(TOOL_PACKAGES)}"

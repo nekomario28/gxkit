@@ -33,6 +33,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - **Documented example output is checked against the tools**: every root/`per-tool
   README` example is run and its `inspect:` counts and each shown `[n] severity
   code` must match (it caught five stale examples).
+- **Package metadata is checked for the whole family**: `requires-python`,
+  license, URL keys and the one command per package, plus the `gxcore` pin range
+  covering `gxcore`'s own version. The README's stated domain count is checked
+  against the registry.
 - `gxcore.graph` is cross-checked against NetworkX and `gxcore.geometry` /
   `gxcore.layout` against Shapely on random inputs; the domain tools' graph
   reading (`schemagx`, `protogx`) is cross-checked against NetworkX too, as is
