@@ -17,9 +17,16 @@ mismatch. A composite key and anything that is not `CREATE TABLE` are refused
 with their line: `Schema` records one primary key per table and one column per
 foreign key, and picking one silently would let a check state something untrue.
 
-Both are checked by the same codes as a declaration, and both are proven through
-the public CLI and by mutants for their authentication, version, malformed-input,
-routing and refusal branches.
+**`flowgx` reads a Mermaid state diagram.** `[*] --> s` is the start,
+`s --> [*]` is accepting, and `a --> b : event` is a transition; a `.mmd` file is
+read directly, and a Markdown document through the one `stateDiagram` block it
+holds. Two initial states, a composite state and a document with more than one
+diagram are refused with their line, because `Machine` has one start and no
+hierarchy, and which diagram is the artifact is not worth guessing.
+
+All three are checked by the same codes as a declaration, and each is proven
+through the public CLI and by mutants for its routing, markers, refusal branches
+and malformed input.
 
 Checkpoint: a published spec with an unauthenticated POST, and a dump with a
 foreign key to a non-primary key, are both reported by the public CLI; a

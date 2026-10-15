@@ -29,6 +29,12 @@ A machine file defines `machine` (a `flowgx.Machine`) or `STATES` /
 `(source, target, event)`. With no `accept`, states with no outgoing transition
 are accepting.
 
+Or point it at a Mermaid state diagram: `flowgx inspect checkout.mmd`, or
+`flowgx inspect README.md` for the single ```mermaid stateDiagram block it holds.
+`[*] --> s` is the start, `s --> [*]` is accepting, `a --> b : event` is a
+transition. Two initial states, a composite state, or more than one diagram in a
+document exits 2 with its line.
+
 ## Checks
 
 error: `no-start`, `no-accept`, `unknown-state`, `unreachable-state`, `dead-end`,

@@ -139,6 +139,51 @@ def test_a_sql_document_needs_the_tool_named(tmp_path):
     assert "not a Python artifact" in result.stderr
 
 
+MERMAID = """stateDiagram-v2
+    [*] --> cart
+    cart --> paid : pay
+    paid --> [*]
+    abandoned --> cart : resume
+"""
+
+
+def test_a_mermaid_diagram_is_inspected_by_the_same_codes(tmp_path):
+    document = tmp_path / "checkout.mmd"
+    document.write_text(MERMAID, encoding="utf-8")
+    result = _inspect(document, tool="flowgx")
+    assert result.returncode == 1, result.stdout + result.stderr
+    report = json.loads(result.stdout)
+    assert _codes(report) == ["unreachable-state"]
+    assert report["errors"] == 1
+
+
+def test_a_diagram_drawn_in_a_document_is_read_through_it(tmp_path):
+    document = tmp_path / "README.md"
+    document.write_text(f"# Checkout\n\n```mermaid\n{MERMAID}```\n", encoding="utf-8")
+    result = _inspect(document, tool="flowgx")
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "unreachable-state" in _codes(json.loads(result.stdout))
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        ("stateDiagram-v2\n    [*] --> a\n    [*] --> b\n", "a second initial state"),
+        ("flowchart LR\n    a --> b\n", "expected a `stateDiagram-v2` header"),
+        (
+            "stateDiagram-v2\n    state outer {\n        [*] --> inner\n    }\n",
+            "a composite state is not representable",
+        ),
+    ],
+)
+def test_a_diagram_that_cannot_be_read_says_where_it_is_wrong(tmp_path, content, expected):
+    document = tmp_path / "diagram.mmd"
+    document.write_text(content, encoding="utf-8")
+    result = _inspect(document, tool="flowgx")
+    assert result.returncode == 2, result.stdout
+    assert expected in result.stderr and "Traceback" not in result.stderr
+
+
 @pytest.mark.parametrize(
     ("content", "expected"),
     [
