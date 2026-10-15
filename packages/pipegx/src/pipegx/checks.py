@@ -67,11 +67,14 @@ def inspect_pipeline(pipeline: Pipeline, name: str | None = None) -> Report:
 
     for goal in pipeline.goals:
         if goal not in seen_artifacts:
+            # The goal *is* the finding: two unproduced goals are two defects, and
+            # swapping one for another is new debt.
             out.append(
                 Problem(
                     ERROR,
                     "goal-not-produced",
                     f"the goal {goal!r} is produced by no step",
+                    identity=(goal,),
                 )
             )
 

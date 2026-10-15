@@ -221,6 +221,15 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
 
 ### Fixed
 
+- **Eight error findings that can repeat are now identified by the relationship
+  they are about**, so replacing one relationship with another is new debt rather
+  than unchanged debt: `pipegx.goal-not-produced` (per goal),
+  `protogx.unhandled-message` (per message) and `unknown-message` /
+  `unknown-state` (per transition), `schemagx.dangling-foreign-key` (per reference
+  and missing side), and `authzgx`'s three `dangling-*` (per referrer and missing
+  name). The remaining 14 findings that carry no location cannot occur twice in
+  one artifact, and `docs/IDENTITY.md` records the single `if`/`except` that makes
+  each one true — checked against the source, so the reasons cannot go stale.
 - `netgx` reported only the **first** public entry that reaches a sensitive node,
   so a second exposure route was invisible, and the finding was identified by the
   sensitive node alone. Measured: with `a` and `b` both reaching `db`, one finding;
@@ -256,7 +265,7 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 97 named defects, each killed by its intended
+- A bounded mutation catalogue of 101 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

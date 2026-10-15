@@ -62,7 +62,7 @@ inspect: 5 problems (5 errors)
 | `cycle` | error | the needs graph has a cycle; one finding per cyclic component |
 | `duplicate-step` | error | a step declared twice |
 | `duplicate-artifact` | error | two steps produce the same artifact |
-| `goal-not-produced` | error | a goal no step produces |
+| `goal-not-produced` | error | a goal no step produces; one finding per goal |
 | `no-steps` | info | the pipeline declares no steps |
 | `no-goals` | info | the pipeline declares no goals |
 

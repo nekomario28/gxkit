@@ -23,8 +23,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 DOCUMENT = ROOT / "docs" / "IDENTITY.md"
 
-#: Lower this as sites are fixed. Raising it needs a reason in the commit message.
-IDENTITY_DEBT_LIMIT = 24
+#: No finding that can occur twice in one artifact may be indistinguishable from a
+#: sibling. Raising this needs a reason in the commit message.
+IDENTITY_DEBT_LIMIT = 0
 
 
 def _script() -> dict:
@@ -38,14 +39,32 @@ def test_the_identity_document_is_current():
     )
 
 
-def test_the_identity_debt_only_shrinks():
-    found = _script()["sites"]()
-    total = sum(len(codes) for codes in found.values())
+def test_no_finding_that_can_repeat_is_indistinguishable():
+    owing = _script()["debt"]()
+    total = sum(len(codes) for codes in owing.values())
     assert total <= IDENTITY_DEBT_LIMIT, (
-        f"{total} error findings cannot be told apart, above the limit of "
-        f"{IDENTITY_DEBT_LIMIT}. Give the new finding a target or a relationship "
-        f"identity, or raise the limit deliberately and say why."
+        f"{total} error findings can occur twice and cannot be told apart, above the "
+        f"limit of {IDENTITY_DEBT_LIMIT}: {owing}. Give the finding a target or a "
+        f"relationship identity, or raise the limit deliberately and say why."
     )
+
+
+def test_every_justified_site_is_still_a_site():
+    """The reasons cannot go stale: a site that gains a location leaves the table."""
+    found = _script()["sites"]()
+    justified = _script()["UNIQUE_PER_ARTIFACT"]
+    for (tool, code), reason in justified.items():
+        assert code in found.get(tool, []), (
+            f"{tool}.{code} is justified as once-per-artifact ({reason!r}) and no "
+            f"longer needs the entry; remove it"
+        )
+
+
+def test_a_justification_is_a_reason_not_a_label():
+    """Each entry names the guard in the source that makes it unique."""
+    for (tool, code), reason in _script()["UNIQUE_PER_ARTIFACT"].items():
+        assert len(reason) > 20, f"{tool}.{code}: {reason!r} is not a reason"
+        assert "one" in reason or "single" in reason, f"{tool}.{code}: {reason!r}"
 
 
 def test_a_finding_that_cannot_be_told_apart_is_what_the_document_is_about():
@@ -68,17 +87,28 @@ def test_a_finding_that_cannot_be_told_apart_is_what_the_document_is_about():
     assert len(keys) == 2, "two exposure routes share a fingerprint"
 
 
-@pytest.mark.parametrize("tool", ["authzgx", "framegx", "protogx", "shadergx"])
-def test_a_listed_site_is_listed_because_it_carries_neither(tool):
-    """The document is not a guess: the listed codes really have neither field.
+@pytest.mark.parametrize(
+    ("tool", "code"),
+    [
+        ("flowgx", "no-start"),
+        ("framegx", "frozen"),
+        ("protogx", "unhandled-message"),
+        ("schemagx", "dangling-foreign-key"),
+    ],
+)
+def test_the_source_really_has_no_location_for_that_finding(tool, code):
+    """The premise of the whole document, checked against the parsed source.
 
-    Checked against the parsed source rather than the rendered table, so a tool
-    that gains a target or an identity leaves the list on the next generation.
+    `framegx.frozen` is a *justified* site (it carries a `label`, so it is
+    distinguishable and not listed); `protogx.unhandled-message` and
+    `schemagx.dangling-foreign-key` carry an identity now. Each entry asserts what
+    the judgement rests on rather than trusting the rendered table.
     """
     import ast
 
-    listed = _script()["sites"]()
-    assert listed.get(tool), f"{tool} is not in the inventory; the list changed"
+    script = _script()
+    listed = script["sites"]()
+    occurrences = 0
     for path in sorted((ROOT / "packages").glob(f"{tool}/src/{tool}/*.py")):
         for node in ast.walk(ast.parse(path.read_bytes(), filename=str(path))):
             if not isinstance(node, ast.Call):
@@ -87,11 +117,15 @@ def test_a_listed_site_is_listed_because_it_carries_neither(tool):
             if name not in {"Problem", "_problem"}:
                 continue
             args = node.args
-            if not args or not isinstance(args[0], ast.Name) or args[0].id != "ERROR":
-                continue
             if len(args) < 2 or not isinstance(args[1], ast.Constant):
                 continue
-            keywords = {keyword.arg for keyword in node.keywords}
-            if {"identity", "target"} & keywords:
+            if str(args[1].value) != code:
                 continue
-            assert str(args[1].value) in listed[tool]
+            occurrences += 1
+            keywords = {keyword.arg for keyword in node.keywords}
+            distinguishable = bool({"identity", "target", "label"} & keywords)
+            if (tool, code) in script["UNIQUE_PER_ARTIFACT"]:
+                assert not distinguishable, f"{tool}.{code} now has a location; drop the entry"
+            if not distinguishable:
+                assert code in listed.get(tool, []), f"{tool}.{code} is a site and not listed"
+    assert occurrences, f"{tool}.{code} is not in the source at all"
