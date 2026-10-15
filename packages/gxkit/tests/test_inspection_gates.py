@@ -157,6 +157,43 @@ def test_replacing_an_overlap_partner_is_a_new_error(tmp_path):
     }
 
 
+def test_a_rotated_cycle_witness_is_not_new_debt(tmp_path):
+    """Two cyclic components, and the fingerprint belongs to the component.
+
+    Which member a cycle search starts from is a display detail, so a baseline
+    must recognise the same component after the declaration order changes.
+    """
+    before = tmp_path / "before.py"
+    after = tmp_path / "after.py"
+    depends = 'DEPENDS = [("a", "b"), ("b", "a"), ("c", "d"), ("d", "c")]\n'
+    before.write_text('MODULES = ["a", "b", "c", "d"]\nROOTS = ["a"]\n' + depends, encoding="utf-8")
+    # Declaring the modules in another order moves which member the cycle search
+    # starts from: the witness rotates, the component does not.
+    after.write_text('MODULES = ["b", "a", "d", "c"]\nROOTS = ["a"]\n' + depends, encoding="utf-8")
+    baseline = tmp_path / "baseline.json"
+    assert _inspect(before, "--write-baseline", str(baseline)).returncode == 1
+    result = _inspect(after, "--baseline", str(baseline), "--json")
+    # Nothing is new, so the gate passes: the two cycles and the two unreachable
+    # components are the same findings, however the witness rotated.
+    assert result.returncode == 0, result.stdout
+    diff = json.loads(result.stdout)["baseline"]
+    assert diff == {"new": 0, "fixed": 0, "persisted": 4, "new_errors": 0}, diff
+
+
+def test_every_independent_cycle_is_reported_through_the_cli(tmp_path):
+    artifact = tmp_path / "graph.py"
+    artifact.write_text(
+        'MODULES = ["a", "b", "c", "d"]\n'
+        'DEPENDS = [("a", "b"), ("b", "a"), ("c", "d"), ("d", "c")]\n'
+        'ROOTS = ["a"]\n',
+        encoding="utf-8",
+    )
+    result = _inspect(artifact, "--json")
+    assert result.returncode == 1, result.stdout
+    cycles = [p for p in json.loads(result.stdout)["problems"] if p["code"] == "cycle"]
+    assert len(cycles) == 2, cycles
+
+
 def test_replacing_an_unknown_edge_endpoint_is_a_new_error(tmp_path):
     before = tmp_path / "before.py"
     after = tmp_path / "after.py"

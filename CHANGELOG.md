@@ -59,8 +59,14 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   or refuses the input, never a quiet partial read; and reading a foreign format
   is this repository's code, which gxkit does not itself verify.
 
+### Fixed
+- `depsgx` reports a cycle witness for every independent cyclic component, not
+  only the first one found. Two unrelated cycles previously produced one finding,
+  so a gate could pass with the second still present; each component is now
+  identified by its members, so a witness that rotates does not read as new debt.
+
 ### Verification
-- The bounded mutation catalogue grows to 59, covering the importer's
+- The bounded mutation catalogue grows to 61, covering the importer's
   authentication, version and malformed-input branches, the `.json` and `.sql`
   routing, the DDL composite-key and unclosed-table refusals, the type families,
   the Mermaid start/terminal markers and composite refusal, and the

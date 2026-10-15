@@ -504,6 +504,27 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # Deeper component reporting is only honest if every component is reported
+    # and if the fingerprint follows the component rather than the witness.
+    cases.extend(
+        [
+            Mutation(
+                "depsgx-first-cycle-only",
+                "packages/depsgx/src/depsgx/checks.py",
+                "    for component in strongly_connected_components(acyclic):",
+                "    for component in strongly_connected_components(acyclic)[:1]:",
+                KIT_TEST
+                + "test_inspection_gates.py::test_every_independent_cycle_is_reported_through_the_cli",
+            ),
+            Mutation(
+                "depsgx-cycle-identity-from-display",
+                "packages/depsgx/src/depsgx/checks.py",
+                "                    identity=tuple(sorted(component)),\n",
+                "",
+                KIT_TEST + "test_inspection_gates.py::test_a_rotated_cycle_witness_is_not_new_debt",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
