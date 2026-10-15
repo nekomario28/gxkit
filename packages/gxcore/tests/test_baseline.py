@@ -51,6 +51,28 @@ def test_baseline_of_records_every_problem():
     assert baseline.problems[1] == {"code": "b", "severity": INFO, "message": "m"}
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        ([1, 2], "expected a JSON object"),
+        ({"version": 2, "problems": {"a": {}}}, "problems: expected a list"),
+        ({"version": 2, "problems": ["x"]}, r"problems\[0\]: expected an object"),
+        ({"version": 2, "problems": [{"severity": "error"}]}, r"problems\[0\]\.code"),
+        ({"version": 2, "problems": [{"code": "c"}]}, r"problems\[0\]\.severity"),
+        ({"version": 2, "problems": [{"code": 3, "severity": "error"}]}, r"problems\[0\]\.code"),
+    ],
+)
+def test_a_baseline_that_cannot_be_read_is_refused_with_its_field(tmp_path, payload, expected):
+    """A record this cannot read never matches, so a corrupt baseline would
+    report every finding as fixed or new."""
+    import json
+
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match=expected):
+        Baseline.load(path)
+
+
 def test_save_then_load_roundtrips(tmp_path):
     path = tmp_path / "sub" / "baseline.json"
     Baseline.of(_report(Problem(ERROR, "a", "m", target="t"))).save(path)

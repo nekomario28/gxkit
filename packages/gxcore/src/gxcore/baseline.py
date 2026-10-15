@@ -65,13 +65,27 @@ class Baseline:
 
     @classmethod
     def load(cls, path: str | Path) -> Baseline:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        path = Path(path)
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError(f"{path}: expected a JSON object, not {type(data).__name__}")
         if data.get("version") != BASELINE_VERSION:
             raise ValueError(
                 f"{path}: unsupported baseline version {data.get('version')!r} "
                 f"(expected {BASELINE_VERSION}); recreate it with --write-baseline"
             )
-        return cls(name=data.get("name", ""), problems=list(data.get("problems", [])))
+        problems = data.get("problems", [])
+        if not isinstance(problems, list):
+            raise ValueError(f"{path}: problems: expected a list, not {type(problems).__name__}")
+        for index, record in enumerate(problems):
+            # A record this cannot read would never match a finding, so a
+            # corrupted baseline would report the whole tree as fixed or new.
+            if not isinstance(record, dict):
+                raise ValueError(f"{path}: problems[{index}]: expected an object")
+            for required in ("code", "severity"):
+                if not isinstance(record.get(required), str):
+                    raise ValueError(f"{path}: problems[{index}].{required}: expected a string")
+        return cls(name=data.get("name", ""), problems=list(problems))
 
     def save(self, path: str | Path) -> None:
         path = Path(path)

@@ -32,7 +32,16 @@ are only ever added.
 **The baseline.** `--write-baseline` / `--baseline` compare a run to an accepted
 state and report `new`, `fixed`, `persisted`, `new_errors`. Format 2 is current
 and preserves repeated findings and explicit relationship identities; an older
-format is rejected rather than guessed at.
+format is rejected rather than guessed at. A baseline whose shape cannot be read
+is refused with the offending field and index, because a record that never
+matches would report every finding as fixed or new.
+
+**The config.** `.gxkit.toml` accepts `ignore`, `severity`, and per-tool tables
+of the same two keys. Anything else is refused with its field — including
+`ignore = "code"` (a string, which would otherwise mean the characters it
+contains), a severity that is not `error`/`warn`/`info`, and a mistyped key in a
+tool table. Reading a configuration that cannot be understood and then inspecting
+anyway is the silent-narrowing failure this contract forbids.
 
 **The CLI shape.** `<tool> inspect <path>` and `<tool> render <path>`, with
 `--json`, `--no-storyboard`, `-o/--output`, `--baseline`, `--write-baseline` and
