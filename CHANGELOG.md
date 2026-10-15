@@ -19,6 +19,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A report prints on a console that cannot encode every character it names. A
   message naming an edge arrow on a Windows code page turned a real verdict into
   an input failure; unencodable characters are escaped instead.
+- The family inspects its own module graph. `scripts/self_inspect.py` derives
+  the real import and routing graph and runs `gxkit` on it, and the layering rule
+  a shared layer cannot express (no sibling tool depends on another, the core
+  depends on nothing, nothing depends on the umbrella) is pinned beside it.
 
 ### Verification
 - `scripts/guard_contracts.py` replays the environment its stubbed commands run
