@@ -752,6 +752,17 @@ def mutations(root: Path) -> list[Mutation]:
             + "[exits-zero-while-loading-chartgx]",
         )
     )
+    # The baseline contract holds for every tool: accepting an artifact and
+    # re-inspecting it reports nothing new.
+    cases.append(
+        Mutation(
+            "baseline-records-nothing",
+            "packages/gxcore/src/gxcore/baseline.py",
+            "        return cls(name=report.name, problems=[_record(p) for p in report.sorted()])",
+            "        return cls(name=report.name, problems=[])",
+            KIT_TEST + "test_contract.py::test_a_baseline_round_trips_for_every_tool[chartgx]",
+        )
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
