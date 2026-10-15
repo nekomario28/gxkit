@@ -1,4 +1,4 @@
-"""seedgx — inspect a random-seed manifest for reproducibility.
+"""seedgx — inspect declarations in a random-seed manifest.
 
 Declare one seed per randomness stream; `seedgx inspect` finds a stream with no
 seed, a seed outside the 32-bit range, two streams sharing a seed, a duplicate
@@ -28,4 +28,4 @@ __all__ = [
     "render_image",
     "spec_from_parts",
 ]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

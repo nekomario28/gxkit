@@ -37,6 +37,20 @@ Render = Callable[[Any, Path | None, float | None], Path]
 ToImage = Callable[[Any], Any]
 
 
+def printable_output() -> None:
+    """Let a report print on a console that cannot encode every character.
+
+    Messages name what they found, and some of those names are not in every
+    console's code page (an arrow in an edge, a degree sign). Losing the report
+    to an encoding error would turn a real verdict into an input failure, so
+    unencodable characters are escaped instead.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(errors="backslashreplace")
+
+
 @dataclass
 class Tool:
     name: str
@@ -71,10 +85,13 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
 
 
 def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
-    artifact = tool.load(Path(args.file))
+    # The artifact may change the process directory while it loads, so its
+    # identity is fixed before it executes; the report still names the file.
+    path = Path(args.file).resolve()
+    artifact = tool.load(path)
     report = tool.inspect(artifact)
     if not getattr(args, "no_config", False):
-        apply_config(report, load_config(Path(args.file).resolve().parent), tool.name)
+        apply_config(report, load_config(path.parent), tool.name)
 
     diff: Diff | None = None
     if args.baseline:
@@ -97,7 +114,7 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
     if args.json:
         print(to_json(report, sb, diff))
     else:
-        text = human(args.file, report, sb)
+        text = human(path, report, sb)
         if diff is not None:
             text = f"{text}\n{summary(diff)}"
         print(text)
@@ -107,13 +124,15 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
 
 
 def _cmd_render(tool: Tool, args: argparse.Namespace) -> int:
-    artifact = tool.load(Path(args.file))
-    out = Path(args.output) if args.output else Path(f"{Path(args.file).stem}.png")
+    path = Path(args.file).resolve()
+    artifact = tool.load(path)
+    out = Path(args.output) if args.output else Path(f"{path.stem}.png")
     print(tool.render(artifact, out, args.dpi))
     return 0
 
 
 def run(tool: Tool, argv: list[str] | None = None) -> int:
+    printable_output()
     args = _build_parser(tool).parse_args(argv)
     try:
         if args.command == "inspect":

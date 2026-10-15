@@ -173,6 +173,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
     "seedgx": {
         "missing-seed": "error",
         "seed-out-of-range": "error",
+        "invalid-seed": "error",
         "duplicate-stream": "error",
         "duplicate-seed": "warn",
         "non-deterministic": "info",
@@ -183,6 +184,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "duplicate-run": "error",
         "negative-start": "error",
         "negative-duration": "error",
+        "non-finite-time": "error",
         "zero-duration": "info",
         "no-runs": "info",
     },

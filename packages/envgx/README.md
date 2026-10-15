@@ -28,6 +28,10 @@ env = e.Environment(
 
 Or module-level `VARIABLES` (a name → spec mapping) / `REFERENCES` / `NAME`.
 
+Names are names: `references` must be a list of strings. A malformed member or
+collection rejects the artifact with its field and index (exit 2) instead of
+disappearing, and a recognized declaration is never replaced by another one.
+
 ## The contract
 
 ```

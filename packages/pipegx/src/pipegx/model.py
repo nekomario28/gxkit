@@ -19,6 +19,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import convert_items, convert_names
+
 
 @dataclass
 class Step:
@@ -63,6 +65,8 @@ def _as_step(value: object) -> Step | None:
             produces=[str(p) for p in value.get("produces", [])],
         )
     if isinstance(value, (tuple, list)) and value:
+        if len(value) > 2:
+            return None
         name = value[0]
         needs = value[1] if len(value) > 1 else []
         return Step(str(name), needs=[str(n) for n in needs])
@@ -71,25 +75,16 @@ def _as_step(value: object) -> Step | None:
 
 def _as_pipeline(value: object) -> Pipeline | None:
     if isinstance(value, Pipeline):
+        value.steps = convert_items(value.steps, _as_step, field="steps")
         return value
     if isinstance(value, dict) and "steps" in value:
-        steps = [_as_step(item) for item in value["steps"]]
-        if any(step is None for step in steps):
-            return None
         return Pipeline(
-            steps=[step for step in steps if step is not None],
-            goals=[str(g) for g in value.get("goals", [])],
+            steps=convert_items(value["steps"], _as_step, field="steps"),
+            goals=convert_names(value.get("goals", []), field="goals"),
             name=str(value.get("name", "pipeline")),
         )
     if isinstance(value, (list, tuple)):
-        built: list[Step] = []
-        for item in value:
-            step = _as_step(item)
-            if step is None:
-                return None
-            built.append(step)
-        if built:
-            return Pipeline(steps=built)
+        return Pipeline(steps=convert_items(value, _as_step, field="steps"))
     return None
 
 
@@ -108,8 +103,8 @@ def load_pipeline(path: str | Path) -> tuple[Pipeline, object]:
         steps = getattr(module, "STEPS", None)
         if steps is not None:
             pipeline = Pipeline(
-                steps=[step for step in (_as_step(item) for item in steps) if step is not None],
-                goals=[str(g) for g in getattr(module, "GOALS", [])],
+                steps=convert_items(steps, _as_step, field="STEPS"),
+                goals=convert_names(getattr(module, "GOALS", []), field="GOALS"),
             )
     if pipeline is None:
         raise ValueError(

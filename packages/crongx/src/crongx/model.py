@@ -14,7 +14,10 @@ not overlap, or one is starved while the other holds it.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import isfinite
 from pathlib import Path
+
+from gxcore.loading import convert_items
 
 
 @dataclass
@@ -28,6 +31,10 @@ class Run:
     def end(self) -> float:
         return self.start + self.duration
 
+    @property
+    def is_finite(self) -> bool:
+        return all(isfinite(value) for value in (self.start, self.duration, self.end))
+
 
 @dataclass
 class Schedule:
@@ -39,7 +46,8 @@ class Schedule:
 
     def overlap(self, a: Run, b: Run) -> bool:
         """True when the two runs' half-open intervals overlap."""
-        return a.start < b.end and b.start < a.end
+        valid = all(run.is_finite and run.start >= 0 and run.duration > 0 for run in (a, b))
+        return valid and a.start < b.end and b.start < a.end
 
 
 def _as_run(value: object) -> Run | None:
@@ -59,31 +67,28 @@ def _as_run(value: object) -> Run | None:
         )
     if isinstance(value, (tuple, list)) and value:
         # (name, start, duration, resource) with the tail optional
-        parts = [*list(value), 0.0, 0.0, ""]
-        return Run(str(parts[0]), float(parts[1]), float(parts[2]), str(parts[3]))
+        if len(value) > 4:
+            return None
+        return Run(
+            str(value[0]),
+            start=float(value[1]) if len(value) > 1 else 0.0,
+            duration=float(value[2]) if len(value) > 2 else 0.0,
+            resource=str(value[3]) if len(value) > 3 else "",
+        )
     return None
 
 
 def _as_schedule(value: object) -> Schedule | None:
     if isinstance(value, Schedule):
+        value.runs = convert_items(value.runs, _as_run, field="runs")
         return value
     if isinstance(value, dict) and "runs" in value:
-        runs = [_as_run(item) for item in value["runs"]]
-        if any(run is None for run in runs):
-            return None
         return Schedule(
-            runs=[run for run in runs if run is not None],
+            runs=convert_items(value["runs"], _as_run, field="runs"),
             name=str(value.get("name", "schedule")),
         )
     if isinstance(value, (list, tuple)):
-        built: list[Run] = []
-        for item in value:
-            run = _as_run(item)
-            if run is None:
-                return None
-            built.append(run)
-        if built:
-            return Schedule(runs=built)
+        return Schedule(runs=convert_items(value, _as_run, field="runs"))
     return None
 
 
@@ -101,9 +106,7 @@ def load_schedule(path: str | Path) -> tuple[Schedule, object]:
     if schedule is None:
         runs = getattr(module, "RUNS", None)
         if runs is not None:
-            schedule = Schedule(
-                runs=[run for run in (_as_run(item) for item in runs) if run is not None]
-            )
+            schedule = Schedule(runs=convert_items(runs, _as_run, field="RUNS"))
     if schedule is None:
         raise ValueError(f"{path}: no schedule found — define `schedule` (a Schedule) or RUNS")
     schedule.name = getattr(module, "NAME", path.stem)

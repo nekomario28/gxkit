@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from gxcore import ERROR, INFO, WARN
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires, assert_quiet
 from seedgx import SeedSpec, Stream, inspect_spec, load_spec, spec_from_parts
 
@@ -12,6 +14,10 @@ from seedgx import SeedSpec, Stream, inspect_spec, load_spec, spec_from_parts
 def test_a_clean_manifest_has_no_problems():
     spec = SeedSpec(streams=[Stream("python", 42), Stream("numpy", 7)])
     assert inspect_spec(spec).problems == []
+
+
+def test_direct_inspection_also_rejects_a_noninteger_seed():
+    assert_fires(inspect_spec(SeedSpec(streams=[Stream("bad", 0.5)])), "invalid-seed", ERROR)
 
 
 def test_missing_seed():
@@ -85,8 +91,10 @@ def test_converters():
     spec = SeedSpec(streams=[stream])
     assert _as_spec(spec) is spec
     assert _as_spec([("python", 1)]) is not None
-    assert _as_spec([42]) is None
-    assert _as_spec({"streams": [42]}) is None
+    with pytest.raises(InvalidArtifact, match=r"streams\[0\]"):
+        _as_spec([42])
+    with pytest.raises(InvalidArtifact, match=r"streams\[0\]"):
+        _as_spec({"streams": [42]})
     assert _as_spec(42) is None
 
 

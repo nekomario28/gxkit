@@ -44,6 +44,7 @@ class Problem:
     target: str | None = None
     label: str = ""
     bbox: BBox | None = None
+    identity: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.severity not in _RANK:
@@ -59,6 +60,8 @@ class Problem:
             d["target"] = self.target
         if self.label:
             d["label"] = self.label
+        if self.identity:
+            d["identity"] = list(self.identity)
         return d
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from envgx import (
     Environment,
     Variable,
@@ -12,6 +13,7 @@ from envgx import (
     load_environment,
 )
 from gxcore import ERROR, INFO, WARN
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires, assert_quiet
 
 
@@ -142,9 +144,11 @@ def test_converters_cover_every_shape():
 
     assert _as_environment(Environment(variables=[Variable("PORT")])) is not None
     assert _as_environment({"variables": [{"name": "PORT"}]}) is not None
-    assert _as_environment({"variables": [42]}) is None
+    with pytest.raises(InvalidArtifact, match=r"variables\[0\]"):
+        _as_environment({"variables": [42]})
     assert _as_environment([Variable("PORT")]) is not None
-    assert _as_environment([42]) is None
+    with pytest.raises(InvalidArtifact, match=r"variables\[0\]"):
+        _as_environment([42])
     assert _as_variable({"type": "int"}) is None
     assert _as_variable(42) is None
 

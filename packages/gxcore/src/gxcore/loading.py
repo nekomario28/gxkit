@@ -13,10 +13,12 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, TypeVar
 
 DEFAULT_BUILDERS = (
     "build",
@@ -30,8 +32,63 @@ DEFAULT_BUILDERS = (
 )
 
 
+T = TypeVar("T")
+
+
+class InvalidArtifact(ValueError):
+    """A recognised declaration contains invalid data; do not try another shape."""
+
+
+def convert_items(values: object, convert: Callable[[Any], T | None], *, field: str) -> list[T]:
+    """Convert every declared member or reject it with its field and index."""
+    if not isinstance(values, (list, tuple)):
+        raise InvalidArtifact(f"{field}: expected a list or tuple")
+    result: list[T] = []
+    for index, value in enumerate(values):
+        try:
+            item = convert(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise InvalidArtifact(f"{field}[{index}]: {exc}") from exc
+        if item is None:
+            raise InvalidArtifact(f"{field}[{index}]: invalid declaration {value!r}")
+        result.append(item)
+    return result
+
+
+def _name(value: object) -> str:
+    if not isinstance(value, str):
+        raise InvalidArtifact(f"expected a name, not {value!r}")
+    return value
+
+
+def convert_names(values: object, *, field: str) -> list[str]:
+    """Convert a declared name collection, or reject it with field and index.
+
+    Names are read as names: coercing an arbitrary object to `str` would turn a
+    malformed declaration into a name that silently matches nothing.
+    """
+    return convert_items(values, _name, field=field)
+
+
+_MODULES: ContextVar[dict[Path, ModuleType] | None] = ContextVar("gx_modules", default=None)
+
+
+@contextmanager
+def loading_session() -> Iterator[None]:
+    """Share imported artifacts within one inspection, never across invocations."""
+    token = _MODULES.set({})
+    try:
+        yield
+    finally:
+        _MODULES.reset(token)
+
+
 def load_module(path: str | Path) -> ModuleType:
     path = Path(path)
+    modules = _MODULES.get()
+    key = path.resolve()
+    if modules is not None and key in modules:
+        return modules[key]
     if not path.exists():
         raise FileNotFoundError(path)
     name = f"gx_under_test_{abs(hash(str(path)))}"
@@ -40,7 +97,10 @@ def load_module(path: str | Path) -> ModuleType:
         raise ImportError(f"cannot load a Python module from {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
-    spec.loader.exec_module(module)
+    # Inspect the current source, not a timestamp/size-matched cached .pyc.
+    exec(compile(path.read_bytes(), str(path), "exec", dont_inherit=True), module.__dict__)
+    if modules is not None:
+        modules[key] = module
     return module
 
 
@@ -59,6 +119,8 @@ def resolve(
             return value
         try:
             return convert(value)
+        except InvalidArtifact:
+            raise
         except Exception:
             return None
 

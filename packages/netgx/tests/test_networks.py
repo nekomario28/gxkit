@@ -32,6 +32,24 @@ def test_dangling_edge():
     assert_fires(inspect_network(_net(edges=[("web", "ghost")])), "dangling-edge", ERROR)
 
 
+def test_a_dangling_edge_identity_names_its_edge_and_endpoint():
+    report = inspect_network(_net(edges=[("web", "ghost")]))
+    dangling = [p for p in report.problems if p.code == "dangling-edge"]
+    assert [p.identity for p in dangling] == [("web", "ghost", "ghost")]
+
+
+def test_two_dangling_endpoints_on_one_edge_are_two_findings():
+    report = inspect_network(
+        Network(nodes={"a": "service"}, edges=[("a", "missing"), ("missing", "a")])
+    )
+    dangling = [p for p in report.problems if p.code == "dangling-edge"]
+    assert len(dangling) == 2
+    assert {p.identity for p in dangling} == {
+        ("a", "missing", "missing"),
+        ("missing", "a", "missing"),
+    }
+
+
 def test_public_reaches_sensitive():
     assert_fires(
         inspect_network(_net(edges=[("internet", "web"), ("web", "db")])),

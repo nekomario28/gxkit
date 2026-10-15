@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 from gxcore.cli import run
+from gxcore.loading import loading_session
 from gxcore.toolkit import distribution_version
 
 from .codes import CODEBOOK
@@ -45,10 +46,10 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
 
     try:
         module = load_module(path)
-    except Exception as exc:  # a broken artifact reports, does not traceback
+        spec = detect(module)
+    except (Exception, SystemExit) as exc:  # an artifact exit is not inspection success
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
-    spec = detect(module)
     if spec is None:
         names = ", ".join(t.name for t in TOOLS)
         print(
@@ -125,7 +126,10 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
     files: list[Path] = []
     for raw in positional:
-        target = Path(raw)
+        # Resolve every input before any artifact executes: an artifact may
+        # change the process directory, and a relative path would then name a
+        # different file for routing, loading and reporting alike.
+        target = Path(raw).resolve()
         if target.is_dir():
             found = sorted(target.rglob("*.py"))
             if not found:
@@ -141,11 +145,12 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
     rc = 0
     for file in files:
-        spec = _tool_for(file, explicit)
-        if spec is None:
-            rc = max(rc, 2)
-            continue
-        rc = max(rc, _run_tool(spec, file, args))
+        with loading_session():
+            spec = _tool_for(file, explicit)
+            if spec is None:
+                rc = max(rc, 2)
+                continue
+            rc = max(rc, _run_tool(spec, file, args))
     return rc
 
 
@@ -155,7 +160,9 @@ def build_parser() -> argparse.ArgumentParser:
         description="Route an artifact to the gxkit tool that inspects it.",
     )
     p.add_argument(
-        "--version", action="version", version=f"gxkit {distribution_version('gxkit-cli', '0.1.0')}"
+        "--version",
+        action="version",
+        version=f"gxkit {distribution_version('gxkit-cli')}",
     )
     sub = p.add_subparsers(dest="command", required=True)
 

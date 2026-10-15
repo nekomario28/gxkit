@@ -40,6 +40,7 @@ licensed. Anyone may implement it; the MIT code is a reference.
 | glcontext | MIT | shadergx (via moderngl) |
 | ffmpeg | LGPL/GPL (system binary) | framegx (invoked as a subprocess, not linked) |
 | pytest | MIT | development only |
+| PyYAML | MIT | development only (structured workflow guard) |
 
 No copyleft dependency is linked, so no obligation forces a different license.
 

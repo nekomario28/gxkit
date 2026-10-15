@@ -76,7 +76,7 @@ def test_check_dist_accepts_a_complete_dist(tmp_path):
 def test_check_dist_reports_a_missing_wheel(tmp_path):
     module = _release_module()
     _fake_dist(tmp_path, module)
-    (tmp_path / "gxcore-0.4.0-py3-none-any.whl").unlink()
+    next(tmp_path.glob("gxcore-*-py3-none-any.whl")).unlink()
     problems = module.check_dist(tmp_path)
     assert any("gxcore" in p and "no wheel" in p for p in problems)
 

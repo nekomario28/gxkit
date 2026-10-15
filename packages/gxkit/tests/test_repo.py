@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import pathlib
 import re
+import runpy
 import subprocess
+import sys
 
 import pytest
 
@@ -79,26 +81,14 @@ def test_authors_are_canonicalised_through_the_mailmap():
     assert not unexpected, f"unexpected authors — add a .mailmap entry: {sorted(unexpected)}"
 
 
-def test_the_readme_agent_prompt_is_installable():
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "llms.txt" in readme, "the README has no agent setup prompt"
-    llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
-    install = re.search(r"#subdirectory=packages/([a-z0-9]+)", llms)
-    assert install, "llms.txt has no install line for the prompt to name"
-    assert (ROOT / "packages" / install.group(1)).is_dir(), (
-        f"the agent prompt installs a package that does not exist: {install.group(1)}"
-    )
+def test_the_readme_agent_prompt_targets_the_family_install_command():
+    runpy.run_path(str(ROOT / "scripts/guard_contracts.py"))["check_agent_prompt"](ROOT)
 
 
 def test_the_coverage_floor_names_every_distribution():
-    from gxkit.registry import TOOLS
-
-    names = {"gxcore", "gxkit", *(tool.name for tool in TOOLS)}
-    for rel in ("scripts/check.sh", ".github/workflows/ci.yml"):
-        text = (ROOT / rel).read_text(encoding="utf-8")
-        assert "--cov-fail-under=100" in text, f"{rel} has no coverage floor"
-        found = set(re.findall(r"--cov=([a-z0-9_]+)", text))
-        assert found == names, f"{rel} coverage set drifted: {sorted(found ^ names)}"
+    if sys.platform == "win32":
+        pytest.skip("shell-argument observation runs on the POSIX coverage lanes")
+    runpy.run_path(str(ROOT / "scripts/guard_contracts.py"))["check_coverage"](ROOT)
 
 
 def test_ffmpeg_bound_modules_are_not_excluded_from_coverage():

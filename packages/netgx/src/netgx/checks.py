@@ -28,10 +28,16 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
     seen: set[tuple[str, str]] = set()
     for src, dst in net.edges:
         for node in (src, dst):
-            if declared and node not in declared:
+            if node not in declared:
                 out.append(
                     Problem(
-                        ERROR, "dangling-edge", f"edge {src} → {dst} names unknown node {node!r}"
+                        ERROR,
+                        "dangling-edge",
+                        f"edge {src} → {dst} names unknown node {node!r}",
+                        # The finding is about this edge and endpoint, not about how
+                        # many unknown endpoints exist: replacing one endpoint with
+                        # another is a new relationship, not an unchanged one.
+                        identity=(src, dst, node),
                     )
                 )
         if src == dst:

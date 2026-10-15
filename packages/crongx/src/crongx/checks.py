@@ -39,6 +39,17 @@ def inspect_schedule(schedule: Schedule, name: str | None = None) -> Report:
                 )
             )
         seen_names.add(run.name)
+        if not run.is_finite:
+            out.append(
+                Problem(
+                    ERROR,
+                    "non-finite-time",
+                    f"{run.name!r} must have finite start, duration, and end",
+                    target=target,
+                    label=run.name,
+                )
+            )
+            continue
         if run.start < 0:
             out.append(
                 Problem(
@@ -81,6 +92,7 @@ def inspect_schedule(schedule: Schedule, name: str | None = None) -> Report:
                         f"{a.name!r} and {b.name!r} both hold {a.resource!r} at once",
                         target=_node_id(j),
                         label=b.name,
+                        identity=(a.resource, *sorted((a.name, b.name))),
                     )
                 )
 

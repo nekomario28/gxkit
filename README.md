@@ -48,8 +48,10 @@ errors and old debt is visible as it shrinks:
 <tool> inspect artifact.py --baseline .gxkit-baseline.json         # new / fixed / unchanged
 ```
 
-The baseline is plain JSON — commit it. Without one, `inspect` behaves exactly
-as before (any `error` fails).
+The baseline is plain JSON — commit it. Format 2 preserves repeated findings
+and explicit relationship identities. Older baselines are rejected: review the
+current findings, then deliberately recreate accepted debt with `--write-baseline`.
+Without a baseline, any `error` fails. An input that cannot be inspected exits 2.
 
 **One entry point.** You don't have to know which tool fits:
 

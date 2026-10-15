@@ -10,23 +10,26 @@ baseline (`.gxkit-baseline.json`) and every run is a diff, not a fresh verdict.
 from __future__ import annotations
 
 import json
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from .model import ERROR, Report
 
-BASELINE_VERSION = 1
-_SEP = "\x1f"
+BASELINE_VERSION = 2
 
 
-def fingerprint(code: str, target: str | None, label: str) -> str:
-    """The identity of a problem across runs: code, target and label.
+def fingerprint(code: str, target: str | None, label: str, identity: tuple[str, ...] = ()) -> str:
+    """Stable domain identity, or the display location when none is supplied.
 
-    Deliberately not the message (it carries numbers) and not the severity
-    (`.gxkit.toml` may change it) — those are attributes, not identity.
+    Messages, numeric values, severity and image coordinates are not identities.
+    Explicit relationship identities survive reordering of display targets.
     """
-    return _SEP.join((code, target or "", label or ""))
+    parts = (
+        ("identity", code, *identity) if identity else ("location", code, target or "", label or "")
+    )
+    return json.dumps(parts, ensure_ascii=False)
 
 
 def _record(problem: Any) -> dict[str, Any]:
@@ -37,11 +40,18 @@ def _record(problem: Any) -> dict[str, Any]:
         record["label"] = problem.label
     if problem.message:
         record["message"] = problem.message
+    if problem.identity:
+        record["identity"] = list(problem.identity)
     return record
 
 
 def _key(record: dict[str, Any]) -> str:
-    return fingerprint(record.get("code", ""), record.get("target"), record.get("label", ""))
+    return fingerprint(
+        record.get("code", ""),
+        record.get("target"),
+        record.get("label", ""),
+        tuple(record.get("identity", ())),
+    )
 
 
 @dataclass
@@ -59,7 +69,7 @@ class Baseline:
         if data.get("version") != BASELINE_VERSION:
             raise ValueError(
                 f"{path}: unsupported baseline version {data.get('version')!r} "
-                f"(expected {BASELINE_VERSION})"
+                f"(expected {BASELINE_VERSION}); recreate it with --write-baseline"
             )
         return cls(name=data.get("name", ""), problems=list(data.get("problems", [])))
 
@@ -93,13 +103,22 @@ class Diff:
 
 
 def compare(report: Report, baseline: Baseline) -> Diff:
-    before = {_key(record): record for record in baseline.problems}
-    after = {fingerprint(p.code, p.target, p.label): p for p in report.sorted()}
-    return Diff(
-        new=[p for key, p in after.items() if key not in before],
-        fixed=[record for key, record in before.items() if key not in after],
-        persisted=[p for key, p in after.items() if key in before],
-    )
+    before: dict[str, deque[int]] = defaultdict(deque)
+    for index, record in enumerate(baseline.problems):
+        before[_key(record)].append(index)
+    matched: set[int] = set()
+    diff = Diff()
+    for problem in report.sorted():
+        candidates = before[
+            fingerprint(problem.code, problem.target, problem.label, problem.identity)
+        ]
+        if candidates:
+            matched.add(candidates.popleft())
+            diff.persisted.append(problem)
+        else:
+            diff.new.append(problem)
+    diff.fixed = [record for i, record in enumerate(baseline.problems) if i not in matched]
+    return diff
 
 
 def summary(diff: Diff) -> str:

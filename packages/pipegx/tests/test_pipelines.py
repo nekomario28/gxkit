@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from gxcore import ERROR, INFO
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires
 from pipegx import Pipeline, Step, inspect_pipeline, load_pipeline, pipeline_from_parts
 
@@ -91,8 +93,10 @@ def test_converters():
     pipe = Pipeline(steps=[step])
     assert _as_pipeline(pipe) is pipe
     assert _as_pipeline([step]) is not None
-    assert _as_pipeline([42]) is None
-    assert _as_pipeline({"steps": [42]}) is None
+    with pytest.raises(InvalidArtifact, match=r"steps\[0\]"):
+        _as_pipeline([42])
+    with pytest.raises(InvalidArtifact, match=r"steps\[0\]"):
+        _as_pipeline({"steps": [42]})
     assert _as_pipeline(42) is None
 
 

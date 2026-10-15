@@ -30,4 +30,25 @@ def main(argv=None):
     return run(TOOL, argv)
 ```
 
+## Inspection ownership
+
+Routing and inspection share one module execution within an invocation; a later
+invocation reads the current source. The loader must not reuse stale bytecode.
+Requested inputs are resolved once, before any artifact executes: an artifact may
+change the process directory, and a relative path must keep naming the file that
+was asked for.
+
+Recognised collection declarations convert every member or reject the artifact
+with a field/index. A conversion error must not trigger another shape's fallback.
+Name collections use `convert_names`, which rejects a non-name member rather
+than coercing it into a name that matches nothing.
+
+A report must print on a console that cannot encode every character it names;
+escaping an unencodable character beats losing the verdict to an error.
+
+A baseline records occurrences, not a set of display locations. Checks that
+report relationships supply stable identities independent of numeric prose and
+layout order. Baseline format 2 rejects older records: recreate an accepted
+baseline deliberately with `--write-baseline`, rather than guessing identities.
+
 MIT licensed.
