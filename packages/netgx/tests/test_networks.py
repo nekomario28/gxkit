@@ -142,3 +142,64 @@ def test_examples_load_and_are_diagnosed():
         ("duplicate-edge", INFO),
     ):
         assert_fires(report, code, severity)
+
+
+def test_every_public_entry_that_reaches_a_sensitive_node_is_reported():
+    """One route per entry, not one per sensitive node.
+
+    Measured before the fix: with `a` and `b` both reaching `db`, only `a` was
+    reported, so the second exposure route was invisible.
+    """
+    net = Network(
+        nodes={"a": "public", "b": "public", "db": "data"},
+        edges=[("a", "db"), ("b", "db")],
+        sensitive=["db"],
+    )
+    found = [p for p in inspect_network(net).problems if p.code == "public-reaches-sensitive"]
+    assert len(found) == 2
+    assert {p.identity for p in found} == {("a", "db"), ("b", "db")}
+    assert all(p.severity == ERROR for p in found)
+
+
+def test_a_replaced_exposure_route_is_new_debt(tmp_path):
+    """The route is the finding: changing which entry reaches the data is new.
+
+    Measured before the fix: the same baseline reported `new_errors: 0` for a
+    chart whose public entry had changed from `a` to `b`.
+    """
+    import subprocess
+    import sys
+
+    before = tmp_path / "before.py"
+    after = tmp_path / "after.py"
+    nodes = 'NODES = {"a": "public", "b": "public", "db": "data"}\nSENSITIVE = ["db"]\n'
+    before.write_text(nodes + 'EDGES = [("a", "db")]\n', encoding="utf-8")
+    after.write_text(nodes + 'EDGES = [("b", "db")]\n', encoding="utf-8")
+    baseline = tmp_path / "baseline.json"
+
+    def run(path, *flags):
+        return subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from gxkit.cli import main; raise SystemExit(main())",
+                "inspect",
+                "netgx",
+                str(path),
+                "--no-storyboard",
+                "--no-config",
+                *flags,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+
+    assert run(before, "--write-baseline", str(baseline)).returncode == 1
+    result = run(after, "--baseline", str(baseline), "--json")
+    assert result.returncode == 1, result.stdout
+    import json
+
+    diff = json.loads(result.stdout)["baseline"]
+    assert diff["new_errors"] == 1, diff

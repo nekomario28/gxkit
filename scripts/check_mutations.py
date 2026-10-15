@@ -808,6 +808,26 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # An exposure route is identified by the route: the first one was reported
+    # alone, and a baseline could not see the route change.
+    cases.extend(
+        [
+            Mutation(
+                "netgx-first-exposure-route-only",
+                "packages/netgx/src/netgx/checks.py",
+                "                        identity=(entry, sensitive),\n                    )\n                )",
+                "                        identity=(entry, sensitive),\n                    )\n                )\n                break",
+                "packages/netgx/tests/test_networks.py::test_every_public_entry_that_reaches_a_sensitive_node_is_reported",
+            ),
+            Mutation(
+                "netgx-exposure-route-unidentified",
+                "packages/netgx/src/netgx/checks.py",
+                "                        identity=(entry, sensitive),\n",
+                "",
+                "packages/netgx/tests/test_networks.py::test_a_replaced_exposure_route_is_new_debt",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
