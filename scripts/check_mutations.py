@@ -737,6 +737,21 @@ def mutations(root: Path) -> list[Mutation]:
             KIT_TEST + "test_docs.py::test_every_problem_code_is_documented_for_its_tool",
         )
     )
+    # An artifact that exits with success is a load failure on every route, the
+    # umbrella's and each tool's own.
+    cases.append(
+        Mutation(
+            "direct-tool-artifact-exit-bypass",
+            "packages/gxcore/src/gxcore/cli.py",
+            "    except SystemExit as e:",
+            "    except Exception as e:",
+            # One case, so the kill is a named assertion rather than 112
+            # failures whose summary pytest elides.
+            KIT_TEST
+            + "test_robustness.py::test_malformed_input_exits_2_not_traceback"
+            + "[exits-zero-while-loading-chartgx]",
+        )
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
