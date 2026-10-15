@@ -37,6 +37,8 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "red-green": "info",
         # Reported by the declared-model route, which a figure cannot express.
         "mismatched-lengths": "error",
+        "short-line": "error",
+        "ambiguous-labels": "error",
         "non-finite-value": "error",
         "two-error-shapes": "error",
         "negative-error": "error",

@@ -221,6 +221,18 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
 
 ### Fixed
 
+- **`chartgx` now reads the model the way the renderer that owns it does.** Its
+  declared-chart route reported no errors for three declarations that cannot be
+  drawn — a scatter with no points, a one-point line, a grouped bar with no series
+  — and ignored an unknown field *inside* a mark, so a mistyped optional field was
+  silently dropped. All four are now reported (`empty-chart`, `short-line`) or
+  refused naming the key (exit 2). Measured before: `chartgx inspect` said 0 errors
+  where figspec refused the same file.
+- **The declared-chart route has the model's `heatmap` mark**: a matrix with
+  optional row/column names and a closed set of colour ramps (`viridis`, `turbo`,
+  `inferno`, `magma`, `plasma`, `cividis`, `warm`, `cool`, `cubehelix`). New
+  declared-only codes: `short-line`, `ambiguous-labels` (two marks naming one axis
+  differently would caption the other's data).
 - **Eight error findings that can repeat are now identified by the relationship
   they are about**, so replacing one relationship with another is new debt rather
   than unchanged debt: `pipegx.goal-not-produced` (per goal),

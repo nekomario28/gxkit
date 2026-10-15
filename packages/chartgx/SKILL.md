@@ -48,10 +48,12 @@ uv tool install ./packages/chartgx
 | `no-units` | info | units on the value axis |
 | `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | fine for trends, not for magnitudes |
-| `mismatched-lengths` | error | an error array or bar group disagrees in number with what it annotates |
+| `mismatched-lengths` | error | an error array, bar group or heatmap rows disagree in number with what they annotate |
 | `non-finite-value` | error | a declared number cannot be placed |
 | `two-error-shapes` | error | symmetric and asymmetric error bars declared at once |
 | `negative-error` | error | an error magnitude is negative |
+| `short-line` | error | a declared line has fewer than two points |
+| `ambiguous-labels` | error | two marks name one axis differently |
 
 Every check has a test that proves it fires on a chart with the defect and stays
 quiet on one without (`tests/`).

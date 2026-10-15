@@ -793,6 +793,51 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/chartgx/tests/test_model_route.py::test_a_truncated_baseline_is_the_same_code_the_figure_route_uses",
             ),
             Mutation(
+                "declared-model-empty-mark-silent",
+                "packages/chartgx/src/chartgx/model.py",
+                "            if not points:\n"
+                '                report_problem("empty-chart", f"{kind} mark declares no points to draw", target)',
+                "            pass",
+                "packages/chartgx/tests/test_model_route.py::test_an_empty_mark_is_an_error_rather_than_a_clean_report",
+            ),
+            Mutation(
+                "declared-model-short-line-accepted",
+                "packages/chartgx/src/chartgx/model.py",
+                '            if kind == "line" and len(points) == 1:',
+                "            if False:",
+                "packages/chartgx/tests/test_model_route.py::test_a_one_point_line_is_short_rather_than_empty",
+            ),
+            Mutation(
+                "declared-model-mark-field-unchecked",
+                "packages/chartgx/src/chartgx/model.py",
+                "        unknown = sorted(key for key in mark if key not in MARK_FIELDS[str(kind)])\n"
+                "        if unknown:\n"
+                "            raise InvalidModel(\n"
+                '                f"{path}: marks[{index}] has unrecognised key(s) {unknown} for a {kind} mark"\n'
+                "            )",
+                "        unknown = []",
+                "packages/chartgx/tests/test_model_route.py::test_an_unknown_field_inside_a_mark_is_refused_not_ignored",
+            ),
+            Mutation(
+                "declared-model-heatmap-ragged-accepted",
+                "packages/chartgx/src/chartgx/model.py",
+                """                if len(row) != width:
+                    report_problem(
+                        "mismatched-lengths",
+                        f"heatmap row {position} has {len(row)} cells for {width} columns",
+                        target,
+                    )""",
+                "                pass",
+                "packages/chartgx/tests/test_model_route.py::test_a_ragged_matrix_disagrees_with_itself",
+            ),
+            Mutation(
+                "declared-model-ambiguous-labels-unchecked",
+                "packages/chartgx/src/chartgx/model.py",
+                "    if len(named) > 1 and any(labels != named[0] for labels in named):",
+                "    if False:",
+                "packages/chartgx/tests/test_model_route.py::test_two_names_for_one_axis_are_refused_rather_than_picked_between",
+            ),
+            Mutation(
                 "declared-model-lengths-unchecked",
                 "packages/chartgx/src/chartgx/model.py",
                 '                expected = len(points) if shape == "symmetric" else len(points) * 2',

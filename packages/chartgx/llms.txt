@@ -36,7 +36,9 @@ or whatever `matplotlib.pyplot` has open.
    and without running anything: `chartgx inspect chart.json`. It has no
    storyboard here (a declaration has no artists to box) — the renderer that owns
    the model draws one: `figspec storyboard model.json -o model.storyboard.svg`.
-   Unknown keys or unreadable members exit 2.
+   The kinds are line, scatter, bar, grouped_bar and heatmap (a matrix with
+   optional row/column labels and a closed set of colour ramps). Unknown keys —
+   at the top level or inside a mark — and unreadable members exit 2.
 3. Fix the `error` and `warn` problems; inspect again.
 4. Look at `<name>.storyboard.png` — each numbered box proves a problem.
 5. `chartgx render chart.py -o chart.png` for the final still.
@@ -45,7 +47,7 @@ or whatever `matplotlib.pyplot` has open.
 
 error: `truncated-baseline`, `clipped-text`, `text-overlap`, `log-nonpositive`,
 `empty-chart`, `mismatched-lengths`, `non-finite-value`, `two-error-shapes`,
-`negative-error`.
+`negative-error`, `short-line`, `ambiguous-labels`.
 warn: `no-title`, `no-xlabel`, `no-ylabel`, `dual-axis`, `too-many-series`,
 `pie-slices`, `constant-series`, `clipped-data`, `legend-covers`,
 `inverted-axis`.

@@ -82,15 +82,24 @@ chartgx inspect revenue.json
 ```
 
 The codes are the same where the concept is the same, so a finding does not have
-two names depending on which route produced it. Four can only come from a
+two names depending on which route produced it. Six can only come from a
 declaration, because a figure cannot express them:
 
 | code | severity | what it means |
 | --- | --- | --- |
-| `mismatched-lengths` | error | an error array or a bar group disagrees in number with what it annotates |
+| `mismatched-lengths` | error | an error array, a bar group or a heatmap's rows and labels disagree in number with what they annotate |
 | `non-finite-value` | error | a declared number is NaN or infinite and cannot be placed |
 | `two-error-shapes` | error | a mark declares symmetric and asymmetric error bars at once |
 | `negative-error` | error | an error magnitude is negative, which is not a distance |
+| `short-line` | error | a line has fewer than two points, so there is no line to draw |
+| `ambiguous-labels` | error | two marks name one axis differently, so one would caption the other's data |
+
+The kinds are `line`, `scatter`, `bar`, `grouped_bar` and `heatmap`. A `heatmap`
+carries a matrix (`values`), optional `row_labels`/`col_labels` and a `color_map`
+from the model's closed set — an unknown ramp is an input failure naming the value,
+not a silent fall back to the default. An **empty mark** (a scatter with no points,
+a bar with no categories, a matrix with no cells) is `empty-chart`: nothing to draw
+is an error, not a clean report.
 
 A declaration has no storyboard *here*: box numbers are drawn over a figure's
 artists, and a declaration has no artists, so the report is printed and the image is
