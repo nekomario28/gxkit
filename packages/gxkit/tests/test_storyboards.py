@@ -88,6 +88,50 @@ def test_storyboard_annotates_a_faulty_artifact(tmp_path):
     _assert_non_blank(out)
 
 
+@pytest.mark.parametrize("name", list(EXAMPLES))
+@pytest.mark.parametrize("which", [0, 1])
+def test_every_located_problem_is_the_number_the_picture_shows(name, which):
+    """The documented promise: the text report and the picture agree.
+
+    Every problem that carries a location is boxed, and the number on the box is
+    that problem's number in the report — so "box 3" is not a claim about pixels
+    but about the data the picture was drawn from.
+    """
+    from gxcore.storyboard import labelled_boxes
+
+    _require(name)
+    tool = _tool(name)
+    scene = tool.load(Path(_example(name, which)))
+    report = tool.inspect(scene)
+    located = [
+        (number, problem) for number, problem in enumerate(report.sorted(), 1) if problem.bbox
+    ]
+    drawn = labelled_boxes(report.problems, height=800)
+    # Every located problem is numbered, in the report's own order, and the
+    # number sits on a box drawn from that problem's location. Problems sharing a
+    # location share one box, so the numbers on it are exactly theirs.
+    drawn_numbers = [number for box in drawn for number in box.numbers]
+    # Every located problem is numbered exactly once. Which box is drawn first is
+    # a drawing detail; that each number exists, and lands on its own location, is
+    # the promise the report and the picture share.
+    assert sorted(drawn_numbers) == [n for n, _ in located], (
+        f"{name}/{which}: the picture does not number every located problem once"
+    )
+    for box in drawn:
+        x0, y0, x1, y1 = box.rectangle
+        assert x1 > x0 and y1 > y0, f"{name}/{which}: a degenerate box {box.rectangle}"
+        assert box.problem.bbox is not None
+        where = tuple(round(value) for value in box.problem.bbox)
+        sharing = [
+            number
+            for number, problem in located
+            if problem.bbox and tuple(round(value) for value in problem.bbox) == where
+        ]
+        assert list(box.numbers) == sharing, (
+            f"{name}/{which}: box at {where} carries {box.numbers}, expected {sharing}"
+        )
+
+
 def test_the_examples_cover_every_tool():
     from gxkit.registry import TOOLS
 

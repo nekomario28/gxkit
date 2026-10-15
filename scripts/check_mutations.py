@@ -610,6 +610,35 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # A picture that numbers the wrong problem, and an empty declaration that
+    # reports nothing, are both silent: each is restored and must be rejected.
+    cases.extend(
+        [
+            Mutation(
+                "storyboard-numbering-off-by-one",
+                "packages/gxcore/src/gxcore/storyboard.py",
+                "    for number, problem in enumerate(sorted(problems, key=sort_key), start=1):",
+                "    for number, problem in enumerate(sorted(problems, key=sort_key), start=0):",
+                KIT_TEST
+                + "test_storyboards.py::test_every_located_problem_is_the_number_the_picture_shows",
+            ),
+            Mutation(
+                "storyboard-unlocated-problem-boxed",
+                "packages/gxcore/src/gxcore/storyboard.py",
+                "        if problem.bbox is None:\n            continue",
+                "        if problem.bbox is None:\n            problem.bbox = (0.0, 0.0, 0.0, 0.0)",
+                KIT_TEST
+                + "test_storyboards.py::test_every_located_problem_is_the_number_the_picture_shows",
+            ),
+            Mutation(
+                "netgx-empty-network-silent",
+                "packages/netgx/src/netgx/checks.py",
+                "    if not net.nodes:",
+                "    if False:",
+                "packages/netgx/tests/test_networks.py::test_an_empty_network_says_so",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

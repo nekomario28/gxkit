@@ -144,6 +144,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "no-endpoints": "info",
     },
     "netgx": {
+        "no-nodes": "info",
         "dangling-edge": "error",
         "public-reaches-sensitive": "error",
         "self-loop": "warn",

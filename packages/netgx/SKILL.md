@@ -43,6 +43,7 @@ A node kind is `public`, `edge`, `service` or `data`. Or module-level `NODES` /
 | `duplicate-edge` | info | the same edge is listed twice |
 | `isolated-node` | info | a node with no traffic in or out |
 | `no-public` | info | no node is marked public |
+| `no-nodes` | info | the network declares no nodes |
 
 ## Why the checks can be trusted
 

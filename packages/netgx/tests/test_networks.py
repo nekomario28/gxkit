@@ -32,6 +32,13 @@ def test_dangling_edge():
     assert_fires(inspect_network(_net(edges=[("web", "ghost")])), "dangling-edge", ERROR)
 
 
+def test_an_empty_network_says_so():
+    """Every other tool reports an empty declaration; saying nothing would let
+    "no problems" stand for a network that declares no topology."""
+    report = inspect_network(Network())
+    assert [(p.code, p.severity) for p in report.problems] == [("no-nodes", INFO)]
+
+
 def test_a_dangling_edge_identity_names_its_edge_and_endpoint():
     report = inspect_network(_net(edges=[("web", "ghost")]))
     dangling = [p for p in report.problems if p.code == "dangling-edge"]

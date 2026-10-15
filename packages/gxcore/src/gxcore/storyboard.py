@@ -9,6 +9,7 @@ in the image.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image
@@ -33,6 +34,65 @@ def storyboard_path(name: str, out: str | Path | None = None) -> Path:
     if out:
         return Path(out)
     return Path(f"{safe_name(name)}.storyboard.png")
+
+
+@dataclass(frozen=True)
+class Box:
+    """One rectangle the storyboard draws, and the report numbers it carries.
+
+    ``numbers`` are the text report's numbering, so "box 3 is problem 3" is a
+    property of the data rather than of the pixels.
+    """
+
+    numbers: tuple[int, ...]
+    rectangle: tuple[float, float, float, float]
+    problem: Problem
+
+
+def labelled_boxes(
+    problems: Sequence[Problem],
+    *,
+    height: float,
+    origin: str = "bottom-left",
+    pad: int | None = None,
+) -> list[Box]:
+    """The boxes a storyboard would draw, in raster coordinates.
+
+    One entry per rectangle, carrying every report number that landed on it: a
+    problem's own box can be shared with another fault on the same target, so one
+    rectangle carries both numbers rather than hiding the earlier box.
+    """
+    if pad is None:
+        pad = max(3, int(height / 240))
+    flip = origin == "bottom-left"
+    grouped: dict[tuple[float, float, float, float], list[int]] = {}
+    representative: dict[tuple[float, float, float, float], Problem] = {}
+    for number, problem in enumerate(sorted(problems, key=sort_key), start=1):
+        if problem.bbox is None:
+            continue
+        key: tuple[float, float, float, float] = (
+            float(round(problem.bbox[0])),
+            float(round(problem.bbox[1])),
+            float(round(problem.bbox[2])),
+            float(round(problem.bbox[3])),
+        )
+        grouped.setdefault(key, []).append(number)
+        representative.setdefault(key, problem)
+    boxes: list[Box] = []
+    for key, numbers in grouped.items():
+        x0, y0, x1, y1 = key
+        if flip:
+            top, bottom = height - y1, height - y0
+        else:
+            top, bottom = y0, y1
+        boxes.append(
+            Box(
+                numbers=tuple(numbers),
+                rectangle=(x0 - pad, top - pad, x1 + pad, bottom + pad),
+                problem=representative[key],
+            )
+        )
+    return boxes
 
 
 def annotate(
@@ -65,37 +125,13 @@ def annotate(
     except Exception:  # very old Pillow
         font = ImageFont.load_default()
 
-    flip = origin == "bottom-left"
-
-    # Several problems can share one box (e.g. two faults on the same node).
-    # Group them so one rectangle carries every number instead of hiding the
-    # earlier boxes under the later ones.
-    groups: dict[tuple[float, float, float, float], list[int]] = {}
-    representative: dict[tuple[float, float, float, float], Problem] = {}
-    for n, p in enumerate(sorted(problems, key=sort_key), start=1):
-        if p.bbox is None:
-            continue
-        key: tuple[float, float, float, float] = (
-            float(round(p.bbox[0])),
-            float(round(p.bbox[1])),
-            float(round(p.bbox[2])),
-            float(round(p.bbox[3])),
-        )
-        groups.setdefault(key, []).append(n)
-        representative.setdefault(key, p)
-
-    for key, numbers in groups.items():
-        p = representative[key]
-        x0, y0, x1, y1 = key
-        if flip:
-            top, bottom = H - y1, H - y0
-        else:
-            top, bottom = y0, y1
-        box = (x0 - pad, top - pad, x1 + pad, bottom + pad)
+    for drawn in labelled_boxes(problems, height=H, origin=origin, pad=pad):
+        box = drawn.rectangle
+        p = drawn.problem
         color = _COLORS.get(p.severity, (128, 128, 128))
         draw.rectangle(box, outline=color, width=max(2, int(H / 400)))
 
-        tag = ",".join(str(n) for n in numbers)
+        tag = ",".join(str(n) for n in drawn.numbers)
         tb = draw.textbbox((0, 0), tag, font=font)
         tw, th = tb[2] - tb[0], tb[3] - tb[1]
         ty = box[1] - th - 6

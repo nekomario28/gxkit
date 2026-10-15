@@ -8,4 +8,4 @@ codes, a storyboard) is shared.
 - Write: a Python file building netgx.Network(nodes={"internet": "public", "db": "data"}, edges=[("internet", "web")], sensitive=["db"]); or NODES / EDGES / SENSITIVE.
 - Node kinds: public, edge, service, data.
 - netgx inspect net.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
-- Codes: dangling-edge (error), public-reaches-sensitive (error), self-loop (warn), duplicate-edge (info), isolated-node (info), no-public (info).
+- Codes: no-nodes (info), dangling-edge (error), public-reaches-sensitive (error), self-loop (warn), duplicate-edge (info), isolated-node (info), no-public (info).
