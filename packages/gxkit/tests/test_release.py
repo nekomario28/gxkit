@@ -107,6 +107,18 @@ def test_check_dist_reports_a_wheel_without_py_typed(tmp_path):
     assert any("docgx" in p and "py.typed" in p for p in module.check_dist(tmp_path))
 
 
+def test_check_dist_reports_a_wheel_without_a_license(tmp_path):
+    """`check_dist` refuses a wheel with no LICENSE; this shows it can."""
+    module = _release_module()
+    _fake_dist(tmp_path, module)
+    declared = _version(module, "docgx")
+    (tmp_path / f"docgx-{declared}-py3-none-any.whl").unlink()
+    path = tmp_path / f"docgx-{declared}-py3-none-any.whl"
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("docgx/py.typed", "")
+    assert any("docgx" in p and "LICENSE" in p for p in module.check_dist(tmp_path))
+
+
 def test_check_dist_reports_an_unexpected_wheel(tmp_path):
     module = _release_module()
     _fake_dist(tmp_path, module)

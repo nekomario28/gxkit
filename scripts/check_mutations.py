@@ -639,6 +639,62 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # The gates themselves must be shown failing: a repo-hygiene rule, the
+    # packaging check, the traceability freshness guard, the layering rule and
+    # the action's refusal of an empty directory.
+    cases.extend(
+        [
+            Mutation(
+                "prepublish-aws-rule-blind",
+                "scripts/prepublish_check.py",
+                '    ("aws-access-key", re.compile(r"AKIA[0-9A-Z]{16}")),',
+                '    ("aws-access-key", re.compile(r"AKIA-never-matches")),',
+                KIT_TEST + "test_repo.py::test_the_prepublication_rules_can_fire",
+            ),
+            Mutation(
+                "prepublish-home-path-rule-blind",
+                "scripts/prepublish_check.py",
+                '    ("unix-home-path", re.compile(r"/(?:home|Users)/[A-Za-z0-9._-]+/")),',
+                '    ("unix-home-path", re.compile(r"/home-never-matches/")),',
+                KIT_TEST + "test_repo.py::test_the_prepublication_rules_can_fire",
+            ),
+            Mutation(
+                "release-license-unchecked",
+                "scripts/release.py",
+                '        if not any(m.endswith("licenses/LICENSE") for m in members):',
+                "        if False:",
+                KIT_TEST + "test_release.py::test_check_dist_reports_a_wheel_without_a_license",
+            ),
+            Mutation(
+                "release-unexpected-wheel-unchecked",
+                "scripts/release.py",
+                "    for key in sorted(set(wheels) - {_normalize(n) for n in expected}):",
+                "    for key in []:",
+                KIT_TEST + "test_release.py::test_check_dist_reports_an_unexpected_wheel",
+            ),
+            Mutation(
+                "trace-codes-column-dropped",
+                "scripts/make_trace.py",
+                'f"| {len(codes)} | {_examples(spec.name)} |"',
+                'f"| {_examples(spec.name)} |"',
+                KIT_TEST + "test_docs.py::test_trace_document_covers_every_tool_and_is_current",
+            ),
+            Mutation(
+                "self-inspect-sibling-rule-dropped",
+                "scripts/self_inspect.py",
+                "        elif src in domains and dst in domains:",
+                "        elif False:",
+                KIT_TEST + "test_repo.py::test_the_layering_rule_rejects_every_forbidden_direction",
+            ),
+            Mutation(
+                "action-empty-directory-accepted",
+                "scripts/inspect_path.sh",
+                "    exit 1\n  fi",
+                "    true\n  fi",
+                KIT_TEST + "test_action_script.py::test_an_empty_directory_fails",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

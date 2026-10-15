@@ -48,6 +48,20 @@ def tracked_files() -> list[str]:
     return [p for p in out.decode().split("\x00") if p]
 
 
+def findings_in(text: str, *, where: str = "(text)") -> list[tuple[str, str, int, str]]:
+    """Every credential and machine path in ``text``, by rule and line.
+
+    Pure, so the rules themselves can be tested: the gate is that this runs over
+    the tracked tree, and a rule that cannot fire is not a rule.
+    """
+    found: list[tuple[str, str, int, str]] = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        for rule, rx in SECRETS + MACHINE_PATHS:
+            if rx.search(line):
+                found.append((rule, where, lineno, line.strip()[:120]))
+    return found
+
+
 def scan_head() -> list[tuple[str, str, int, str]]:
     findings: list[tuple[str, str, int, str]] = []
     for name in tracked_files():
@@ -55,10 +69,7 @@ def scan_head() -> list[tuple[str, str, int, str]]:
             text = pathlib.Path(name).read_text(encoding="utf-8")
         except (UnicodeDecodeError, IsADirectoryError, FileNotFoundError):
             continue
-        for lineno, line in enumerate(text.splitlines(), start=1):
-            for rule, rx in SECRETS + MACHINE_PATHS:
-                if rx.search(line):
-                    findings.append((rule, name, lineno, line.strip()[:120]))
+        findings.extend(findings_in(text, where=name))
     return findings
 
 
