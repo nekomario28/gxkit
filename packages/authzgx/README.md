@@ -68,7 +68,7 @@ inspect: 5 problems (2 errors)
 | code | severity | what it means |
 | --- | --- | --- |
 | `escalation` | error | a low principal reaches a sensitive permission (path given) |
-| `cyclic-inheritance` | error | role inheritance has a cycle |
+| `cyclic-inheritance` | error | role inheritance has a cycle; one finding per cyclic component |
 | `dangling-grant` / `dangling-assignment` / `dangling-inherit` | error | a reference names something undeclared |
 | `unreachable-role` | info | no principal can reach the role |
 | `orphan-permission` | info | no role grants the permission |

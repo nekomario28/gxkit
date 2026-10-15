@@ -15,6 +15,7 @@ from .config import apply as apply_config
 from .config import load as load_config
 from .graph import (
     can_reach,
+    cycle_witnesses,
     distances,
     find_cycle,
     reachable,
@@ -47,6 +48,7 @@ __all__ = [
     "annotate",
     "apply_config",
     "can_reach",
+    "cycle_witnesses",
     "distances",
     "find_cycle",
     "human",

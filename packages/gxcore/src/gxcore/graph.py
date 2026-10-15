@@ -221,6 +221,36 @@ def topological_sort(edges: Adjacency[_H], nodes: Iterable[_H] | None = None) ->
     return out if len(out) == len(ordered) else None
 
 
+def cycle_witnesses(edges: Adjacency[_H]) -> list[tuple[list[_H], list[_H]]]:
+    """One cycle witness per cyclic component, with the component it belongs to.
+
+    A single global `find_cycle` reports the first cycle it meets and hides the
+    rest, so a graph with two independent cycles looks like a graph with one. A
+    caller that reports cycles — a dependency graph, a role hierarchy, a build
+    DAG, a foreign-key graph — must report every component, and it must identify
+    the finding by the component rather than by whichever node the search
+    happened to start from, or a rotated witness reads as new debt.
+
+    Returns ``(witness, sorted_component)`` pairs in a deterministic order, and an
+    empty list when the graph is acyclic.
+    """
+    e = _norm(edges)
+    witnesses: list[tuple[list[_H], list[_H]]] = []
+    for component in strongly_connected_components(e):
+        if len(component) < 2:
+            continue
+        members = set(component)
+        inside: dict[_H, list[_H]] = {
+            node: [dst for dst in e.get(node, ()) if dst in members] for node in component
+        }
+        witness = find_cycle(inside)
+        if witness:
+            # Sorted by name: nodes are names in every caller, and this is
+            # deterministic for any hashable so the fingerprint cannot move.
+            witnesses.append((witness, sorted(component, key=str)))
+    return witnesses
+
+
 def strongly_connected_components(edges: Adjacency[_H]) -> list[list[_H]]:
     """The graph's strongly connected components, each a list of nodes.
 

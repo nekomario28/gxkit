@@ -156,13 +156,30 @@ is a log line, not a gate.** Every one is now proven by a mutant.
 - Writing them found a **missing test**: `check_dist` refuses a wheel with no
   `LICENSE`, and nothing proved that check could fire. It has one now.
 
+A fifth sweep asked the cross-tool question: **was a defect fixed in one tool and
+left in its siblings?** The answer was yes, four times.
+
+- "Only the first cycle is reported" was fixed for `depsgx` and still present in
+  **`authzgx`** (a role-inheritance cycle, error), **`pipegx`** (a `needs` cycle,
+  error), **`flowgx`**, **`protogx`** and **`schemagx`**. Two independent cycles
+  produced one finding, so a gate passed with the second one present. Measured
+  before the fix: `authzgx` reported `role:r1` and not `role:r3`; `pipegx`
+  reported `a` and not `c`.
+- The rule now has **one owner**, `gxcore.graph.cycle_witnesses(graph)`, returning
+  one witness per cyclic component with the component itself. `depsgx`'s inline
+  loop is gone, `Schema.cycle()` is gone (its only caller was the check), and all
+  six tools identify a cycle finding by its component members, so a witness that
+  rotates is the same finding rather than new debt.
+- A cross-tool regression asserts the property for all six at once, and one
+  mutant per tool plus the shared helper keeps it from coming back in any of them.
+
 ### Verification
 
-- 1673 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1679 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 80 named defects, each killed by its intended
+- A bounded mutation catalogue of 86 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

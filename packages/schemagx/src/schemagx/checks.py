@@ -8,7 +8,7 @@ that needs deferred constraints, and tables nothing points at. Cycles come from
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.graph import reverse, strongly_connected_components, topological_sort
+from gxcore.graph import cycle_witnesses, reverse, strongly_connected_components, topological_sort
 
 from .model import Schema, type_family
 from .render import compute_layout, node_box
@@ -95,14 +95,14 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
                 )
             )
 
-    cycle = schema.cycle()
-    if cycle:
+    for witness, component in cycle_witnesses(schema.edges()):
         out.append(
             Problem(
                 WARN,
                 "cyclic-foreign-key",
-                f"foreign-key cycle: {' → '.join(cycle)} — inserts need deferred constraints",
-                target=cycle[0],
+                f"foreign-key cycle: {' → '.join(witness)} — inserts need deferred constraints",
+                target=witness[0],
+                identity=tuple(component),
             )
         )
 

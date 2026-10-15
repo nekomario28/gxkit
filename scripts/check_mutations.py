@@ -509,17 +509,9 @@ def mutations(root: Path) -> list[Mutation]:
     cases.extend(
         [
             Mutation(
-                "depsgx-first-cycle-only",
-                "packages/depsgx/src/depsgx/checks.py",
-                "    for component in strongly_connected_components(acyclic):",
-                "    for component in strongly_connected_components(acyclic)[:1]:",
-                KIT_TEST
-                + "test_inspection_gates.py::test_every_independent_cycle_is_reported_through_the_cli",
-            ),
-            Mutation(
                 "depsgx-cycle-identity-from-display",
                 "packages/depsgx/src/depsgx/checks.py",
-                "                    identity=tuple(sorted(component)),\n",
+                "                identity=tuple(component),\n",
                 "",
                 KIT_TEST + "test_inspection_gates.py::test_a_rotated_cycle_witness_is_not_new_debt",
             ),
@@ -694,6 +686,46 @@ def mutations(root: Path) -> list[Mutation]:
                 KIT_TEST + "test_action_script.py::test_an_empty_directory_fails",
             ),
         ]
+    )
+    # The "only the first cycle" defect was fixed for depsgx and lived on in four
+    # more tools. One mutant per tool keeps it from coming back in any of them.
+    cycles = (
+        KIT_TEST
+        + "test_input_boundaries.py::test_every_independent_cycle_is_a_finding_not_only_the_first"
+    )
+    for tool, path, call in [
+        ("depsgx", "packages/depsgx/src/depsgx/checks.py", "cycle_witnesses(acyclic)"),
+        (
+            "authzgx",
+            "packages/authzgx/src/authzgx/checks.py",
+            "cycle_witnesses(model.role_edges())",
+        ),
+        ("pipegx", "packages/pipegx/src/pipegx/checks.py", "cycle_witnesses(edges)"),
+        ("flowgx", "packages/flowgx/src/flowgx/checks.py", "cycle_witnesses(edges)"),
+        ("protogx", "packages/protogx/src/protogx/checks.py", "cycle_witnesses(edges)"),
+        (
+            "schemagx",
+            "packages/schemagx/src/schemagx/checks.py",
+            "cycle_witnesses(schema.edges())",
+        ),
+    ]:
+        cases.append(
+            Mutation(
+                f"{tool}-first-cycle-only",
+                path,
+                call,
+                f"{call}[:1]",
+                cycles,
+            )
+        )
+    cases.append(
+        Mutation(
+            "cycle-witness-single",
+            "packages/gxcore/src/gxcore/graph.py",
+            "    for component in strongly_connected_components(e):",
+            "    for component in strongly_connected_components(e)[:1]:",
+            cycles,
+        )
     )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.

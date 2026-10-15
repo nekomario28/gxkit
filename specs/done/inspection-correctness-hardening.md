@@ -45,6 +45,12 @@ block: each is refused with the line, because the model cannot hold it and
 picking one silently would let a check state something untrue. See
 `schemagx/ddl.py`, `flowgx/mermaid.py`, `apigx/openapi.py`.
 
+**A rule has one owner.** "A cycle finding per cyclic component, identified by
+that component" lives in `gxcore.graph.cycle_witnesses`; six tools report cycles,
+and a single global search in any one of them hides the second component while
+looking like a complete answer. The same reasoning made `convert_items` and
+`convert_names` shared rather than per-tool.
+
 **A baseline compares identity and multiplicity, not prose.** A finding is
 identified by a domain-owned stable identity when its relationship is what
 matters (a cron conflict partner, a network edge and endpoint); repeated findings

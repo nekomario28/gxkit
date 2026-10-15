@@ -59,7 +59,7 @@ inspect: 5 problems (5 errors)
 | code | severity | what it means |
 | --- | --- | --- |
 | `unknown-step` | error | a `needs` names a step that does not exist |
-| `cycle` | error | the needs graph has a cycle |
+| `cycle` | error | the needs graph has a cycle; one finding per cyclic component |
 | `duplicate-step` | error | a step declared twice |
 | `duplicate-artifact` | error | two steps produce the same artifact |
 | `goal-not-produced` | error | a goal no step produces |

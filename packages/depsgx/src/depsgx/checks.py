@@ -10,7 +10,12 @@ from __future__ import annotations
 from collections import Counter
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import find_cycle, reverse, strongly_connected_components, topological_sort
+from gxcore.graph import (
+    cycle_witnesses,
+    reverse,
+    strongly_connected_components,
+    topological_sort,
+)
 
 from .model import ModuleGraph
 from .render import compute_layout, node_box
@@ -76,29 +81,19 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
         if src != dst:
             acyclic.setdefault(src, []).append(dst)
             acyclic.setdefault(dst, [])
-    # A global first-cycle search hides faults in other independent components.
-    # Report one witness per cyclic SCC, not exponentially many elementary circuits.
-    for component in strongly_connected_components(acyclic):
-        if len(component) < 2:
-            continue
-        members = set(component)
-        component_edges = {
-            node: [dst for dst in acyclic[node] if dst in members] for node in component
-        }
-        cycle = find_cycle(component_edges)
-        if cycle:
-            out.append(
-                Problem(
-                    ERROR,
-                    "cycle",
-                    f"dependency cycle: {' → '.join(cycle)}",
-                    target=cycle[0],
-                    # The component is the finding, not the witness: which member
-                    # the search happens to start from is a display detail, and a
-                    # baseline must not read a rotated witness as new debt.
-                    identity=tuple(sorted(component)),
-                )
+    # One witness per cyclic component, and the component is the finding: a
+    # global first-cycle search hides faults in other components, and a rotated
+    # witness must not read as new debt.
+    for witness, component in cycle_witnesses(acyclic):
+        out.append(
+            Problem(
+                ERROR,
+                "cycle",
+                f"dependency cycle: {' → '.join(witness)}",
+                target=witness[0],
+                identity=tuple(component),
             )
+        )
 
     forbidden = {(f[0], f[1]) for f in graph.forbidden}
     for src, dst in graph.depends:

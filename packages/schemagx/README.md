@@ -76,7 +76,7 @@ inspect: 10 problems (4 errors)
 | `dangling-foreign-key` | error | a foreign key names an unknown table or column |
 | `fk-type-mismatch` | warn | the two columns have different types |
 | `fk-to-non-primary-key` | warn | a foreign key points at a non-primary key column |
-| `cyclic-foreign-key` | warn | a foreign-key cycle — inserts need deferred constraints |
+| `cyclic-foreign-key` | warn | a foreign-key cycle — inserts need deferred constraints; one finding per cyclic component |
 | `missing-primary-key` | info | a table has no primary key |
 | `orphan-table` | info | nothing references the table and it references nothing |
 | `no-tables` | info | the schema declares no tables |
