@@ -6,6 +6,7 @@ codes, exit codes, a storyboard) is shared with every other tool.
 
 - Install/run: uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/apigx" apigx inspect api.py
 - Write: a Python file building apigx.API(base="/v1", endpoints=[apigx.Endpoint("GET", "/v1/x", statuses=[200, 404])]); or ENDPOINTS / BASE / NAME.
+- Or point at the OpenAPI 3 JSON document the service publishes: apigx inspect openapi.json (paths/methods become endpoints, security becomes auth, numeric responses become statuses; a malformed document exits 2).
 - A mutating method (POST/PUT/PATCH/DELETE) with auth=False is an error.
 - apigx inspect api.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
 - Codes: duplicate-route (error), unauthenticated-mutation (error), unversioned-path (warn), no-error-status (info), deprecated-endpoint (info), no-endpoints (info).

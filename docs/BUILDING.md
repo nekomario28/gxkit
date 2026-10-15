@@ -111,6 +111,12 @@ and a tool's drawn pixels are held against the boxes it reports.
 Use `gxcore.testing` (`assert_fires`, `assert_quiet`, `has`, `codes`). Inject
 the defect into a real artifact (a figure, a level, a machine), not a mock.
 
+The family also inspects itself: `scripts/self_inspect.py` derives the real
+package graph from the sources and the umbrella's routing table, runs `gxkit` on
+it, and requires the layering this repository claims. It lives at the repository
+root, so no distribution carries it, and the sibling-dependency rule sits in the
+test because two tools sharing a layer is legitimate for `depsgx` to accept.
+
 A presence check is not a gate proof. `scripts/guard_contracts.py` checks the
 actual setup handoff and records pytest arguments from trusted shell scripts
 with external commands stubbed out. Comments and echo output cannot stand in

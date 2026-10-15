@@ -325,6 +325,51 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # An importer must not widen a check's claim: authentication, the supported
+    # version and a malformed document all have to reach the same codes.
+    cases.extend(
+        [
+            Mutation(
+                "openapi-security-inherited-away",
+                "packages/apigx/src/apigx/openapi.py",
+                '    if "security" in operation:\n        return bool(operation["security"])\n    return bool(document.get("security"))',
+                "    return True",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_published_spec_is_inspected_by_the_same_codes",
+            ),
+            Mutation(
+                "openapi-version-unchecked",
+                "packages/apigx/src/apigx/openapi.py",
+                '    if not isinstance(version, str) or not version.startswith("3."):',
+                "    if False:",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_malformed_document_is_an_input_failure_with_its_location",
+            ),
+            Mutation(
+                "openapi-malformed-swallowed",
+                "packages/apigx/src/apigx/openapi.py",
+                '    except json.JSONDecodeError as exc:\n        raise InvalidArtifact(f"{path}: not JSON ({exc})") from exc',
+                "    except json.JSONDecodeError:\n        return API()",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_malformed_document_is_an_input_failure_with_its_location",
+            ),
+            Mutation(
+                "openapi-json-not-routed",
+                "packages/apigx/src/apigx/model.py",
+                '    if Path(path).suffix.lower() == ".json":',
+                "    if False:",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_published_spec_is_inspected_by_the_same_codes",
+            ),
+            Mutation(
+                "foreign-document-detected-as-python",
+                "packages/gxkit/src/gxkit/cli.py",
+                '    if path.suffix.lower() != ".py":',
+                "    if False:",
+                KIT_TEST + "test_foreign_inputs.py::test_a_document_needs_the_tool_named",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

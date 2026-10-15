@@ -3,6 +3,35 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased — pre-publication
+
+### Added
+- `apigx` reads the OpenAPI 3 document a service publishes
+  (`apigx inspect openapi.json`): paths and methods become endpoints, `security`
+  becomes authentication (inherited when absent, and an empty list meaning
+  "requires none"), numeric responses become documented statuses, the first
+  server's path becomes the base. The same codes apply. OpenAPI 2 / Swagger is
+  not supported, and a malformed document is an input failure that names where
+  it is wrong.
+- The umbrella says which tool reads a document that is not a Python artifact,
+  instead of reporting a syntax error in a file that has none.
+- `docs/CONTRACT.md`: what an integrator may rely on — codes, severities, exit
+  codes, the JSON report, the baseline, the CLI shape, supported Pythons — and
+  what is explicitly not promised.
+- `scripts/check_publish.py`: builds every distribution, serves them from a
+  local PEP 503 index and installs the umbrella against that index alone, so a
+  dependency range only a resolver would reject fails before anything is
+  published. Runs in `scripts/check.sh --full` and the packaging CI job.
+
+### Fixed
+- The README leads with the single-tool route on a file the reader already has,
+  and the release notes document the index proof.
+
+### Verification
+- The bounded mutation catalogue grows to 44, covering the importer's
+  authentication, version and malformed-input branches, the `.json` routing and
+  the foreign-document message.
+
 ## Unreleased — reaudit hardening
 
 ### Fixed
@@ -19,6 +48,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - A report prints on a console that cannot encode every character it names. A
   message naming an edge arrow on a Windows code page turned a real verdict into
   an input failure; unencodable characters are escaped instead.
+- The family inspects its own module graph. `scripts/self_inspect.py` derives
+  the real import and routing graph and runs `gxkit` on it, and the layering rule
+  a shared layer cannot express (no sibling tool depends on another, the core
+  depends on nothing, nothing depends on the umbrella) is pinned beside it.
 
 ### Verification
 - `scripts/guard_contracts.py` replays the environment its stubbed commands run

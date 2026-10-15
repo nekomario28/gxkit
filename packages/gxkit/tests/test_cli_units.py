@@ -55,6 +55,14 @@ def test_run_tool_forwards_the_flags(tmp_path, capsys):
     assert '"problems"' in captured.out
 
 
+def test_a_foreign_document_is_told_which_tool_reads_it(tmp_path, capsys):
+    document = tmp_path / "openapi.json"
+    document.write_text("{}", encoding="utf-8")
+    assert cli._tool_for(document, None) is None
+    err = capsys.readouterr().err
+    assert "not a Python artifact" in err and "apigx" in err
+
+
 def test_codes_command_runs(capsys):
     assert cli.main(["codes", "levelgx"]) == 0
     assert "soft-lock" in capsys.readouterr().out

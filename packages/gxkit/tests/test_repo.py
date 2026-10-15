@@ -99,3 +99,30 @@ def test_ffmpeg_bound_modules_are_not_excluded_from_coverage():
         assert "pragma: no cover" not in path.read_text(encoding="utf-8"), (
             f"framegx/{name}.py excludes a capability-bound line from coverage"
         )
+
+
+SELF = ROOT / "scripts/self_inspect.py"
+
+
+def _self():
+    return runpy.run_path(str(SELF))
+
+
+def test_the_family_accepts_its_own_module_graph():
+    """The real graph, inspected by the tool that would report a break in it."""
+    assert _self()["main"]() == 0
+
+
+def test_the_layering_rule_rejects_every_forbidden_direction():
+    """A shared layer cannot express a sibling ban, so the rule is pinned here."""
+    check = _self()["check_layering"]
+    modules = ["gxcore", "gxkit", "chartgx", "crongx"]
+    allowed = [("chartgx", "gxcore"), ("gxkit", "chartgx"), ("gxkit", "gxcore")]
+    assert check(modules, allowed) == []
+    assert check(modules, [("gxcore", "chartgx")]) == [
+        "the shared core must not depend on 'chartgx'"
+    ]
+    assert check(modules, [("chartgx", "crongx")]) == [
+        "'chartgx' must not depend on the sibling tool 'crongx'"
+    ]
+    assert check(modules, [("crongx", "gxkit")]) == ["'crongx' must not depend on the umbrella"]

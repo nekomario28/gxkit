@@ -92,6 +92,13 @@ def _as_api(value: object) -> API | None:
 
 
 def load_api(path: str | Path) -> tuple[API, object]:
+    # An OpenAPI document is the contract most projects already have; a `.json`
+    # path is read as one rather than executed as Python.
+    if Path(path).suffix.lower() == ".json":
+        from .openapi import api_from_file
+
+        return api_from_file(path), path
+
     from gxcore.loading import load_from_file
 
     api, module = load_from_file(
