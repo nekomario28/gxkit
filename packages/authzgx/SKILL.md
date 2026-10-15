@@ -58,6 +58,7 @@ references). `info` = dead config.
 | `escalation` | error | a low principal reaches a sensitive permission (path given) |
 | `cyclic-inheritance` | error | role inheritance has a cycle |
 | `dangling-grant` / `dangling-assignment` / `dangling-inherit` | error | a reference names something undeclared |
+| `dangling-reference` | error | `low`/`sensitive` names nothing declared |
 | `unreachable-role` | info | no principal can reach the role |
 | `orphan-permission` | info | no role grants the permission |
 | `unreachable-permission` | info | no principal can reach the permission |

@@ -70,6 +70,7 @@ inspect: 5 problems (2 errors)
 | `escalation` | error | a low principal reaches a sensitive permission (path given) |
 | `cyclic-inheritance` | error | role inheritance has a cycle; one finding per cyclic component |
 | `dangling-grant` / `dangling-assignment` / `dangling-inherit` | error | a reference names something undeclared; identified by the referrer and the missing name |
+| `dangling-reference` | error | `low` or `sensitive` names something undeclared — the escalation check cannot be made of a name that resolves to nothing |
 | `unreachable-role` | info | no principal can reach the role |
 | `orphan-permission` | info | no role grants the permission |
 | `unreachable-permission` | info | no principal can reach the permission |

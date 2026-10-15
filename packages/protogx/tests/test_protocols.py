@@ -134,3 +134,31 @@ def test_examples_load_and_are_diagnosed():
     ):
         assert_fires(r, code, ERROR)
     assert_fires(r, "missing-response", WARN)
+
+
+def test_a_statement_about_a_state_or_message_that_does_not_exist_is_reported():
+    """A terminal state or a request that names nothing is not a deadlock: it is a
+    declaration that resolves to nothing, and the protocol would be judged against
+    an end condition or a message it does not have."""
+    base = dict(
+        states=["a", "b"],
+        transitions=[("a", "b", "m")],
+        start="a",
+        terminal=["b"],
+        messages=["m"],
+        requests={},
+        responses={},
+    )
+    assert inspect_protocol(Protocol(**base)).errors == 0
+
+    report = inspect_protocol(Protocol(**(base | {"terminal": ["ghost"]})))
+    assert_fires(report, "unknown-state", ERROR)
+    assert "terminal state 'ghost'" in next(
+        p.message for p in report.problems if p.code == "unknown-state"
+    )
+
+    report = inspect_protocol(Protocol(**(base | {"requests": {"ghost": "m"}})))
+    assert_fires(report, "unknown-message", ERROR)
+    assert "request names undeclared message 'ghost'" in next(
+        p.message for p in report.problems if p.code == "unknown-message"
+    )

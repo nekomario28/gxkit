@@ -239,6 +239,9 @@ uvx --python 3.14 manimgx render docs/hero/gxkit_hero.py -r 720x720 --fps 24
   codes, exit codes, the JSON report, the baseline, and what is explicitly not
   promised.
 - [`docs/PLAN.md`](docs/PLAN.md) — goals and roadmap.
+- [`docs/SEMANTICS.md`](docs/SEMANTICS.md) — what each check's claim was measured
+  against: the adversarial probes, the defects they found, and what is left
+  unprobed with the reason.
 - [`docs/LICENSING.md`](docs/LICENSING.md) — why MIT, and acknowledgements.
 - [`docs/agent-native-landscape.md`](docs/agent-native-landscape.md) — which
   domains are still empty.

@@ -106,6 +106,26 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
             )
         )
 
+    # A declared list this tool consumes must resolve. `low` and `sensitive` are
+    # what the escalation check is *made of*: a typo'd name silently narrows the
+    # search, so the answer "no escalation" would be about a different question.
+    for field, names, known, what in (
+        ("low", model.low, declared_principals, "principal"),
+        ("sensitive", model.sensitive, set(model.permissions), "permission"),
+    ):
+        for name in names:
+            if name not in known:
+                out.append(
+                    Problem(
+                        ERROR,
+                        "dangling-reference",
+                        f"`{field}` names {name!r}, which is not a declared {what}",
+                        # The relationship is (which list, which name): a different
+                        # typo is a different defect.
+                        identity=("dangling-reference", field, name),
+                    )
+                )
+
     # privilege escalation: a low principal reaches a sensitive permission
     if not model.sensitive:
         out.append(

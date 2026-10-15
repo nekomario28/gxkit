@@ -51,6 +51,7 @@ Or module-level `MODULES` / `DEPENDS` / `ROOTS` / `FORBIDDEN` / `LAYERS`.
 | `forbidden-dependency` | error | an explicitly banned dependency exists |
 | `self-dependency` | error | a module depends on itself |
 | `dangling-dependency` | error | a dependency names an undeclared module |
+| `dangling-reference` | error | `forbidden`/`layers`/`roots` names no module |
 | `unreachable-module` | info | not reachable from any root — dead code |
 | `orphan-module` | info | nothing depends on it and it is not a root |
 | `duplicate-dependency` | info | the same edge is listed twice |

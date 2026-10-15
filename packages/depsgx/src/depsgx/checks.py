@@ -51,6 +51,25 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
 
     out: list[Problem] = []
 
+    # A declared name this tool consumes must resolve: a typo'd `forbidden` pair or
+    # layer member would silently drop the rule it was written to apply, and a
+    # typo'd root would silently change what "reachable" means.
+    for field, names in (
+        ("forbidden", [name for pair in graph.forbidden for name in pair]),
+        ("layers", [name for layer in graph.layers for name in layer]),
+        ("roots", list(graph.roots)),
+    ):
+        for name in names:
+            if name not in declared:
+                out.append(
+                    Problem(
+                        ERROR,
+                        "dangling-reference",
+                        f"`{field}` names {name!r}, which is not a declared module",
+                        identity=("dangling-reference", field, name),
+                    )
+                )
+
     for src, dst in graph.depends:
         if declared and src not in declared:
             out.append(

@@ -45,6 +45,21 @@ def inspect_machine(machine: Machine, name: str | None = None) -> Report:
             )
         )
 
+    # An accepting state that is not a state is a declaration that resolves to
+    # nothing: the machine would then be judged against success conditions it does
+    # not have.
+    for s in dict.fromkeys(machine.accept):
+        if declared and s not in declared:
+            out.append(
+                Problem(
+                    ERROR,
+                    "unknown-state",
+                    f"accepting state {s!r} is not declared",
+                    target=s,
+                    identity=("accept", s),
+                )
+            )
+
     start = machine.start
     if start is None or start not in states:
         out.append(

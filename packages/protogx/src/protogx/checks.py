@@ -65,6 +65,30 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                     identity=(f"transition:{t[0]}->{t[1]}", message),
                 )
             )
+    # A terminal state that is not a state resolves to nothing, and the protocol
+    # would then be judged against an end condition it does not have.
+    for s in proto.terminal:
+        if declared and s not in declared:
+            out.append(
+                Problem(
+                    ERROR,
+                    "unknown-state",
+                    f"terminal state {s!r} is not declared",
+                    target=s,
+                    identity=("terminal", s),
+                )
+            )
+
+    for request in proto.requests:
+        if proto.messages and request not in proto.messages:
+            out.append(
+                Problem(
+                    ERROR,
+                    "unknown-message",
+                    f"a request names undeclared message {request!r}",
+                    identity=(f"request:{request}", request),
+                )
+            )
     for request, message in proto.responses.items():
         if proto.messages and message not in proto.messages:
             out.append(

@@ -83,6 +83,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "escalation": "error",
         "cyclic-inheritance": "error",
         "dangling-grant": "error",
+        "dangling-reference": "error",
         "dangling-assignment": "error",
         "dangling-inherit": "error",
         "unreachable-role": "info",
@@ -99,6 +100,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "forbidden-dependency": "error",
         "self-dependency": "error",
         "dangling-dependency": "error",
+        "dangling-reference": "error",
         "unreachable-module": "info",
         "orphan-module": "info",
         "duplicate-dependency": "info",
@@ -106,6 +108,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
     },
     "schemagx": {
         "dangling-foreign-key": "error",
+        "dangling-reference": "error",
         "fk-type-mismatch": "warn",
         "fk-to-non-primary-key": "warn",
         "cyclic-foreign-key": "warn",
@@ -156,6 +159,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
     "netgx": {
         "no-nodes": "info",
         "dangling-edge": "error",
+        "dangling-reference": "error",
         "public-reaches-sensitive": "error",
         "self-loop": "warn",
         "duplicate-edge": "info",

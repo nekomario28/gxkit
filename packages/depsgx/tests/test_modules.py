@@ -125,3 +125,21 @@ def test_examples_load_and_are_diagnosed():
     ):
         assert_fires(r, code, ERROR)
     assert_fires(r, "unreachable-module", INFO)
+
+
+def test_a_declared_rule_that_names_nothing_is_reported():
+    """A typo'd rule must not silently stop being a rule."""
+    graph = ModuleGraph(modules=["a", "b"], depends=[("a", "b")], roots=["a"])
+    assert inspect_graph(graph).errors == 0
+
+    table = [
+        ("forbidden", {"forbidden": [("ghost", "b")]}),
+        ("layers", {"layers": {"L": ["ghost"]}}),
+        ("roots", {"roots": ["ghost"]}),
+    ]
+    for field, extra in table:
+        report = inspect_graph(
+            ModuleGraph(**(dict(modules=["a", "b"], depends=[("a", "b")], roots=["a"]) | extra))
+        )
+        assert_fires(report, "dangling-reference", ERROR), field
+        assert field in report.problems[0].message

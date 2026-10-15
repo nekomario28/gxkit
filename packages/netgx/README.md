@@ -55,6 +55,7 @@ inspect: 4 problems (2 errors)
 | code | severity | what it means |
 | --- | --- | --- |
 | `dangling-edge` | error | an edge names an unknown node |
+| `dangling-reference` | error | `sensitive` names an unknown node (otherwise the exposure check silently falls back to every `data` node) |
 | `public-reaches-sensitive` | error | a public node can reach a sensitive one (path given); one finding per entry, identified by the route |
 | `self-loop` | warn | a node allows traffic to itself |
 | `duplicate-edge` | info | the same edge is listed twice |

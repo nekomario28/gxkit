@@ -32,7 +32,8 @@ what it imports.
 ## Checks
 
 error: `cycle`, `layer-violation`, `forbidden-dependency`, `self-dependency`,
-`dangling-dependency`.
+`dangling-dependency`, `dangling-reference` (a `forbidden` pair, layer member or
+root that names no module).
 info: `unreachable-module`, `orphan-module`, `duplicate-dependency`, `no-roots`.
 
 Full documentation is in `README.md`.

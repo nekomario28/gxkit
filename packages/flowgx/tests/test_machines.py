@@ -106,3 +106,16 @@ def test_examples_load_and_are_diagnosed():
     broken, _ = load_machine(examples / "broken_machine.py")
     assert inspect_machine(good).errors == 0
     assert inspect_machine(broken).errors >= 3
+
+
+def test_an_accepting_state_that_is_not_a_state_is_reported():
+    machine = Machine(states=["a", "b"], transitions=[("a", "b", "go")], start="a", accept=["b"])
+    assert inspect_machine(machine).errors == 0
+
+    report = inspect_machine(
+        Machine(states=["a", "b"], transitions=[("a", "b", "go")], start="a", accept=["ghost"])
+    )
+    assert_fires(report, "unknown-state", ERROR)
+    assert "accepting state 'ghost'" in next(
+        p.message for p in report.problems if p.code == "unknown-state"
+    )
