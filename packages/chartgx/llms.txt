@@ -34,7 +34,9 @@ or whatever `matplotlib.pyplot` has open.
 2. `chartgx inspect chart.py`; read the problems (each has a stable `code`).
    A chart declared as data (a figspec model, JSON) is checked without matplotlib
    and without running anything: `chartgx inspect chart.json`. It has no
-   storyboard, and unknown keys or unreadable members exit 2.
+   storyboard here (a declaration has no artists to box) — the renderer that owns
+   the model draws one: `figspec storyboard model.json -o model.storyboard.svg`.
+   Unknown keys or unreadable members exit 2.
 3. Fix the `error` and `warn` problems; inspect again.
 4. Look at `<name>.storyboard.png` — each numbered box proves a problem.
 5. `chartgx render chart.py -o chart.png` for the final still.

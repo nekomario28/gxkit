@@ -92,8 +92,10 @@ def to_image(artifact: Artifact) -> Image.Image:
         # not. The report is still printed; only the image is skipped, with this
         # reason.
         raise ValueError(
-            "a declared model has no storyboard: box numbers are drawn over a "
-            "matplotlib figure's artists, which a declaration does not have"
+            "a declared model has no storyboard here: box numbers are drawn over a "
+            "matplotlib figure's artists, which a declaration does not have. The "
+            "renderer that owns the model can draw one — `figspec storyboard "
+            "model.json -o model.storyboard.svg` boxes the marks these findings name"
         )
     fig = artifact.fig
     fig.canvas.draw()
