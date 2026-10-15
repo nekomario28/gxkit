@@ -40,6 +40,16 @@ format is rejected rather than guessed at.
 
 **Supported Python.** 3.10 through 3.13, on Linux, macOS and Windows.
 
+**Inputs.** A tool accepts a Python artifact, or the document it names: `apigx`
+an OpenAPI 3 JSON file, `schemagx` a `.sql` file, `flowgx` a `.mmd`/`.mermaid`
+file or the one `stateDiagram` block in a `.md`/`.markdown` document, `framegx` a
+video file, `chartgx` any script that builds a matplotlib figure. A Python
+artifact is detected automatically; a document that is not Python needs its tool
+named, because detection reads a Python module. Reading a document adds no
+runtime dependency and no code path that executes it — a foreign document is
+parsed as data. OpenAPI 2, a composite key and a composite or ambiguous diagram
+are refused rather than guessed at, and the refusal names the line.
+
 ## Not stable
 
 Do not build on these; they may change in a minor version.

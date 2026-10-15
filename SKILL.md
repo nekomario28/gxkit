@@ -64,6 +64,23 @@ defect - the cost is one look, and the alternative is sending someone to fix som
 - **`info` about dead code is usually about the model too.** "Nothing depends on this" often means
   the edges were missed, not that the code is unused.
 
+## Read the file that already exists
+
+Four tools read an artifact you do not have to declare, so the first move on a
+project that already has one is to point at it:
+
+| command | reads |
+| --- | --- |
+| `chartgx inspect chart.py` | a plain matplotlib script (the figure it builds) |
+| `apigx inspect openapi.json` | an OpenAPI 3 document |
+| `schemagx inspect schema.sql` | SQL DDL |
+| `flowgx inspect README.md` | the one `stateDiagram` block a document draws |
+| `framegx inspect clip.py` | a rendered video file |
+
+The codes and the exit policy are the same as for a declaration, so an
+unauthenticated mutation in a published spec is the same finding as one in a
+declaration. Detection reads Python, so a foreign document needs its tool named.
+
 ## Write the artifact you want, not only the one you have
 
 `inspect` answers "is this sound?". Pointing it at what you intend answers "can it be reached?", and

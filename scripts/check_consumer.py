@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -149,6 +150,53 @@ class Consumer:
         assert counter.read_text(encoding="utf-8") == "2"
 
 
+def readme_entrance(root: Path, env: dict[str, str]) -> None:
+    """Run the single-tool entrance the README documents, exactly as written.
+
+    The README's first command is the one a reader with a single artifact runs,
+    so it is executed with a fresh tool directory rather than trusted: a
+    documented command that cannot run is the defect this gate exists to catch.
+    """
+    import re
+
+    readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    anchor = readme.find("Install the one tool you need")
+    assert anchor >= 0, "the README no longer documents a single-tool installation"
+    block = re.search(r"```sh\n(?P<body>.*?)\n```", readme[anchor:], re.S)
+    assert block, "the documented installation has no shell block"
+    lines = [line.strip() for line in block.group("body").splitlines() if line.strip()]
+    assert len(lines) == 2, f"the documented entrance changed shape: {lines}"
+    install, command = (shlex.split(line) for line in lines)
+    assert install[:3] == ["uv", "tool", "install"], lines[0]
+    uv = shutil.which("uv")
+    assert uv, "uv is required to run the documented entrance"
+    # The command names a placeholder file, so give it the artifact it implies.
+    (root / command[-1]).write_text(
+        "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots()\n",
+        encoding="utf-8",
+    )
+    # `uv tool install` puts the command in the fresh bin directory, so it has to
+    # be on PATH for the documented follow-up command to resolve — otherwise a
+    # developer's own install would silently satisfy this, which is the defect
+    # this gate was written for.
+    entrance_env = {
+        **env,
+        "PATH": os.pathsep.join([env["UV_TOOL_BIN_DIR"], env.get("PATH", "")]),
+    }
+    for argv in ([uv, *install[1:]], command):
+        result = subprocess.run(
+            argv,
+            cwd=root,
+            env=entrance_env,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+        assert result.returncode in {0, 1}, f"{' '.join(argv)}: {result.stdout}{result.stderr}"
+    print(f"consumer: the README entrance runs as written ({' '.join(command)})", flush=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--revision", required=True, help="full immutable Git commit SHA")
@@ -210,6 +258,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(f"consumer: installed {args.revision} in isolated tool/cache directories", flush=True)
         Consumer(root, env).verify()
+        readme_entrance(root, env)
     print("Consumer inspection gates passed.")
     return 0
 

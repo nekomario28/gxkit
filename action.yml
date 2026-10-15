@@ -7,7 +7,10 @@ branding:
 
 inputs:
   path:
-    description: An artifact file, or a directory to scan for *.py artifacts.
+    description: >-
+      An artifact file, or a directory to scan for *.py artifacts. A document that is not
+      Python (an OpenAPI spec, SQL DDL, a Mermaid diagram) is accepted as a single file
+      with `tool` set, since detection reads a Python module.
     required: true
   tool:
     description: Name one tool (e.g. chartgx) instead of installing the whole family.

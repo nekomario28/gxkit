@@ -27,8 +27,21 @@ gxkit inspect levelgx level.py   # or name the tool explicitly
 gxkit codes              # every problem code and its severity (--json too)
 ```
 
+A Python artifact is detected automatically. Four tools also read a document the
+project already has, and those need the tool named once because detection reads
+Python:
+
+```sh
+apigx   inspect openapi.json   # the OpenAPI 3 spec a service publishes
+schemagx inspect schema.sql    # the DDL a database runs
+flowgx  inspect README.md      # the one stateDiagram block a document draws
+framegx inspect clip.py        # a rendered video
+```
+
 A `.gxkit.toml` up the tree can ignore a code or change its severity. Run it in
-CI with the repository's reusable action (`uses: nekomario28/gxkit@vX.Y.Z`).
+CI with the repository's reusable action (`uses: nekomario28/gxkit@vX.Y.Z`); the
+action's directory scan covers Python artifacts, so pass a foreign document as a
+single `path` with `tool:` set.
 
 ## Tools
 

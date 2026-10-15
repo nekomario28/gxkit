@@ -43,3 +43,9 @@ different feature.
 `depsgx` + `pyproject.toml` was rejected: a dependency list is acyclic by
 construction and has no layers, so the graph checks that make `depsgx` useful
 have nothing to say about it.
+
+`shadergx` + a bare `.frag` file was considered and deferred, not rejected: it is
+equally faithful (a shader file is the artifact, with no wrapper to write), but
+its audience is narrower than the state diagrams teams keep in their docs, and
+installation weight is the same either way. Add it when someone asks for it.
+

@@ -71,9 +71,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - `scripts/guard_contracts.py` replays the environment its stubbed commands run
   in and then a failing coverage run, and `scripts/check_mutations.py` carries
   eleven more bounded mutants (39 total) covering these repairs.
-- gxcore is staged at 0.6.0 for `convert_names`; changed domain packages and
-  gxkit-cli receive patch versions. No release tag or PyPI publication is
-  created by this branch.
+- gxcore is staged at 0.6.0 for `convert_names`, and every consumer requires the
+  0.6 range. Nothing has been published yet, so no version here is an increment
+  from a released one: these are the versions the first release would carry. No
+  release tag or PyPI publication is created by this branch.
 
 ## Unreleased — inspection correctness hardening
 
@@ -95,9 +96,8 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - Bounded mutation proofs run green controls before restoring named defects in
   disposable copies. Git consumer checks install an immutable revision in fresh
   tool/cache directories and exercise inspection and baseline exit semantics.
-- gxcore is staged at 0.5.0, with compatible dependency ranges in consumers;
-  changed domain packages and gxkit-cli receive patch versions. No release tag
-  or PyPI publication is created by this hardening branch.
+- gxcore was staged at 0.5.0 with compatible consumer ranges (now 0.6.0). No
+  release tag or PyPI publication is created by this hardening branch.
 
 ## [0.9.1] — publish-readiness audit fixes
 

@@ -28,20 +28,28 @@ ship — with a storyboard image as the evidence.
 
 Most people have one kind of artifact, and most of these tools read a file you
 already have — a chart script, a rendered video, a published API spec — with no
-declaration to write:
+declaration to write. Install the one tool you need (from the repository until
+the first release; afterwards the same commands are `uvx chartgx …`):
 
 ```sh
-uvx chartgx inspect my_chart.py          # a plain matplotlib script
-uvx apigx  inspect openapi.json          # the spec your service publishes
-uvx framegx inspect clip.py              # the video your renderer wrote
-uvx schemagx inspect schema.sql          # the DDL your database runs
-uvx flowgx  inspect README.md           # the state diagram it draws
+uv tool install "git+https://github.com/nekomario28/gxkit#subdirectory=packages/chartgx"
+chartgx inspect my_chart.py
 ```
 
-`chartgx` runs the script and reads the figure it builds; `apigx` converts the
-OpenAPI 3 document and applies the same codes as a declaration; `framegx`
-probes the encoded file; `schemagx` converts the DDL; `flowgx` reads the
-state diagram. Nothing here needs a gxkit-specific declaration.
+Then point it at what you already have:
+
+| tool | reads | the check only it makes |
+| --- | --- | --- |
+| `chartgx inspect chart.py` | a plain matplotlib script | a bar chart whose baseline is not zero |
+| `apigx inspect openapi.json` | the OpenAPI 3 spec your service publishes | a mutating route with no authentication |
+| `schemagx inspect schema.sql` | the DDL your database runs | a foreign key to a non-primary-key column |
+| `flowgx inspect README.md` | the state diagram a document draws | a state nothing can reach |
+| `framegx inspect clip.py` | the video your renderer wrote | a render that is frozen or black |
+
+None of these needs a gxkit-specific declaration: `chartgx` runs the script and
+reads the figure it builds, `apigx` and `schemagx` and `flowgx` convert the
+document and apply the same codes as a declaration, and `framegx` probes the
+encoded file.
 
 Want all sixteen? Install the family instead — the contract is identical:
 
