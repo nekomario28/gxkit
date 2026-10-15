@@ -50,3 +50,8 @@ keys are `"table.column"` strings and point child -> parent.
 - `warn` — a type mismatch, a non-primary-key reference, or a foreign-key cycle
   that will need deferred constraints.
 - `info` — a missing primary key or an orphan table.
+
+`schemagx inspect schema.sql` reads a SQL dump instead of a declaration:
+`CREATE TABLE` becomes tables, `PRIMARY KEY` and `FOREIGN KEY ... REFERENCES`
+become the keys, and the same codes apply. A composite key and anything that is
+not `CREATE TABLE` exit 2 with their line rather than being guessed at.

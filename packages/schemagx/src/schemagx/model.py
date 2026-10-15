@@ -19,10 +19,79 @@ foreign-key cycle and an unreferenced table is dead weight.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import find_cycle
+
+CONSTRAINT_WORDS = (
+    "PRIMARY",
+    "NOT",
+    "NULL",
+    "UNIQUE",
+    "DEFAULT",
+    "REFERENCES",
+    "CHECK",
+    "GENERATED",
+    "CONSTRAINT",
+    "COLLATE",
+    "AUTO_INCREMENT",
+    "AUTOINCREMENT",
+    # Modifiers that follow a type; they are not part of it.
+    "UNSIGNED",
+    "ZEROFILL",
+)
+
+# Unambiguous synonyms, so a PostgreSQL schema is not reported as a type
+# mismatch on every key. Length and precision are dropped: a `VARCHAR(50)`
+# column referencing a `VARCHAR(255)` one is normal and not a defect.
+TYPE_FAMILIES = {
+    "int": "int",
+    "integer": "int",
+    "int4": "int",
+    "serial": "int",
+    "serial4": "int",
+    "smallint": "smallint",
+    "int2": "smallint",
+    "smallserial": "smallint",
+    "serial2": "smallint",
+    "bigint": "bigint",
+    "int8": "bigint",
+    "bigserial": "bigint",
+    "serial8": "bigint",
+    "bool": "bool",
+    "boolean": "bool",
+    "text": "text",
+    "varchar": "varchar",
+    "character varying": "varchar",
+    "char": "char",
+    "character": "char",
+    "bpchar": "char",
+    "uuid": "uuid",
+    "timestamp": "timestamp",
+    "timestamptz": "timestamp",
+    "timestamp with time zone": "timestamp",
+    "timestamp without time zone": "timestamp",
+    "datetime": "timestamp",
+    "date": "date",
+    "time": "time",
+    "timetz": "time",
+    "time with time zone": "time",
+    "float": "float",
+    "float4": "float",
+    "real": "float",
+    "float8": "double",
+    "double precision": "double",
+    "double": "double",
+    "numeric": "numeric",
+    "decimal": "numeric",
+    "money": "numeric",
+    "json": "json",
+    "jsonb": "jsonb",
+    "bytea": "bytea",
+    "blob": "bytea",
+}
 
 
 @dataclass
@@ -73,11 +142,27 @@ class Schema:
         }
 
 
+def type_family(declared: str) -> str:
+    """The comparable family of a declared column type."""
+    text = declared.strip().lower()
+    text = re.sub(r"\s*\([^)]*\)", "", text).strip()
+    for suffix in (" unsigned", " zerofill"):
+        text = text.removesuffix(suffix).strip()
+    return TYPE_FAMILIES.get(text, text)
+
+
 def _as_schema(value: object) -> Schema | None:
     return value if isinstance(value, Schema) else None
 
 
 def load_schema(path: str | Path) -> tuple[Schema, object]:
+    # A SQL file is the schema most databases already have; a `.sql` path is
+    # read as DDL rather than executed as Python.
+    if Path(path).suffix.lower() == ".sql":
+        from .ddl import schema_from_file
+
+        return schema_from_file(path), path
+
     from gxcore.loading import load_module, resolve
 
     path = Path(path)

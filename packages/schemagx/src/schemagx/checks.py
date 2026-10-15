@@ -10,7 +10,7 @@ from __future__ import annotations
 from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.graph import reverse, strongly_connected_components, topological_sort
 
-from .model import Schema
+from .model import Schema, type_family
 from .render import compute_layout, node_box
 
 
@@ -72,7 +72,9 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
             continue
 
         child_type, parent_type = schema.type_of(child), schema.type_of(parent)
-        if child_type and parent_type and child_type != parent_type:
+        # Compare families, not spellings: `int` and `integer`, or a PostgreSQL
+        # `serial` key with an `integer` reference, are the same column type.
+        if child_type and parent_type and type_family(child_type) != type_family(parent_type):
             out.append(
                 Problem(
                     WARN,

@@ -28,6 +28,12 @@ A schema file defines `schema` (a `Schema`) or module-level `TABLES` /
 `PRIMARY_KEYS` / `FOREIGN_KEYS` / `ROOTS`. Foreign keys are `"table.column"`
 strings pointing child -> parent.
 
+Or point it at SQL DDL: `schemagx inspect schema.sql` reads `CREATE TABLE`,
+`PRIMARY KEY` and `FOREIGN KEY ... REFERENCES` as the same model. A composite
+key, or any statement that is not `CREATE TABLE`, exits 2 with its line rather
+than being guessed at. Column types are compared by family, so a `SERIAL` key
+with an `INTEGER` reference is not a mismatch.
+
 ## Checks
 
 error: `dangling-foreign-key`.

@@ -48,7 +48,8 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
         # reads it beats reporting a syntax error in a file that has none.
         print(
             f"gxkit: {path.name} is not a Python artifact.\n"
-            f"  name the tool that reads it, e.g. `gxkit inspect apigx {path}`",
+            f"  Name the tool that reads it: gxkit inspect <tool> {path}\n"
+            f"  `gxkit tools` lists what each tool inspects.",
             file=sys.stderr,
         )
         return None
