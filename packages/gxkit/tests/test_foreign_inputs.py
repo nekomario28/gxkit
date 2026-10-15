@@ -186,6 +186,112 @@ def test_a_diagram_that_cannot_be_read_says_where_it_is_wrong(tmp_path, content,
 
 
 @pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        (
+            "CREATE TABLE p (id INT PRIMARY KEY);\n"
+            "CREATE TABLE c (a INT, b INT, FOREIGN KEY (a, b) REFERENCES p);\n",
+            "composite foreign key",
+        ),
+    ],
+)
+def test_a_composite_key_is_still_refused_when_the_target_is_omitted(tmp_path, content, expected):
+    """The child columns are checked before an omitted target is resolved.
+
+    Returning early to resolve `REFERENCES p` used to keep the first column and
+    drop the second, which is a silent narrowing of the statement.
+    """
+    document = tmp_path / "schema.sql"
+    document.write_text(content, encoding="utf-8")
+    result = _inspect(document, tool="schemagx")
+    assert result.returncode == 2, result.stdout
+    assert expected in result.stderr
+
+
+def test_a_sql_literal_containing_a_comment_marker_is_read(tmp_path):
+    """`DEFAULT '--'` is a value, not the start of a comment."""
+    document = tmp_path / "schema.sql"
+    document.write_text(
+        "CREATE TABLE t (id INT PRIMARY KEY, label TEXT DEFAULT '--', note TEXT);\n",
+        encoding="utf-8",
+    )
+    result = _inspect(document, "--json", tool="schemagx")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["errors"] == 0
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        ("CREATE TABLE t (id INT); /* unterminated\n", "unterminated"),
+        ("CREATE TABLE t (id INT, x TEXT DEFAULT 'oops);\n", "unterminated"),
+    ],
+)
+def test_an_unterminated_comment_or_literal_is_refused(tmp_path, content, expected):
+    document = tmp_path / "schema.sql"
+    document.write_text(content, encoding="utf-8")
+    result = _inspect(document, tool="schemagx")
+    assert result.returncode == 2, result.stdout
+    assert expected in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("document", "level"),
+    [
+        (
+            {
+                "openapi": "3.0.3",
+                "servers": [{"url": "https://api.example.com/v1"}],
+                "paths": {
+                    "/items": {
+                        "get": {
+                            "responses": {},
+                            "servers": [{"url": "https://api.example.com/legacy"}],
+                        }
+                    }
+                },
+            },
+            "paths['/items'].get",
+        ),
+        (
+            {
+                "openapi": "3.0.3",
+                "servers": [{"url": "https://api.example.com/v1"}],
+                "paths": {
+                    "/items": {
+                        "servers": [{"url": "https://api.example.com/legacy"}],
+                        "get": {"responses": {}},
+                    }
+                },
+            },
+            "paths['/items']",
+        ),
+    ],
+)
+def test_a_server_override_the_model_cannot_represent_is_refused(tmp_path, document, level):
+    """One base per API, so an override that changes the path is an input failure."""
+    path = tmp_path / "openapi.json"
+    path.write_text(json.dumps(document), encoding="utf-8")
+    result = _inspect(path, tool="apigx")
+    assert result.returncode == 2, result.stdout
+    assert "overrides the server path" in result.stderr and level in result.stderr
+
+
+def test_a_document_without_servers_reports_no_base_rather_than_inventing_one(tmp_path):
+    document = {
+        "openapi": "3.0.3",
+        "info": {"title": "X"},
+        "paths": {"/v1/a": {"get": {"responses": {}}}, "/other/b": {"get": {"responses": {}}}},
+    }
+    path = tmp_path / "openapi.json"
+    path.write_text(json.dumps(document), encoding="utf-8")
+    result = _inspect(path, "--json", tool="apigx")
+    assert result.returncode in {0, 1}, result.stderr
+    assert "base: /" in result.stdout or "base" not in result.stdout
+    assert "unversioned-path" not in _codes(json.loads(result.stdout))
+
+
+@pytest.mark.parametrize(
     ("tool", "document", "unhandled"),
     [
         (

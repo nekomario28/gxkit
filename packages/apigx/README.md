@@ -47,6 +47,13 @@ unauthenticated mutation in a published spec is the same defect as one in a
 declaration. OpenAPI 2 / Swagger is not supported, and a document that is not
 valid OpenAPI 3 is an input failure (exit 2) that names where it is wrong.
 
+The base is what the document declares in `servers`, and every operation path is
+built in that coordinate space. A path-item or operation `servers` that changes
+the path is refused, because the model carries one base for the whole API.
+
+`unversioned-path` is a check on a *declaration*: an imported spec declares its
+own base, so every path is under it by construction and the check cannot fire.
+
 Nothing is ignored: a key the importer does not recognise in a path item or an
 operation, a `webhooks` section, and a `$ref` that would have to be followed are
 all refused. That is deliberate — a mistyped method would otherwise drop a route,

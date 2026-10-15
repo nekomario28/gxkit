@@ -180,6 +180,32 @@ def test_a_rotated_cycle_witness_is_not_new_debt(tmp_path):
     assert diff == {"new": 0, "fixed": 0, "persisted": 4, "new_errors": 0}, diff
 
 
+def test_a_replaced_duplicate_edge_is_not_the_same_finding(tmp_path):
+    """Two duplicate findings can share a target; the relationship identifies them.
+
+    `duplicate-edge` reports against its source, so replacing which destination is
+    duplicated is a different finding at the same location. Without an identity it
+    reads as unchanged debt.
+    """
+    before = tmp_path / "before.py"
+    after = tmp_path / "after.py"
+    preamble = 'NODES = {"a": "service", "b": "service", "c": "service"}\n'
+    before.write_text(preamble + 'EDGES = [("a", "b"), ("a", "b")]\n', encoding="utf-8")
+    after.write_text(preamble + 'EDGES = [("a", "c"), ("a", "c")]\n', encoding="utf-8")
+    baseline = tmp_path / "baseline.json"
+    assert _inspect(before, "--write-baseline", str(baseline)).returncode == 0
+    result = _inspect(after, "--baseline", str(baseline), "--json")
+    # The replaced duplicate edge and the moved isolated node are both new/fixed;
+    # only `no-public` is the same finding in both. Without a relationship
+    # identity the replaced edge would read as persisted, which is the bug.
+    assert json.loads(result.stdout)["baseline"] == {
+        "new": 2,
+        "fixed": 2,
+        "persisted": 1,
+        "new_errors": 0,
+    }
+
+
 def test_every_independent_cycle_is_reported_through_the_cli(tmp_path):
     artifact = tmp_path / "graph.py"
     artifact.write_text(

@@ -85,6 +85,32 @@ documented entrance are executed rather than matched as text.
 **`depsgx`** reports a cycle witness for every independent cyclic component, not
 only the first found.
 
+### Fixed
+
+Two further rounds — a whole-diff review and a coherence sweep over the release
+candidate — found six more, all reproduced and repaired:
+
+- `schemagx`: a composite `FOREIGN KEY` whose target was omitted was resolved
+  before the child columns were validated, so `FOREIGN KEY (a, b) REFERENCES p`
+  kept `a` and silently dropped `b`. The count is validated first.
+- `schemagx`: comment stripping was not quote-aware, so a value containing `--`
+  (`DEFAULT '--'`) was truncated and the table read as unclosed. Comments are now
+  stripped by a quote-aware scanner, and an unterminated comment or literal is
+  refused instead of swallowing the rest of the file.
+- `apigx`: an operation or path-item `servers` override was accepted and ignored,
+  so the endpoint was reported at the document's path rather than the override's.
+  An override that changes the path is refused, because the model has one base.
+- `apigx`: the base is no longer inferred from the paths' shared prefix. Every
+  path shares an inferred prefix by construction, so the value could never fail a
+  check while appearing to have judged; no declared server now means no base.
+- The umbrella used none of the `reads` declaration it now carries: it told the
+  reader to name the tool for a document that is not Python without saying which.
+  The registry declares the suffixes, so it names the tool; `gxkit tools --json`
+  publishes them.
+- `netgx`: `self-loop` and `duplicate-edge` now carry relationship identities, so
+  replacing which destination is duplicated is a new finding rather than
+  persisted debt at the same source.
+
 ### Verification
 
 - 1586 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and

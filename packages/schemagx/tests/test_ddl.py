@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from gxcore.loading import InvalidArtifact
 from schemagx import (
@@ -74,6 +76,41 @@ def test_a_reference_may_name_a_table_declared_later():
         "CREATE TABLE b (a_key INT REFERENCES a);\nCREATE TABLE a (key INT PRIMARY KEY);\n"
     )
     assert schema.foreign_keys == [("b.a_key", "a.key")]
+
+
+def test_a_literal_may_contain_an_escaped_quote_and_a_comment_marker():
+    schema = schema_from_ddl(
+        "CREATE TABLE t (id INT PRIMARY KEY, note TEXT DEFAULT 'it''s -- fine');\n"
+    )
+    assert schema.tables["t"]["note"] == "TEXT"
+
+
+def test_a_block_comment_between_tokens_becomes_separators():
+    """Removing it must not join tokens or shift the lines an error names."""
+    schema = schema_from_ddl("CREATE TABLE t (id INT /* a\n   b */ PRIMARY KEY);\n")
+    assert schema.primary_keys == {"t": "id"}
+
+
+@pytest.mark.parametrize(
+    ("ddl", "expected"),
+    [
+        ("CREATE TABLE t (id INT); /* never closed\n", "unterminated /* comment"),
+        ("CREATE TABLE t (id INT, x TEXT DEFAULT 'oops);\n", "unterminated ' literal"),
+        ('CREATE TABLE t (id INT, x TEXT DEFAULT "oops);\n', 'unterminated " literal'),
+    ],
+)
+def test_an_unterminated_comment_or_literal_is_refused(ddl, expected):
+    with pytest.raises(InvalidArtifact, match=re.escape(expected)):
+        schema_from_ddl(ddl, source="schema.sql")
+
+
+def test_a_composite_target_is_refused():
+    with pytest.raises(InvalidArtifact, match="composite foreign key"):
+        schema_from_ddl(
+            "CREATE TABLE p (x INT, y INT, PRIMARY KEY (x));\n"
+            "CREATE TABLE c (a INT, FOREIGN KEY (a) REFERENCES p (x, y));\n",
+            source="schema.sql",
+        )
 
 
 def test_a_statement_between_two_tables_is_refused_not_skipped():
