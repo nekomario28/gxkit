@@ -35,6 +35,9 @@ Legend: `#` wall, `.`/space floor, `S` spawn, `G` goal, `X` item, `!` hazard,
 1. Write the level as a Python file.
 2. `levelgx inspect level.py` — size, reachability, shortest path, problems with
    stable `code`s, and `<name>.storyboard.png`. **Exit 1 on any error.**
+   Add `--no-storyboard` when the level's directory is read-only (a sandbox or a
+   locked checkout): the image is written beside the artifact, so a directory that
+   cannot be written to is an input failure, not a clean report.
 3. Fix and inspect again; the storyboard boxes each problem cell.
 4. `levelgx render level.py -o level.png`.
 
