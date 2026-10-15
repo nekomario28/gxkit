@@ -58,15 +58,57 @@ def find(start: str | Path) -> Path | None:
     return None
 
 
+def _names(value: object, *, where: str) -> set[str]:
+    """A list of code names, or a located refusal.
+
+    `ignore = "soft-lock"` is the mistake this exists for: iterating the string
+    would silently mean the eight characters it contains, so a config that looks
+    like it ignores one code would ignore nothing and the reader would not know.
+    """
+    if not isinstance(value, list) or not all(isinstance(name, str) for name in value):
+        raise ValueError(f"{where}: expected a list of code names, not {value!r}")
+    return set(value)
+
+
+def _severities(value: object, *, where: str) -> dict[str, str]:
+    if not isinstance(value, dict):
+        raise ValueError(f"{where}: expected a table of code -> severity, not {value!r}")
+    for code, severity in value.items():
+        if not isinstance(severity, str) or severity not in VALID_SEVERITIES:
+            raise ValueError(
+                f"{where}.{code}: {severity!r} is not one of {', '.join(sorted(VALID_SEVERITIES))}"
+            )
+    return {str(code): str(severity) for code, severity in value.items()}
+
+
 def load(start: str | Path) -> Config:
     file = find(start)
     if file is None:
         return Config()
     data = tomllib.loads(file.read_text(encoding="utf-8"))
-    per_tool = {k: v for k, v in data.items() if k not in RESERVED and isinstance(v, dict)}
+    where = str(file)
+    unknown = sorted(
+        set(data) - RESERVED - {name for name, value in data.items() if isinstance(value, dict)}
+    )
+    if unknown:
+        raise ValueError(
+            f"{where}: unrecognised key(s) {unknown}; expected {sorted(RESERVED)} or a tool table"
+        )
+    per_tool: dict[str, dict[str, Any]] = {}
+    for name, value in data.items():
+        if name in RESERVED or not isinstance(value, dict):
+            continue
+        extra = sorted(set(value) - RESERVED)
+        if extra:
+            # A mistyped `ignoer` would otherwise sit in the file looking active.
+            raise ValueError(f"{where}: [{name}] has unrecognised key(s) {extra}")
+        per_tool[name] = {
+            "ignore": sorted(_names(value.get("ignore", []), where=f"{where}: [{name}] ignore")),
+            "severity": _severities(value.get("severity", {}), where=f"{where}: [{name}] severity"),
+        }
     return Config(
-        ignore=set(data.get("ignore", [])),
-        severity={k: v for k, v in data.get("severity", {}).items()},
+        ignore=_names(data.get("ignore", []), where=f"{where}: ignore"),
+        severity=_severities(data.get("severity", {}), where=f"{where}: severity"),
         per_tool=per_tool,
     )
 
@@ -75,12 +117,19 @@ def apply(report: Report, config: Config, tool: str) -> Report:
     ignore, severity = config.for_tool(tool)
     if not ignore and not severity:
         return report
+    for code, declared in severity.items():
+        if not isinstance(declared, str) or declared not in VALID_SEVERITIES:
+            # `Config` is public, so the value can also arrive without `load`.
+            raise ValueError(
+                f"config: {code!r} is set to {declared!r}, not one of "
+                f"{', '.join(sorted(VALID_SEVERITIES))}"
+            )
     kept = []
     for problem in report.problems:
         if problem.code in ignore:
             continue
         override = severity.get(problem.code)
-        if override in VALID_SEVERITIES:
+        if override is not None:
             problem.severity = override
         kept.append(problem)
     report.problems = kept

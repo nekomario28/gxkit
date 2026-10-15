@@ -111,13 +111,29 @@ candidate — found six more, all reproduced and repaired:
   replacing which destination is duplicated is a new finding rather than
   persisted debt at the same source.
 
+### Fixed
+
+A second sweep, over the shared core's own input files, found that the rule the
+tools apply to artifacts was not applied to gxcore's inputs:
+
+- `ignore = "soft-lock"` in `.gxkit.toml` was iterated as a string, so it meant
+  the eight characters it contains; a severity that was not `error`/`warn`/`info`
+  was dropped in silence; and a mistyped key in a tool table sat there looking
+  active. All are refused with their field now, and `apply` refuses an invalid
+  severity however the `Config` was built.
+- A baseline whose `problems` was not a list of records was read as whatever it
+  happened to iterate to, so a corrupted baseline reported every finding as fixed
+  or new. Its shape is validated with the field and index.
+- The test that pinned the old behaviour (`test_invalid_severity_is_ignored`) is
+  replaced by one that requires the refusal.
+
 ### Verification
 
-- 1586 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1624 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 61 named defects, each killed by its intended
+- A bounded mutation catalogue of 70 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

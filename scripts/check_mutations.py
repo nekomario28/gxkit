@@ -571,6 +571,45 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # A malformed input *file* must be refused like a malformed declaration:
+    # gxcore's own config and baseline are inputs too, and both used to be read
+    # as something other than what they said.
+    cases.extend(
+        [
+            Mutation(
+                "config-ignore-string-split",
+                "packages/gxcore/src/gxcore/config.py",
+                "    if not isinstance(value, list) or not all(isinstance(name, str) for name in value):",
+                "    if False:",
+                CORE_TEST
+                + "test_config.py::test_a_config_that_cannot_be_understood_is_refused_with_its_field",
+            ),
+            Mutation(
+                "config-invalid-severity-ignored",
+                "packages/gxcore/src/gxcore/config.py",
+                "        if not isinstance(severity, str) or severity not in VALID_SEVERITIES:",
+                "        if False:",
+                CORE_TEST
+                + "test_config.py::test_a_config_that_cannot_be_understood_is_refused_with_its_field",
+            ),
+            Mutation(
+                "config-tool-key-unchecked",
+                "packages/gxcore/src/gxcore/config.py",
+                "        if extra:",
+                "        if False:",
+                CORE_TEST
+                + "test_config.py::test_a_config_that_cannot_be_understood_is_refused_with_its_field",
+            ),
+            Mutation(
+                "baseline-record-shape-unchecked",
+                "packages/gxcore/src/gxcore/baseline.py",
+                "                if not isinstance(record.get(required), str):",
+                "                if False:",
+                CORE_TEST
+                + "test_baseline.py::test_a_baseline_that_cannot_be_read_is_refused_with_its_field",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
