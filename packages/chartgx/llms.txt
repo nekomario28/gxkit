@@ -41,7 +41,8 @@ or whatever `matplotlib.pyplot` has open.
 error: `truncated-baseline`, `clipped-text`, `text-overlap`, `log-nonpositive`,
 `empty-chart`.
 warn: `no-title`, `no-xlabel`, `no-ylabel`, `dual-axis`, `too-many-series`,
-`pie-slices`, `constant-series`, `clipped-data`, `legend-covers`.
-info: `small-text`, `no-units`, `cut-value-axis`.
+`pie-slices`, `constant-series`, `clipped-data`, `legend-covers`,
+`inverted-axis`.
+info: `small-text`, `no-units`, `cut-value-axis`, `red-green`.
 
 Full documentation is in `README.md`.

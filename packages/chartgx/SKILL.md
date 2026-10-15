@@ -46,6 +46,7 @@ uv tool install ./packages/chartgx
 | `inverted-axis` | warn | orient the value axis the right way |
 | `small-text` | info | raise font size |
 | `no-units` | info | units on the value axis |
+| `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | fine for trends, not for magnitudes |
 
 Every check has a test that proves it fires on a chart with the defect and stays

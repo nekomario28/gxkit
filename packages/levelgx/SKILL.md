@@ -40,8 +40,10 @@ Legend: `#` wall, `.`/space floor, `S` spawn, `G` goal, `X` item, `!` hazard,
 
 ## Severities
 
-`error` = broken (no spawn/goal, unreachable goal, soft-lock, stranded item).
-`warn` = a hazard blocks the only route. `info` = dead space, or no items.
+`error` = broken: `no-spawn`, `no-goal`, `goal-unreachable`, `soft-lock`,
+`stranded-item`.
+`warn` = `hazard-cuts-off` (a hazard blocks the only route).
+`info` = `unreachable-area` (dead space), `no-items`.
 
 ## Why it can be trusted
 

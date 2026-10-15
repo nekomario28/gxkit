@@ -79,7 +79,10 @@ inspect: 4 problems (4 errors)
 | `dead-end` | error | a reachable state has no way out and is not accepting |
 | `no-exit` | error | a reachable state can never reach an accepting state |
 | `ambiguous-transition` | error | two transitions from one state share an event |
-| `cycle` | info | a loop exists (often intentional) |
+| `cycle` | info | a loop exists (often intentional); one finding per cyclic component |
+| `clipped-text` | error | a state label is cut off by the canvas |
+| `text-overlap` | error | two state labels overlap |
+| `small-text` | info | a label is below the readable floor |
 
 `no-exit` is the workflow form of a soft-lock: `gxcore.graph` computes the states
 that are reachable but from which the goal is not.

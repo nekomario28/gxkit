@@ -125,6 +125,28 @@ def test_every_tool_skill_md_names_a_code():
         )
 
 
+def test_every_problem_code_is_documented_for_its_tool():
+    """The code table is how a reader looks a finding up.
+
+    A code that exists and is emitted but appears in no document is a finding
+    nobody can interpret; `non-finite-time` was added to crongx's README and
+    missed in its SKILL and llms handoffs, and flowgx's shared layout codes were
+    documented nowhere. `AGENTS.md` is a narrative summary and is not required to
+    name every code; the reference documents are.
+    """
+    from gxkit.codes import CODEBOOK
+
+    missing: list[str] = []
+    for tool, codes in sorted(CODEBOOK.items()):
+        for filename in ("README.md", "SKILL.md", "llms.txt"):
+            path = ROOT / "packages" / tool / filename
+            if not path.exists():
+                continue
+            text = path.read_text(encoding="utf-8")
+            missing += [f"{tool}/{filename}: {code}" for code in codes if code not in text]
+    assert not missing, "problem codes with no reference documentation: " + ", ".join(missing)
+
+
 def test_changelog_links_every_released_version():
     text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     versions = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", text, re.M)

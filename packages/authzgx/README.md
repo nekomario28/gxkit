@@ -74,7 +74,8 @@ inspect: 5 problems (2 errors)
 | `orphan-permission` | info | no role grants the permission |
 | `unreachable-permission` | info | no principal can reach the permission |
 | `empty-role` | info | the role grants nothing, directly or by inheritance |
-| `no-sensitive` / `no-low` | info | escalation cannot be judged |
+| `no-sensitive` / `no-low` / `no-permissions` | info | escalation cannot be judged,
+  or the model declares no permissions |
 
 ## Why it can be trusted
 

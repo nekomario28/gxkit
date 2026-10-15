@@ -8,4 +8,4 @@ codes, exit codes, a storyboard) is shared.
 - Write: a Python file building crongx.Schedule(runs=[crongx.Run("backup", start=0, duration=3600, resource="disk")]); or RUNS / NAME.
 - A run is Run(name, start, duration, resource); a run holds [start, start+duration).
 - crongx inspect sched.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
-- Codes: overlap (error), duplicate-run (error), negative-start (error), negative-duration (error), zero-duration (info), no-runs (info).
+- Codes: overlap (error), duplicate-run (error), negative-start (error), negative-duration (error), non-finite-time (error), zero-duration (info), no-runs (info).

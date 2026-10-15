@@ -41,6 +41,7 @@ module-level `RUNS` / `NAME`.
 | `duplicate-run` | error | the same run name declared twice |
 | `negative-start` | error | a run starts before zero |
 | `negative-duration` | error | a run has a negative duration |
+| `non-finite-time` | error | a start, duration or computed end is not finite |
 | `zero-duration` | info | a run has zero duration (it never runs) |
 | `no-runs` | info | the schedule declares no runs |
 

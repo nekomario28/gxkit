@@ -62,7 +62,8 @@ references). `info` = dead config.
 | `orphan-permission` | info | no role grants the permission |
 | `unreachable-permission` | info | no principal can reach the permission |
 | `empty-role` | info | the role grants nothing |
-| `no-sensitive` / `no-low` | info | escalation cannot be judged |
+| `no-sensitive` / `no-low` / `no-permissions` | info | escalation cannot be judged,
+  or the model declares no permissions |
 
 `escalation` is reachability: `gxcore.graph` walks
 `principal → role → parent role → permission` and `shortest_path` returns the

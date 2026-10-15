@@ -34,6 +34,6 @@ A model file defines `model` (an `AuthModel`) or module-level `PRINCIPALS` /
 error: `escalation`, `cyclic-inheritance`, `dangling-grant`,
 `dangling-assignment`, `dangling-inherit`.
 info: `unreachable-role`, `orphan-permission`, `unreachable-permission`,
-`empty-role`, `no-sensitive`, `no-low`.
+`empty-role`, `no-sensitive`, `no-low`, `no-permissions`.
 
 Full documentation is in `README.md`.
