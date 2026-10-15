@@ -25,6 +25,11 @@ MALFORMED = {
     "syntax-error": "def (:\n",
     "not-an-artifact": "x = 1\n",
     "exits-while-loading": "import sys\nsys.exit(3)\n",
+    # An artifact asking to stop with *success* is still a load failure: this is
+    # the defect class a real audit found in the umbrella, and it is the one that
+    # silently produces a green run from a file nobody inspected.
+    "exits-zero-while-loading": "import sys\nsys.exit(0)\n",
+    "exits-message-while-loading": "import sys\nsys.exit('stop')\n",
     "raises-while-loading": "raise RuntimeError('boom')\n",
 }
 
@@ -38,7 +43,12 @@ def _tool(name: str):
 def test_malformed_input_exits_2_not_traceback(tmp_path, capsys, name, kind):
     path = tmp_path / "artifact.py"
     path.write_text(MALFORMED[kind])
-    rc = run(_tool(name), ["inspect", str(path), "--no-storyboard"])
+    try:
+        rc = run(_tool(name), ["inspect", str(path), "--no-storyboard"])
+    except SystemExit as exc:
+        # The CLI is supposed to turn the artifact's exit into its own code; if it
+        # lets one escape, the process exit would be the artifact's, not the gate's.
+        raise AssertionError(f"{name}/{kind}: SystemExit({exc.code!r}) escaped the CLI") from exc
     captured = capsys.readouterr()
     assert rc == 2, f"{name}/{kind}: exit {rc}, stderr={captured.err!r}"
     assert "Traceback" not in captured.err

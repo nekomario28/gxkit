@@ -189,13 +189,25 @@ requires every catalogued code to appear in that tool's `README.md`, `SKILL.md`
 and `llms.txt`. `AGENTS.md` is a narrative summary and is deliberately exempt.
 A mutant that renames a code out of the docs is killed.
 
+A seventh sweep, over the exit policy every tool shares. It was already guarded —
+16 tools × 5 malformed inputs, each required to exit 2 without a traceback — but
+the table did not include the case a real audit found in the umbrella:
+**`sys.exit(0)` during load**, where an artifact that asks to stop with success
+produced a green run from a file nobody inspected. Measured: every tool already
+treats it as a load failure, so the two missing kinds are in the table now, and a
+mutant that removes the direct tool's `SystemExit` handling is killed.
+
+Writing that mutant exposed a weakness in the test: it asserted only the return
+code, so a `SystemExit` escaping the CLI would have surfaced as a confusing
+propagating exception rather than the claim it breaks. It now says so explicitly.
+
 ### Verification
 
-- 1680 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1712 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 87 named defects, each killed by its intended
+- A bounded mutation catalogue of 88 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 
