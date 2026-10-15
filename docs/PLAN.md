@@ -1,10 +1,12 @@
 # Plan — an agent-native review loop, and the tools built on it
 
-Status: the tool plan is complete — all planned tools landed (P0–P8). The open
-workstream is pre-publication: reachability (importers for documents a project
-already has), the published contract, and the first release. See
-[`specs/pre-publication/`](../specs/pre-publication/README.md). This file is the
-durable plan; keep it current if new tools are added.
+Status: the tool plan is complete — all planned tools landed (P0–P8). The
+pre-publication workstream is implemented and staged for a 1.0.0 release:
+importers for documents a project already has, the published contract, and the
+publication gates. What remains is the owner's publish step. See
+[`specs/pre-publication/`](../specs/pre-publication/README.md) and
+[`RELEASING.md`](RELEASING.md). This file is the durable plan; keep it current if
+new tools are added.
 
 How to add a tool (the checklist, the contract, the extraction rule) is in
 [`BUILDING.md`](BUILDING.md).

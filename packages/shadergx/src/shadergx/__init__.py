@@ -32,4 +32,4 @@ __all__ = [
     "render_image",
     "shader_from_source",
 ]
-__version__ = "0.1.0"
+__version__ = "1.0.0"

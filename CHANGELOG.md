@@ -3,127 +3,97 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased — pre-publication
+## [1.0.0] — first release
+
+See the [v1.0.0 release](https://github.com/nekomario28/gxkit/releases/tag/v1.0.0).
+
+The first published version. Everything below is the same release entry: the
+family had repository tags before this, but no distribution had been published,
+so no version here is an increment from a released one.
+
+**What 1.0.0 promises** is in [`docs/CONTRACT.md`](docs/CONTRACT.md): problem
+codes, severities, exit codes, the JSON report's keys, the CLI shape, baseline
+format 2, and Python 3.10–3.13 on Linux, macOS and Windows. Message prose,
+problem order, storyboard pixels, the importable Python API and capability-bound
+behaviour are explicitly not promised.
 
 ### Added
-- `apigx` reads the OpenAPI 3 document a service publishes
-  (`apigx inspect openapi.json`): paths and methods become endpoints, `security`
-  becomes authentication (inherited when absent, and an empty list meaning
-  "requires none"), numeric responses become documented statuses, the first
-  server's path becomes the base. The same codes apply. OpenAPI 2 / Swagger is
-  not supported, and a malformed document is an input failure that names where
-  it is wrong.
-- `schemagx` reads a SQL DDL file (`schemagx inspect schema.sql`): `CREATE TABLE`
-  becomes tables, `PRIMARY KEY` and `FOREIGN KEY ... REFERENCES` become the keys,
-  and the same codes apply. Composite keys and anything that is not a
-  `CREATE TABLE` statement are refused with their line rather than guessed at,
-  and column types are compared by family, so a PostgreSQL `SERIAL` key with an
-  `INTEGER` reference is no longer a false mismatch — which also removes that
-  false positive from declarations.
-- `flowgx` reads a Mermaid state diagram (`flowgx inspect checkout.mmd`, or
-  `flowgx inspect README.md` for the one `stateDiagram` block a document holds):
-  `[*] --> s` is the start, `s --> [*]` is accepting, `a --> b : event` is a
-  transition, and the same codes apply. Two initial states, a composite state and
-  a document with more than one diagram are refused with their line.
-- The umbrella says to name the tool for a document that is not a Python
-  artifact, instead of reporting a syntax error in a file that has none.
-- `docs/CONTRACT.md`: what an integrator may rely on — codes, severities, exit
-  codes, the JSON report, the baseline, the CLI shape, supported Pythons — and
-  what is explicitly not promised.
-- `scripts/check_publish.py`: builds every distribution, serves them from a
-  local PEP 503 index and installs the umbrella against that index alone, so a
-  dependency range only a resolver would reject fails before anything is
-  published. Runs in `scripts/check.sh --full` and the packaging CI job.
+
+- **Reading the file a project already has**, so a tool can be pointed at what
+  exists instead of a transcription:
+  - `apigx inspect openapi.json` — an OpenAPI 3 document: paths and methods
+    become endpoints, `security` becomes authentication, numeric responses become
+    statuses, and the endpoint paths are built in the server's coordinate space.
+  - `schemagx inspect schema.sql` — SQL DDL: `CREATE TABLE`, `PRIMARY KEY` and
+    `FOREIGN KEY ... REFERENCES` become the same model, and column types are
+    compared by family.
+  - `flowgx inspect checkout.mmd` — a Mermaid state diagram, or the one
+    `stateDiagram` block a Markdown document holds.
+  - `chartgx` and `framegx` already read what exists: a plain matplotlib script
+    and a rendered video file.
+- **`docs/CONTRACT.md`**, the stability promise above, including what the tools
+  are not: not a conformance validator, not a check on this repository's own
+  format reading, not a runtime or quality oracle.
+- **Publication and installation gates**: `scripts/check_publish.py` builds every
+  distribution, serves them from a local PEP 503 index and installs the umbrella
+  and each tool against it, so a dependency range only a resolver would reject
+  fails before anything is published. `scripts/check_consumer.py` installs an
+  immutable Git revision in isolated tool/cache directories and runs the
+  entrance the README documents, verbatim.
+- **A family that inspects itself**: `scripts/self_inspect.py` derives the real
+  import and routing graph and runs `depsgx` on it, pinning the layering a shared
+  layer cannot express.
 
 ### Fixed
-- The README leads with the single-tool route on a file the reader already has,
-  and the release notes document the index proof.
 
-### Fixed
-- Reading OpenAPI and SQL DDL as the formats define them, after an independent
-  review found five ways the importers could be silently wrong: an anonymous
-  `security` alternative (`[{}]`) was read as authenticated, which hid a public
-  mutation; an operation path was compared against the server's path without
-  being prefixed by it, so a correctly versioned endpoint read as unversioned; a
-  statement between two `CREATE TABLE`s was skipped instead of refused; a
-  `REFERENCES t` with no column invented `id` instead of resolving `t`'s primary
-  key; and a `$ref` path item was dropped rather than refused.
+**Inspecting nothing and reporting success.** An artifact that exits during
+import or detection is an input failure, never a successful inspection; a
+directory continues past a broken file; routing and inspection execute a module
+once per invocation and read current source rather than stale bytecode; requested
+inputs are resolved once before anything executes, so an artifact cannot redirect
+the inspection by changing directory; and a report prints on a console that
+cannot encode every character it names.
 
-### Fixed
-- An importer now refuses what it cannot account for instead of narrowing what it
-  read: an unrecognised key in an OpenAPI path item or operation, a `webhooks`
-  section, and a `$ref` are refused with their location. A mistyped method
-  silently dropped a route, and a mistyped `security` key read as inherited
-  authentication, which hid a public mutation — both are now input failures.
-- `docs/CONTRACT.md` states the boundary this rests on: a tool reports a finding
-  or refuses the input, never a quiet partial read; and reading a foreign format
-  is this repository's code, which gxkit does not itself verify.
+**A verdict that was not the verdict.** Recognised declarations fail closed on
+malformed members and auxiliary collections, with the field and index named
+instead of a silent fallback to another shape; schedule tuple defaults, empty and
+non-finite intervals, seed integer validation, references against explicitly
+empty declarations, API base path boundaries, and name collections are explicit
+cases.
 
-### Fixed
-- `depsgx` reports a cycle witness for every independent cyclic component, not
-  only the first one found. Two unrelated cycles previously produced one finding,
-  so a gate could pass with the second still present; each component is now
-  identified by its members, so a witness that rotates does not read as new debt.
+**Baselines that hid debt.** A finding is identified by a domain-owned stable
+identity and its multiplicity is preserved: a replaced cron conflict partner, a
+replaced network edge endpoint, and a rotated cycle witness are new findings, not
+unchanged debt. Format 2 rejects older baselines and asks for a deliberate
+recreation rather than guessing.
+
+**Importers that read less than they claimed.** An importer refuses what it
+cannot account for — an unrecognised key in an OpenAPI path item or operation, a
+`webhooks` section, a `$ref`, a statement outside the translated SQL, a
+composite key, a diagram the machine cannot hold — with its location, rather than
+narrowing what it read and reporting success about the rest. Independent review
+found five such defects, all reproduced and repaired: an anonymous `security`
+alternative read as authenticated (hiding a public mutation), a server path
+ignored, an intervening `ALTER` skipped, an omitted reference column invented,
+and a `$ref` path item dropped.
+
+**A gate that could not fail.** The coverage guard observes the environment its
+executed commands run in and replays a failing run, so an inherited pytest
+override and a swallowed failure are both rejected. Setup handoff and the
+documented entrance are executed rather than matched as text.
+
+**`depsgx`** reports a cycle witness for every independent cyclic component, not
+only the first found.
 
 ### Verification
-- The bounded mutation catalogue grows to 61, covering the importer's
-  authentication, version and malformed-input branches, the `.json` and `.sql`
-  routing, the DDL composite-key and unclosed-table refusals, the type families,
-  the Mermaid start/terminal markers and composite refusal, and the
-  foreign-document message.
 
-## Unreleased — reaudit hardening
-
-### Fixed
-- A network finding is identified by its own relationship: replacing the unknown
-  endpoint of one edge is a new error, not unchanged baseline debt.
-- Requested inputs are resolved once before any artifact executes, so an
-  artifact's own directory change cannot redirect routing, loading or the
-  project configuration to another file.
-- Recognised declarations fail closed on their auxiliary collections: environment
-  references, pipeline goals and API auth schemes must be lists of names, and a
-  non-name member is rejected with its field and index.
-- The coverage gate is provable in both directions: an inherited pytest option
-  override and a swallowed failing run are both rejected by the named guard.
-- A report prints on a console that cannot encode every character it names. A
-  message naming an edge arrow on a Windows code page turned a real verdict into
-  an input failure; unencodable characters are escaped instead.
-- The family inspects its own module graph. `scripts/self_inspect.py` derives
-  the real import and routing graph and runs `gxkit` on it, and the layering rule
-  a shared layer cannot express (no sibling tool depends on another, the core
-  depends on nothing, nothing depends on the umbrella) is pinned beside it.
-
-### Verification
-- `scripts/guard_contracts.py` replays the environment its stubbed commands run
-  in and then a failing coverage run, and `scripts/check_mutations.py` carries
-  eleven more bounded mutants (39 total) covering these repairs.
-- gxcore is staged at 0.6.0 for `convert_names`, and every consumer requires the
-  0.6 range. Nothing has been published yet, so no version here is an increment
-  from a released one: these are the versions the first release would carry. No
-  release tag or PyPI publication is created by this branch.
-
-## Unreleased — inspection correctness hardening
-
-### Fixed
-- Artifact exits during import or detection are input failures, never successful
-  inspection; directory inspection continues to later files.
-- Routing and inspection execute the same module once per invocation and read
-  current source rather than stale timestamp-matched bytecode.
-- Baselines preserve repeated findings and cron conflict partners. Format 2
-  rejects version 1; deliberately recreate accepted debt after reviewing it.
-- Malformed collection members are rejected with a field/index, not dropped or
-  hidden by another representation's fallback.
-- Schedule tuple defaults, empty intervals and non-finite times; seed integer
-  validation without truncation; references against empty declarations; API base
-  matching at a path boundary.
-
-### Verification
-- Setup-handoff and executable coverage-command guards replace token presence.
-- Bounded mutation proofs run green controls before restoring named defects in
-  disposable copies. Git consumer checks install an immutable revision in fresh
-  tool/cache directories and exercise inspection and baseline exit semantics.
-- gxcore was staged at 0.5.0 with compatible consumer ranges (now 0.6.0). No
-  release tag or PyPI publication is created by this hardening branch.
+- 1586 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+  a dependency audit; every distribution built, checked with `twine` and against
+  its `pyproject`; a public-Git consumer install at an exact revision; and the
+  index installation gate.
+- A bounded mutation catalogue of 61 named defects, each killed by its intended
+  assertion after green controls, running in the local gate and in CI.
+- CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 
 ## [0.9.1] — publish-readiness audit fixes
 

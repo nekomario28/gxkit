@@ -50,6 +50,10 @@ Decisions belong in [choices](choices.md). The architecture the importers and
 gates rest on is recorded as durable rationale in
 [`../done/inspection-correctness-hardening.md`](../done/inspection-correctness-hardening.md).
 
-Remaining, and owned by the repository owner: the release itself — claiming the
-names, `uv publish` in dependency order, the tag, and consolidating the
-CHANGELOG's Unreleased sections into a release section.
+Staged and verified for the release: every package at **1.0.0** with
+`gxcore>=1.0,<2.0` in consumers, the CHANGELOG consolidated into one `[1.0.0]`
+release section, and `docs/RELEASING.md` carrying the exact order of steps.
+
+Remaining, and owned by the repository owner: the PyPI token, `uv publish` in
+dependency order, and the `v1.0.0` tag and release whose body is extracted from
+the CHANGELOG.
