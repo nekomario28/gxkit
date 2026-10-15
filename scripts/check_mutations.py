@@ -330,12 +330,12 @@ def mutations(root: Path) -> list[Mutation]:
     cases.extend(
         [
             Mutation(
-                "openapi-security-inherited-away",
+                "openapi-inherited-security-ignored",
                 "packages/apigx/src/apigx/openapi.py",
-                '    if "security" in operation:\n        return bool(operation["security"])\n    return bool(document.get("security"))',
-                "    return True",
+                '    requirements = operation["security"] if "security" in operation else document.get("security")',
+                '    requirements = operation["security"] if "security" in operation else None',
                 KIT_TEST
-                + "test_foreign_inputs.py::test_a_published_spec_is_inspected_by_the_same_codes",
+                + "test_foreign_inputs.py::test_a_spec_that_inherits_its_security_has_no_unauthenticated_mutation",
             ),
             Mutation(
                 "openapi-version-unchecked",
@@ -436,6 +436,49 @@ def mutations(root: Path) -> list[Mutation]:
                 '    if path.suffix.lower() in {".mmd", ".mermaid", ".md", ".markdown"}:',
                 "    if False:",
                 "packages/gxkit/tests/test_foreign_inputs.py::test_a_diagram_drawn_in_a_document_is_read_through_it",
+            ),
+        ]
+    )
+    # The review of the importers found five ways they could be silently wrong:
+    # an anonymous alternative read as authenticated, a server path ignored, an
+    # intervening statement skipped, an omitted reference column invented, and a
+    # referenced path item dropped. Each is restored and must be rejected.
+    cases.extend(
+        [
+            Mutation(
+                "openapi-anonymous-alternative-authenticated",
+                "packages/apigx/src/apigx/openapi.py",
+                "    return all(isinstance(requirement, dict) and requirement for requirement in requirements)",
+                "    return True",
+                "packages/apigx/tests/test_openapi.py::test_an_anonymous_alternative_makes_the_operation_public",
+            ),
+            Mutation(
+                "openapi-server-path-ignored",
+                "packages/apigx/src/apigx/openapi.py",
+                '    if not server_path:\n        return path\n    return server_path + (path if path.startswith("/") else f"/{path}")',
+                "    return path",
+                "packages/apigx/tests/test_openapi.py::test_an_operation_path_is_relative_to_the_server_path",
+            ),
+            Mutation(
+                "openapi-reference-dropped",
+                "packages/apigx/src/apigx/openapi.py",
+                '        if "$ref" in operations:',
+                "        if False:",
+                "packages/apigx/tests/test_openapi.py::test_a_reference_is_refused_rather_than_dropped",
+            ),
+            Mutation(
+                "ddl-next-statement-searched-past",
+                "packages/schemagx/src/schemagx/ddl.py",
+                "        match = CREATE_TABLE.match(cleaned, position)",
+                "        match = CREATE_TABLE.search(cleaned, position)",
+                "packages/schemagx/tests/test_ddl.py::test_a_statement_between_two_tables_is_refused_not_skipped",
+            ),
+            Mutation(
+                "ddl-reference-column-invented",
+                "packages/schemagx/src/schemagx/ddl.py",
+                "        primary = primary_keys.get(parent)\n        if primary is None:",
+                '        primary = primary_keys.get(parent) or "id"\n        if False:',
+                "packages/schemagx/tests/test_ddl.py::test_a_reference_to_a_table_without_a_primary_key_is_refused",
             ),
         ]
     )

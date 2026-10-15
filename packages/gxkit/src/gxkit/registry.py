@@ -17,6 +17,7 @@ class ToolSpec:
     attrs: tuple[str, ...]  # module attributes holding the artifact object
     classes: tuple[str, ...]  # the artifact's class name(s)
     markers: tuple[str, ...]  # module-level names that also identify it
+    reads: tuple[str, ...] = (".py",)  # file suffixes this tool accepts
 
 
 # Order matters: class matches win, then markers, and `protogx` is checked
@@ -61,6 +62,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("schema",),
         ("Schema",),
         ("TABLES", "FOREIGN_KEYS", "PRIMARY_KEYS"),
+        reads=(".py", ".sql"),
     ),
     ToolSpec(
         "docgx", "pages / slides", "docgx.tool", ("page", "slide"), ("Page",), ("BLOCKS", "TITLE")
@@ -91,6 +93,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("machine",),
         ("Machine",),
         ("MACHINE", "STATES", "TRANSITIONS", "ACCEPT"),
+        reads=(".py", ".mmd", ".mermaid", ".md", ".markdown"),
     ),
     ToolSpec(
         "apigx",
@@ -99,6 +102,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("api", "API", "contract"),
         ("API",),
         ("ENDPOINTS", "BASE"),
+        reads=(".py", ".json"),
     ),
     ToolSpec(
         "netgx",

@@ -20,7 +20,7 @@ DOCUMENT = {
     "security": [{"bearer": []}],
     "components": {"securitySchemes": {"bearer": {"type": "http", "scheme": "bearer"}}},
     "paths": {
-        "/v1/invoices": {
+        "/invoices": {
             "get": {"security": [{"bearer": []}], "responses": {"200": {}, "404": {}}},
             "post": {"security": [], "responses": {"201": {}}, "deprecated": True},
         },
@@ -58,9 +58,10 @@ def test_a_published_spec_is_inspected_by_the_same_codes(tmp_path):
     assert result.returncode == 1, result.stderr
     report = json.loads(result.stdout)
     assert report["name"] == "Payments"
+    # An imported spec carries its base in `servers`, so every endpoint is under
+    # it and `unversioned-path` cannot fire; the other three codes still do.
     assert set(_codes(report)) == {
         "unauthenticated-mutation",
-        "unversioned-path",
         "no-error-status",
         "deprecated-endpoint",
     }
@@ -69,10 +70,10 @@ def test_a_published_spec_is_inspected_by_the_same_codes(tmp_path):
 
 def test_a_spec_that_inherits_its_security_has_no_unauthenticated_mutation(tmp_path):
     clean = json.loads(json.dumps(DOCUMENT))
-    clean["paths"]["/v1/invoices"]["post"].pop("security")
+    clean["paths"]["/invoices"]["post"].pop("security")
     clean["paths"].pop("/internal/refund")
-    clean["paths"]["/v1/invoices"]["post"]["responses"] = {"201": {}, "400": {}}
-    clean["paths"]["/v1/invoices"]["post"].pop("deprecated")
+    clean["paths"]["/invoices"]["post"]["responses"] = {"201": {}, "400": {}}
+    clean["paths"]["/invoices"]["post"].pop("deprecated")
     document = tmp_path / "openapi.json"
     document.write_text(json.dumps(clean), encoding="utf-8")
     result = _inspect(document, tool="apigx")

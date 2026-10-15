@@ -24,6 +24,38 @@ def test_catalogue_covers_every_tool():
     assert sorted(t.name for t in TOOLS) == expected
 
 
+def test_a_declared_suffix_really_takes_the_document_route(tmp_path):
+    """`reads` is a claim about the loader, so it is checked against the loader.
+
+    A suffix that is declared but not routed falls through to executing the file
+    as Python, which raises SyntaxError. A document route that refuses the empty
+    file instead raises the located input error, which is what a caller sees.
+    """
+    import importlib
+
+    from gxcore.loading import InvalidArtifact
+
+    for spec in TOOLS:
+        suffixes = [suffix for suffix in spec.reads if suffix != ".py"]
+        if not suffixes:
+            continue
+        load = importlib.import_module(spec.module).TOOL.load
+        for suffix in suffixes:
+            document = tmp_path / f"{spec.name}{suffix}"
+            document.write_text("", encoding="utf-8")
+            # Either the document route refuses the empty file as input, or the
+            # declaration is wrong: any other error is the Python route being
+            # taken for a file that is not Python.
+            try:
+                load(document)
+            except InvalidArtifact:
+                continue
+            except Exception as exc:
+                raise AssertionError(
+                    f"{spec.name} declares {suffix} but did not route it ({type(exc).__name__})"
+                ) from exc
+
+
 def test_detect_by_object_class():
     class Machine: ...
 

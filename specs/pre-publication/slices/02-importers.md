@@ -49,3 +49,27 @@ equally faithful (a shader file is the artifact, with no wrapper to write), but
 its audience is narrower than the state diagrams teams keep in their docs, and
 installation weight is the same either way. Add it when someone asks for it.
 
+## What the independent review changed
+
+A review of the three importers found five ways they could be silently wrong, and
+all five were reproduced and repaired:
+
+- **An anonymous security alternative read as authenticated** (the finding of
+  record). `security: [{}]` requires nothing, and alternatives are ORed, so a
+  public mutating route was reported as authenticated — a false negative on the
+  one check that is about exposure.
+- **The server path ignored.** OpenAPI defines an endpoint as the server's path
+  followed by the path item, so comparing an unprefixed path against the base
+  reported a correctly versioned endpoint as unversioned.
+- **An intervening statement skipped.** Searching for the next `CREATE TABLE`
+  meant an `ALTER` between two tables disappeared, against the documented
+  promise that anything else is refused with its line.
+- **An omitted reference column invented as `id`.** SQL means the referenced
+  table's primary key, whatever it is called; the importer now resolves it after
+  every table is read, and refuses when there is none to mean.
+- **A referenced path item dropped.** A `$ref` path item produced no methods and
+  vanished, so a document could report no endpoints while hiding an
+  unauthenticated mutation. References are refused, not resolved.
+
+Each repair has a named regression and a mutant (the catalogue is 57).
+>>>>>>> b201449 (Fix what the importer review found, and close the hygiene items)

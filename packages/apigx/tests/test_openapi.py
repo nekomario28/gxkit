@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from apigx import API, Endpoint, api_from_document, api_from_file, load_api
+from apigx import API, Endpoint, api_from_document, api_from_file, inspect_api, load_api
 from gxcore.loading import InvalidArtifact
 
 BASE = {
@@ -14,7 +14,7 @@ BASE = {
     "servers": [{"url": "https://api.example.com/v1"}],
     "security": [{"bearer": []}],
     "components": {"securitySchemes": {"bearer": {"type": "http", "scheme": "bearer"}}},
-    "paths": {"/v1/invoices": {"get": {"responses": {"200": {}, "404": {}}}}},
+    "paths": {"/invoices": {"get": {"responses": {"200": {}, "404": {}}}}},
 }
 
 
@@ -40,64 +40,111 @@ def test_a_document_becomes_endpoints_with_their_authentication():
     ],
 )
 def test_authentication_is_inherited_unless_the_operation_says_otherwise(operation, auth):
-    api = api_from_document(_doc(paths={"/v1/a": {"post": operation}}))
+    api = api_from_document(_doc(paths={"/a": {"post": operation}}))
     assert [endpoint.auth for endpoint in api.endpoints] == [auth]
 
 
 def test_a_document_without_security_has_an_unauthenticated_api():
-    document = _doc(paths={"/v1/a": {"post": {"responses": {}}}})
+    document = _doc(paths={"/a": {"post": {"responses": {}}}})
     document.pop("security")
     assert [endpoint.auth for endpoint in api_from_document(document).endpoints] == [False]
 
 
 def test_statuses_come_from_the_numeric_response_keys():
     api = api_from_document(
-        _doc(paths={"/v1/a": {"get": {"responses": {"404": {}, "default": {}, "201": {}}}}})
+        _doc(paths={"/a": {"get": {"responses": {"404": {}, "default": {}, "201": {}}}}})
     )
     assert api.endpoints[0].statuses == [201, 404]
 
 
 @pytest.mark.parametrize("responses", [None, 42, [], "x"])
 def test_responses_that_are_not_an_object_document_no_status(responses):
-    api = api_from_document(_doc(paths={"/v1/a": {"get": {"responses": responses}}}))
+    api = api_from_document(_doc(paths={"/a": {"get": {"responses": responses}}}))
     assert api.endpoints[0].statuses == []
 
 
 def test_a_status_key_that_looks_numeric_but_is_not_is_rejected():
     with pytest.raises(InvalidArtifact, match="responses"):
-        api_from_document(_doc(paths={"/v1/a": {"get": {"responses": {"²": {}}}}}))
+        api_from_document(_doc(paths={"/a": {"get": {"responses": {"²": {}}}}}))
 
 
 def test_deprecated_survives_the_conversion():
-    api = api_from_document(_doc(paths={"/v1/a": {"get": {"responses": {}, "deprecated": True}}}))
+    api = api_from_document(_doc(paths={"/a": {"get": {"responses": {}, "deprecated": True}}}))
     assert api.endpoints[0].deprecated is True
 
 
 @pytest.mark.parametrize("method", ["get", "put", "post", "delete", "patch", "head", "options"])
 def test_every_http_method_becomes_an_endpoint(method):
-    api = api_from_document(_doc(paths={"/v1/a": {method: {"responses": {}}}}))
+    api = api_from_document(_doc(paths={"/a": {method: {"responses": {}}}}))
     assert [endpoint.verb for endpoint in api.endpoints] == [method.upper()]
 
 
 def test_an_unknown_key_in_a_path_item_is_not_an_endpoint():
-    api = api_from_document(_doc(paths={"/v1/a": {"parameters": [], "trace": {"responses": {}}}}))
+    api = api_from_document(_doc(paths={"/a": {"parameters": [], "trace": {"responses": {}}}}))
     assert [endpoint.verb for endpoint in api.endpoints] == ["TRACE"]
 
 
 @pytest.mark.parametrize(
     ("servers", "paths", "expected"),
     [
-        ([{"url": "https://api.example.com/v1/"}], ["/v1/a"], "/v1"),
-        ([{"url": "https://api.example.com"}], ["/v1/a"], ""),
+        ([{"url": "https://api.example.com/v1/"}], ["/a"], "/v1"),
+        ([{"url": "https://api.example.com"}], ["/a"], ""),
         ([], ["/v1/a", "/v1/b"], "/v1"),
         ([], ["/v1/a", "/other/b"], ""),
-        ([], ["/v1/a"], ""),
-        ([{"url": "https://api.example.com/v1", "x": 1}], ["/v1/a"], "/v1"),
+        ([], ["/a"], ""),
+        ([{"url": "https://api.example.com/v1", "x": 1}], ["/a"], "/v1"),
     ],
 )
 def test_the_base_comes_from_the_server_or_the_shared_prefix(servers, paths, expected):
     document = _doc(servers=servers, paths={path: {"get": {"responses": {}}} for path in paths})
     assert api_from_document(document).base == expected
+
+
+def test_an_operation_path_is_relative_to_the_server_path():
+    """OpenAPI defines the endpoint as the server's path followed by the path."""
+    api = api_from_document(_doc(paths={"/items": {"post": {"responses": {}}}}))
+    assert [endpoint.path for endpoint in api.endpoints] == ["/v1/items"]
+    assert "unversioned-path" not in {problem.code for problem in inspect_api(api).problems}
+
+
+def test_a_server_without_a_path_does_not_prefix_anything():
+    document = _doc(servers=[{"url": "https://api.example.com"}], paths={"/items": {"get": {}}})
+    api = api_from_document(document)
+    assert api.base == "" and [endpoint.path for endpoint in api.endpoints] == ["/items"]
+
+
+@pytest.mark.parametrize(
+    "security",
+    [
+        [{}],
+        [{}, {"bearer": []}],
+        [{"bearer": []}, {}],
+    ],
+)
+def test_an_anonymous_alternative_makes_the_operation_public(security):
+    """Alternatives are ORed, so one that requires nothing permits anyone."""
+    document = _doc(paths={"/a": {"post": {"security": security, "responses": {}}}})
+    api = api_from_document(document)
+    assert [endpoint.auth for endpoint in api.endpoints] == [False]
+    assert "unauthenticated-mutation" in {problem.code for problem in inspect_api(api).problems}
+
+
+def test_an_anonymous_alternative_inherited_from_the_document_is_public_too():
+    document = _doc(paths={"/a": {"post": {"responses": {}}}})
+    document["security"] = [{}, {"bearer": []}]
+    assert [endpoint.auth for endpoint in api_from_document(document).endpoints] == [False]
+
+
+@pytest.mark.parametrize(
+    "path_item",
+    [
+        {"$ref": "#/components/pathItems/Invoices"},
+        {"post": {"$ref": "#/components/operations/charge"}},
+    ],
+)
+def test_a_reference_is_refused_rather_than_dropped(path_item):
+    with pytest.raises(InvalidArtifact, match="reference"):
+        api_from_document(_doc(paths={"/items": path_item}))
 
 
 def test_security_schemes_become_the_declared_scheme_names():
