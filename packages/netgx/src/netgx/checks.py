@@ -41,10 +41,24 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
                     )
                 )
         if src == dst:
-            out.append(Problem(WARN, "self-loop", f"{src} allows traffic to itself", target=src))
+            out.append(
+                Problem(
+                    WARN,
+                    "self-loop",
+                    f"{src} allows traffic to itself",
+                    target=src,
+                    identity=(src, src),
+                )
+            )
         if (src, dst) in seen:
             out.append(
-                Problem(INFO, "duplicate-edge", f"edge {src} → {dst} is listed twice", target=src)
+                Problem(
+                    INFO,
+                    "duplicate-edge",
+                    f"edge {src} → {dst} is listed twice",
+                    target=src,
+                    identity=(src, dst),
+                )
             )
         seen.add((src, dst))
 

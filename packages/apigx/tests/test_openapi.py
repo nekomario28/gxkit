@@ -89,13 +89,14 @@ def test_an_unknown_key_in_a_path_item_is_not_an_endpoint():
     [
         ([{"url": "https://api.example.com/v1/"}], ["/a"], "/v1"),
         ([{"url": "https://api.example.com"}], ["/a"], ""),
-        ([], ["/v1/a", "/v1/b"], "/v1"),
-        ([], ["/v1/a", "/other/b"], ""),
+        # No declared server means no declared base: a prefix inferred from the
+        # paths could never fail a check, so it is not reported as one.
+        ([], ["/v1/a", "/v1/b"], ""),
         ([], ["/a"], ""),
         ([{"url": "https://api.example.com/v1", "x": 1}], ["/a"], "/v1"),
     ],
 )
-def test_the_base_comes_from_the_server_or_the_shared_prefix(servers, paths, expected):
+def test_the_base_comes_from_the_server_and_not_from_an_inferred_prefix(servers, paths, expected):
     document = _doc(servers=servers, paths={path: {"get": {"responses": {}}} for path in paths})
     assert api_from_document(document).base == expected
 
@@ -192,6 +193,67 @@ def test_the_whole_operation_vocabulary_is_accepted():
     }
     api = api_from_document(_doc(paths={"/a": {"post": operation}}))
     assert [endpoint.verb for endpoint in api.endpoints] == ["POST"]
+
+
+@pytest.mark.parametrize(
+    ("server", "expected"),
+    [
+        ({"url": "https://api.example.com/v1"}, "/v1"),
+        ({"url": "https://api.example.com"}, ""),
+        ({"url": "https://api.example.com/v1/"}, "/v1"),
+    ],
+)
+def test_an_override_is_read_for_the_path_it_declares(server, expected):
+    from apigx.openapi import _override_path
+
+    assert _override_path([server]) == expected
+
+
+@pytest.mark.parametrize("servers", [None, [], "https://example.com", [42], [{}]])
+def test_an_override_with_no_usable_server_is_not_a_server(servers):
+    from apigx.openapi import _override_path
+
+    assert _override_path(servers) in {None, ""}
+
+
+def test_a_path_item_override_that_changes_the_path_is_refused():
+    with pytest.raises(InvalidArtifact, match="overrides the server path"):
+        api_from_document(
+            _doc(
+                servers=[{"url": "https://api.example.com/v1"}],
+                paths={
+                    "/items": {"servers": [{"url": "https://api.example.com/legacy"}], "get": {}}
+                },
+            )
+        )
+
+
+def test_an_operation_override_that_changes_the_path_is_refused():
+    with pytest.raises(InvalidArtifact, match="overrides the server path"):
+        api_from_document(
+            _doc(
+                servers=[{"url": "https://api.example.com/v1"}],
+                paths={
+                    "/items": {
+                        "get": {
+                            "responses": {},
+                            "servers": [{"url": "https://api.example.com/legacy"}],
+                        }
+                    }
+                },
+            )
+        )
+
+
+def test_an_override_that_only_names_a_host_is_allowed():
+    """A host-only override does not change the path, so the model still holds."""
+    api = api_from_document(
+        _doc(
+            servers=[{"url": "https://api.example.com"}],
+            paths={"/items": {"get": {"responses": {}, "servers": [{"url": "https://other"}]}}},
+        )
+    )
+    assert [endpoint.path for endpoint in api.endpoints] == ["/items"]
 
 
 def test_security_schemes_become_the_declared_scheme_names():

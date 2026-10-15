@@ -125,7 +125,12 @@ def test_tools_json(capsys):
 
     assert main(["tools", "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert {"name", "inspects"} == set(data[0])
+    assert {"name", "inspects", "reads"} == set(data[0])
+    # The suffixes are the declaration the umbrella uses to name a tool for a
+    # document that is not Python, so they are part of the catalogue's output.
+    by_name = {entry["name"]: entry["reads"] for entry in data}
+    assert by_name["apigx"] == [".py", ".json"]
+    assert by_name["flowgx"] == [".py", ".mmd", ".mermaid", ".md", ".markdown"]
 
 
 def test_inspect_routes_and_returns_the_tools_code(capsys):

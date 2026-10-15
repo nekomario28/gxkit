@@ -364,7 +364,7 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "foreign-document-detected-as-python",
                 "packages/gxkit/src/gxkit/cli.py",
-                '    if path.suffix.lower() != ".py":',
+                '    if suffix != ".py":',
                 "    if False:",
                 KIT_TEST + "test_foreign_inputs.py::test_a_document_needs_the_tool_named",
             ),
@@ -377,8 +377,8 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "ddl-composite-key-guessed",
                 "packages/schemagx/src/schemagx/ddl.py",
-                "        if len(columns) != 1:\n            raise InvalidArtifact(",
-                "        if False:\n            raise InvalidArtifact(",
+                '        if len(columns) != 1:\n            raise InvalidArtifact(\n                f"{where}: a composite primary key on {table!r} is not representable; "',
+                "        if False:\n            raise InvalidArtifact('unused'",
                 "packages/schemagx/tests/test_ddl.py::test_a_file_that_is_not_readable_ddl_says_where_it_is_wrong",
             ),
             Mutation(
@@ -522,6 +522,52 @@ def mutations(root: Path) -> list[Mutation]:
                 "                    identity=tuple(sorted(component)),\n",
                 "",
                 KIT_TEST + "test_inspection_gates.py::test_a_rotated_cycle_witness_is_not_new_debt",
+            ),
+        ]
+    )
+    # What the second review and the coherence sweep found: a composite key
+    # truncated before validation, a literal read as a comment, a server override
+    # ignored, and a declared suffix nothing used.
+    cases.extend(
+        [
+            Mutation(
+                "ddl-composite-child-column-dropped",
+                "packages/schemagx/src/schemagx/ddl.py",
+                '        if len(columns) != 1:\n            raise InvalidArtifact(\n                f"{where}: a composite foreign key on {table!r} is not representable; "\n                "declare the schema in Python"\n            )',
+                "        if False:\n            raise InvalidArtifact('unused')",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_composite_key_is_still_refused_when_the_target_is_omitted",
+            ),
+            Mutation(
+                "ddl-comment-stripping-not-quote-aware",
+                "packages/schemagx/src/schemagx/ddl.py",
+                '        if character in "\'\\"":\n            quote = character\n            out.append(character)\n            index += 1\n            continue',
+                "        if False:\n            index += 1\n            continue",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_sql_literal_containing_a_comment_marker_is_read",
+            ),
+            Mutation(
+                "openapi-server-override-ignored",
+                "packages/apigx/src/apigx/openapi.py",
+                '        path_override = _override_path(operations.get("servers"))',
+                "        path_override = None",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_a_server_override_the_model_cannot_represent_is_refused",
+            ),
+            Mutation(
+                "gxkit-foreign-suffix-not-named",
+                "packages/gxkit/src/gxkit/cli.py",
+                "        if readers:",
+                "        if False:",
+                KIT_TEST + "test_cli_units.py::test_a_foreign_document_is_told_which_tool_reads_it",
+            ),
+            Mutation(
+                "netgx-duplicate-edge-unidentified",
+                "packages/netgx/src/netgx/checks.py",
+                "                    identity=(src, dst),\n",
+                "",
+                KIT_TEST
+                + "test_inspection_gates.py::test_a_replaced_duplicate_edge_is_not_the_same_finding",
             ),
         ]
     )

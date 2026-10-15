@@ -56,11 +56,21 @@ def test_run_tool_forwards_the_flags(tmp_path, capsys):
 
 
 def test_a_foreign_document_is_told_which_tool_reads_it(tmp_path, capsys):
+    """The registry declares what each tool reads, so name it instead of guessing."""
     document = tmp_path / "openapi.json"
     document.write_text("{}", encoding="utf-8")
     assert cli._tool_for(document, None) is None
     err = capsys.readouterr().err
-    assert "not a Python artifact" in err and "gxkit tools" in err
+    assert "not a Python artifact" in err
+    assert "apigx" in err and "gxkit inspect apigx" in err
+
+
+def test_a_file_no_tool_reads_says_so(tmp_path, capsys):
+    path = tmp_path / "notes.xyz"
+    path.write_text("", encoding="utf-8")
+    assert cli._tool_for(path, None) is None
+    err = capsys.readouterr().err
+    assert "no tool reads .xyz" in err and "gxkit tools" in err
 
 
 def test_codes_command_runs(capsys):

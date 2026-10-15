@@ -40,15 +40,27 @@ format is rejected rather than guessed at.
 
 **Supported Python.** 3.10 through 3.13, on Linux, macOS and Windows.
 
-**Inputs.** A tool accepts a Python artifact, or the document it names: `apigx`
-an OpenAPI 3 JSON file, `schemagx` a `.sql` file, `flowgx` a `.mmd`/`.mermaid`
-file or the one `stateDiagram` block in a `.md`/`.markdown` document, `framegx` a
-video file, `chartgx` any script that builds a matplotlib figure. A Python
-artifact is detected automatically; a document that is not Python needs its tool
-named, because detection reads a Python module. Reading a document adds no
-runtime dependency and no code path that executes it — a foreign document is
-parsed as data. OpenAPI 2, a composite key and a composite or ambiguous diagram
-are refused rather than guessed at, and the refusal names the line.
+**Inputs.** Every tool takes a Python file, and three also take a document:
+
+| tool | also takes | and what it does with it |
+| --- | --- | --- |
+| `apigx` | `.json` | an OpenAPI 3 document, converted to the same model |
+| `schemagx` | `.sql` | SQL DDL, converted to the same model |
+| `flowgx` | `.mmd`, `.mermaid`, `.md`, `.markdown` | a Mermaid state diagram, or the one `stateDiagram` block a document holds |
+
+`chartgx` runs any Python script that builds a matplotlib figure, and `framegx`
+probes the video a Python declaration points at; both still take a Python file.
+The suffixes each tool accepts are declared in `gxkit.registry`, printed by
+`gxkit tools --json`, listed in `docs/TRACE.md`, and used to name the tool when a
+document that is not Python is passed.
+
+A Python artifact is detected automatically; a document that is not Python needs
+its tool named, because detection reads a Python module. Reading a document adds
+no runtime dependency and no code path that executes it — a foreign document is
+parsed as data. A construct the importer cannot represent is refused with its
+location rather than guessed at: OpenAPI 2, a `$ref`, an unrecognised key, a
+server override that changes the path, a composite key, an unterminated comment
+or literal, a composite or ambiguous diagram.
 
 ## Not stable
 

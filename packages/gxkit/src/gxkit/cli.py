@@ -27,7 +27,12 @@ from .registry import BY_NAME, TOOLS, ToolSpec, detect
 
 def _tools_table(as_json: bool) -> int:
     if as_json:
-        print(json.dumps([{"name": t.name, "inspects": t.inspects} for t in TOOLS], indent=2))
+        print(
+            json.dumps(
+                [{"name": t.name, "inspects": t.inspects, "reads": list(t.reads)} for t in TOOLS],
+                indent=2,
+            )
+        )
     else:
         width = max(len(t.name) for t in TOOLS)
         for t in TOOLS:
@@ -42,16 +47,27 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
             print(f"gxkit: unknown tool {explicit!r}; try `gxkit tools`", file=sys.stderr)
             return None
         return spec
-    if path.suffix.lower() != ".py":
-        # Detection reads a Python module, so a foreign document (an OpenAPI
-        # spec, say) cannot be recognised automatically. Saying which tool
-        # reads it beats reporting a syntax error in a file that has none.
-        print(
-            f"gxkit: {path.name} is not a Python artifact.\n"
-            f"  Name the tool that reads it: gxkit inspect <tool> {path}\n"
-            f"  `gxkit tools` lists what each tool inspects.",
-            file=sys.stderr,
-        )
+    suffix = path.suffix.lower()
+    if suffix != ".py":
+        # Detection reads a Python module, so a foreign document (an OpenAPI spec,
+        # say) cannot be recognised automatically. The registry declares which
+        # suffixes each tool reads, so name the tool rather than making the reader
+        # guess — and keep refusing to execute a non-Python file as Python.
+        readers = [spec.name for spec in TOOLS if suffix in spec.reads]
+        if readers:
+            print(
+                f"gxkit: {path.name} is not a Python artifact.\n"
+                f"  The tool that reads {suffix} is {readers[0]}: "
+                f"gxkit inspect {readers[0]} {path}",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"gxkit: {path.name} is not a Python artifact, and no tool reads "
+                f"{suffix or 'files with no suffix'}.\n"
+                f"  `gxkit tools` lists what each tool inspects.",
+                file=sys.stderr,
+            )
         return None
     from gxcore.loading import load_module
 

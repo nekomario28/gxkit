@@ -55,9 +55,51 @@ def _unquote(identifier: str) -> str:
     return identifier.strip().strip('"').strip("`").strip("[").strip("]").strip('"').strip()
 
 
-def _without_comments(text: str) -> str:
-    """Comments removed, newlines kept so a line number still means something."""
-    return re.sub(r"--[^\n]*", "", re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL))
+def _without_comments(text: str, source: str) -> str:
+    """Comments removed, quote-aware, with newlines kept so lines still mean something.
+
+    A regex substitution deletes the rest of the line after a `--` inside a string
+    literal, so `DEFAULT '--'` corrupted the statement before it was parsed. A
+    block comment becomes newlines (never nothing) so removing it cannot join two
+    tokens or shift the lines an error is reported against.
+    """
+    out: list[str] = []
+    index = 0
+    quote = ""
+    while index < len(text):
+        character = text[index]
+        if quote:
+            out.append(character)
+            if character == quote:
+                if index + 1 < len(text) and text[index + 1] == quote:
+                    out.append(text[index + 1])
+                    index += 2
+                    continue
+                quote = ""
+            index += 1
+            continue
+        if character in "'\"":
+            quote = character
+            out.append(character)
+            index += 1
+            continue
+        if text.startswith("--", index):
+            while index < len(text) and text[index] != "\n":
+                index += 1
+            continue
+        if text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            if end < 0:
+                raise InvalidArtifact(f"{source}: an unterminated /* comment")
+            inner = text[index:end]
+            out.append("".join("\n" if c == "\n" else " " for c in inner))
+            index = end + 2
+            continue
+        out.append(character)
+        index += 1
+    if quote:
+        raise InvalidArtifact(f"{source}: an unterminated {quote} literal")
+    return "".join(out)
 
 
 def _line_of(text: str, offset: int) -> int:
@@ -144,7 +186,7 @@ _MULTIWORD = {
 
 def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
     """A `Schema` from SQL DDL, or a rejection that names the offending line."""
-    cleaned = _without_comments(text)
+    cleaned = _without_comments(text, source)
     tables: dict[str, dict[str, str]] = {}
     primary_keys: dict[str, str] = {}
     foreign_keys: list[tuple[str, str]] = []
@@ -262,9 +304,16 @@ def _table_constraint(
         columns = _columns_of(foreign.group("columns"))
         target = _columns_of(foreign.group("target") or "")
         parent = _unquote(foreign.group("table"))
+        # The child count is checked first: returning early to resolve an omitted
+        # target used to drop the second column of a composite key silently.
+        if len(columns) != 1:
+            raise InvalidArtifact(
+                f"{where}: a composite foreign key on {table!r} is not representable; "
+                "declare the schema in Python"
+            )
         if foreign.group("target") is None:
             return None, None, (f"{table}.{columns[0]}", parent)
-        if len(columns) != 1 or len(target) != 1:
+        if len(target) != 1:
             raise InvalidArtifact(
                 f"{where}: a composite foreign key on {table!r} is not representable; "
                 "declare the schema in Python"

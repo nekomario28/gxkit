@@ -78,7 +78,9 @@ def _statuses(responses: object) -> list[int]:
         if isinstance(key, str) and key.isdigit():
             try:
                 codes.append(int(key))
-            except ValueError as exc:  # pragma: no cover - isdigit already guarantees this
+            except ValueError as exc:
+                # `isdigit` is true for characters `int` rejects — a superscript
+                # '²' among them — so this branch is reachable and is tested.
                 raise InvalidArtifact(f"responses: {key!r} is not a status code") from exc
     return sorted(codes)
 
@@ -103,20 +105,22 @@ def _endpoint_path(server_path: str, path: str) -> str:
     return server_path + (path if path.startswith("/") else f"/{path}")
 
 
-def _base(document: dict[str, Any], paths: list[str]) -> str:
-    """The versioned base: the server's path, or the paths' shared prefix."""
-    server_path = _server_path(document)
-    if server_path:
-        return server_path
-    if len(paths) > 1:
-        prefix = paths[0]
-        for path in paths[1:]:
-            while not path.startswith(prefix):
-                prefix = prefix[: prefix.rfind("/")]
-                if not prefix:
-                    return ""
-        return prefix.rstrip("/")
-    return ""
+def _base(document: dict[str, Any]) -> str:
+    """The base the document declares, and nothing else.
+
+    A prefix inferred from the paths would look like a check had been applied
+    while being unable to fail: every path shares a prefix by construction, so
+    `unversioned-path` can only fire on a declaration. Reporting no base when the
+    document declares none is the honest reading.
+    """
+    return _server_path(document)
+
+
+def _override_path(servers: object) -> str | None:
+    """The path an operation- or path-item-level `servers` overrides with."""
+    if not isinstance(servers, list) or not servers or not isinstance(servers[0], dict):
+        return None
+    return urlparse(str(servers[0].get("url", ""))).path.rstrip("/")
 
 
 def api_from_document(document: object, *, source: str = "openapi") -> API:
@@ -145,6 +149,17 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     for path, operations in paths.items():
         if not isinstance(operations, dict):
             raise InvalidArtifact(f"{source}: paths[{path!r}] is not an object")
+        # OpenAPI lets a path item or an operation override the server, and the
+        # model carries one base for the whole API. Overriding *the path* would
+        # make the endpoint something other than what this reports, so it is
+        # refused; a host-only override does not change the path and is fine.
+        path_override = _override_path(operations.get("servers"))
+        if path_override is not None and path_override != server_path:
+            raise InvalidArtifact(
+                f"{source}: paths[{path!r}] overrides the server path "
+                f"({path_override!r} vs {server_path!r}), which this importer cannot "
+                "represent; declare the API in Python"
+            )
         unknown = _unrecognised(operations, PATH_ITEM_KEYS)
         if unknown:
             raise InvalidArtifact(
@@ -173,6 +188,13 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                     f"{source}: paths[{path!r}].{method} is a reference; this importer does not "
                     "resolve references"
                 )
+            operation_override = _override_path(operation.get("servers"))
+            if operation_override is not None and operation_override != server_path:
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method} overrides the server path "
+                    f"({operation_override!r} vs {server_path!r}), which this importer cannot "
+                    "represent; declare the API in Python"
+                )
             endpoints.append(
                 Endpoint(
                     method.upper(),
@@ -186,7 +208,7 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     name = str(info["title"]) if isinstance(info, dict) and info.get("title") else "api"
     return API(
         endpoints=endpoints,
-        base=_base(document, [endpoint.path for endpoint in endpoints]),
+        base=_base(document),
         name=name,
         auth_schemes=auth_schemes,
     )
