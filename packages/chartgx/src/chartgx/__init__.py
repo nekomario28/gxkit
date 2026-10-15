@@ -23,4 +23,4 @@ __all__ = [
     "load_figure",
     "main",
 ]
-__version__ = "0.1.0"
+__version__ = "1.0.0"

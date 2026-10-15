@@ -28,4 +28,4 @@ __all__ = [
     "page_from_parts",
     "render_image",
 ]
-__version__ = "0.1.0"
+__version__ = "1.0.0"

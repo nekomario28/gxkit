@@ -68,4 +68,4 @@ __all__ = [
     "unreachable",
     "weak_components",
 ]
-__version__ = "0.6.0"
+__version__ = "1.0.0"

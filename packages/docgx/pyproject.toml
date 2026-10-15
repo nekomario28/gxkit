@@ -1,6 +1,6 @@
 [project]
 name = "docgx"
-version = "0.1.0"
+version = "1.0.0"
 description = "Inspect a page / slide for overflowing, overlapping or unreadable text — codes, exit codes, storyboards."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
-    "gxcore>=0.6,<0.7",
+    "gxcore>=1.0,<2.0",
     "Pillow>=9",
 ]
 

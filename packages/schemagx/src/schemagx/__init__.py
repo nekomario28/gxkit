@@ -31,4 +31,4 @@ __all__ = [
     "schema_from_parts",
     "type_family",
 ]
-__version__ = "0.1.0"
+__version__ = "1.0.0"

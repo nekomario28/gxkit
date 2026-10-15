@@ -81,10 +81,18 @@ def test_check_dist_reports_a_missing_wheel(tmp_path):
     assert any("gxcore" in p and "no wheel" in p for p in problems)
 
 
+def _version(module, name):
+    """The version the project declares, so a bump does not rewrite this test."""
+    return next(
+        version for _directory, project, version, _deps in module.projects() if project == name
+    )
+
+
 def test_check_dist_reports_a_wrong_version(tmp_path):
     module = _release_module()
     _fake_dist(tmp_path, module)
-    (tmp_path / "chartgx-0.1.0-py3-none-any.whl").rename(
+    declared = _version(module, "chartgx")
+    (tmp_path / f"chartgx-{declared}-py3-none-any.whl").rename(
         tmp_path / "chartgx-9.9.9-py3-none-any.whl"
     )
     assert any("chartgx" in p and "9.9.9" in p for p in module.check_dist(tmp_path))
@@ -93,8 +101,9 @@ def test_check_dist_reports_a_wrong_version(tmp_path):
 def test_check_dist_reports_a_wheel_without_py_typed(tmp_path):
     module = _release_module()
     _fake_dist(tmp_path, module)
-    (tmp_path / "docgx-0.1.0-py3-none-any.whl").unlink()
-    _wheel(tmp_path, module, "docgx", "0.1.0", include_py_typed=False)
+    declared = _version(module, "docgx")
+    (tmp_path / f"docgx-{declared}-py3-none-any.whl").unlink()
+    _wheel(tmp_path, module, "docgx", declared, include_py_typed=False)
     assert any("docgx" in p and "py.typed" in p for p in module.check_dist(tmp_path))
 
 
