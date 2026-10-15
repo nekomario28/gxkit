@@ -118,6 +118,9 @@ jobs:
         with:
           name: dist
           path: dist/*
+          # Nothing downloads this, so without a retention it accumulates: 148
+          # artifacts, ~53 MB, before anyone noticed.
+          retention-days: 7
 
   action:
     runs-on: ubuntu-latest

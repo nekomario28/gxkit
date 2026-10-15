@@ -151,6 +151,11 @@ def test_no_tracked_file_carries_a_credential_or_a_machine_path():
     assert scan_head() == []
 
 
+def test_every_uploaded_artifact_expires():
+    """CI artifacts nobody downloads must not accumulate without bound."""
+    runpy.run_path(str(ROOT / "scripts/guard_contracts.py"))["check_artifacts"](ROOT)
+
+
 def test_the_family_accepts_its_own_module_graph():
     """The real graph, inspected by the tool that would report a break in it."""
     assert _self()["main"]() == 0
