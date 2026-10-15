@@ -173,13 +173,29 @@ left in its siblings?** The answer was yes, four times.
 - A cross-tool regression asserts the property for all six at once, and one
   mutant per tool plus the shared helper keeps it from coming back in any of them.
 
+A sixth sweep asked whether a reader can look up what they were told. **28
+problem codes were missing from the reference documents** that are supposed to
+list them:
+
+- `crongx/SKILL.md` and its `llms.txt` never named `non-finite-time`, a code added
+  in this release;
+- `flowgx` and `gxcore` documented none of the shared layout codes
+  (`clipped-text`, `text-overlap`, `small-text`) although flowgx emits them;
+- `levelgx/SKILL.md` described three codes in prose and left five uncatalogued;
+- `authzgx` and `chartgx` each omitted one.
+
+All are documented now, and `test_every_problem_code_is_documented_for_its_tool`
+requires every catalogued code to appear in that tool's `README.md`, `SKILL.md`
+and `llms.txt`. `AGENTS.md` is a narrative summary and is deliberately exempt.
+A mutant that renames a code out of the docs is killed.
+
 ### Verification
 
-- 1679 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1680 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 86 named defects, each killed by its intended
+- A bounded mutation catalogue of 87 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

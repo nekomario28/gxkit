@@ -727,6 +727,16 @@ def mutations(root: Path) -> list[Mutation]:
             cycles,
         )
     )
+    # A code the reference documents do not name is a finding nobody can look up.
+    cases.append(
+        Mutation(
+            "docs-code-omitted",
+            "packages/crongx/README.md",
+            "| `non-finite-time` | error |",
+            "| `time-not-finite` | error |",
+            KIT_TEST + "test_docs.py::test_every_problem_code_is_documented_for_its_tool",
+        )
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

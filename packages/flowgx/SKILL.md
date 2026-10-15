@@ -56,7 +56,10 @@ Or module-level `STATES` / `TRANSITIONS` / `START` / `ACCEPT`. Transitions are
 | `dead-end` | error | a reachable state has no way out and is not accepting |
 | `no-exit` | error | a reachable state can never reach "done" |
 | `ambiguous-transition` | error | two transitions from one state share an event |
-| `cycle` | info | a loop exists |
+| `cycle` | info | a loop exists; one finding per cyclic component |
+| `clipped-text` | error | a state label is cut off by the canvas |
+| `text-overlap` | error | two state labels overlap |
+| `small-text` | info | a label is below the readable floor |
 
 `no-exit` is the workflow form of a soft-lock: the state is reachable but "done"
 is not reachable from it. `gxcore.graph` computes it with reverse reachability.

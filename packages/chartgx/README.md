@@ -69,6 +69,7 @@ fig.tight_layout()
 | `inverted-axis` | warn | a value axis that grows the wrong way |
 | `small-text` | info | text below the readable floor |
 | `no-units` | info | a value axis with no unit |
+| `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | a line axis cut away from zero (fine for trends) |
 
 ## Why it can be trusted

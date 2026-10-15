@@ -50,6 +50,12 @@ report all of them, with a fingerprint that does not move when the witness does.
 A report must print on a console that cannot encode every character it names;
 escaping an unencodable character beats losing the verdict to an error.
 
+`gxcore.layout` is a check other tools reuse, and its codes belong to whoever
+emits them: `clipped-text` (error) when a box runs off the canvas, `text-overlap`
+(error) when two boxes collide, and `small-text` (info) when a label falls below
+the readable floor. A tool that lays text out inherits them, which is why they
+appear in more than one tool's code table.
+
 A baseline records occurrences, not a set of display locations. Checks that
 report relationships supply stable identities independent of numeric prose and
 layout order. Baseline format 2 rejects older records: recreate an accepted

@@ -39,6 +39,7 @@ document exits 2 with its line.
 
 error: `no-start`, `no-accept`, `unknown-state`, `unreachable-state`, `dead-end`,
 `no-exit`, `ambiguous-transition`.
-info: `cycle`.
+info: `cycle`, `small-text`.
+error (from the shared label layout): `clipped-text`, `text-overlap`.
 
 Full documentation is in `README.md`.
