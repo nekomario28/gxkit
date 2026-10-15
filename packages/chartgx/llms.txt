@@ -32,6 +32,9 @@ or whatever `matplotlib.pyplot` has open.
 
 1. Write the chart as a Python file.
 2. `chartgx inspect chart.py`; read the problems (each has a stable `code`).
+   A chart declared as data (a figspec model, JSON) is checked without matplotlib
+   and without running anything: `chartgx inspect chart.json`. It has no
+   storyboard, and unknown keys or unreadable members exit 2.
 3. Fix the `error` and `warn` problems; inspect again.
 4. Look at `<name>.storyboard.png` — each numbered box proves a problem.
 5. `chartgx render chart.py -o chart.png` for the final still.
@@ -39,7 +42,8 @@ or whatever `matplotlib.pyplot` has open.
 ## Checks
 
 error: `truncated-baseline`, `clipped-text`, `text-overlap`, `log-nonpositive`,
-`empty-chart`.
+`empty-chart`, `mismatched-lengths`, `non-finite-value`, `two-error-shapes`,
+`negative-error`.
 warn: `no-title`, `no-xlabel`, `no-ylabel`, `dual-axis`, `too-many-series`,
 `pie-slices`, `constant-series`, `clipped-data`, `legend-covers`,
 `inverted-axis`.

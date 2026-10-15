@@ -72,6 +72,32 @@ fig.tight_layout()
 | `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | a line axis cut away from zero (fine for trends) |
 
+### Declared charts
+
+A chart written as data — a figspec model, JSON — is checked without matplotlib
+and without running anything:
+
+```sh
+chartgx inspect revenue.json
+```
+
+The codes are the same where the concept is the same, so a finding does not have
+two names depending on which route produced it. Four can only come from a
+declaration, because a figure cannot express them:
+
+| code | severity | what it means |
+| --- | --- | --- |
+| `mismatched-lengths` | error | an error array or a bar group disagrees in number with what it annotates |
+| `non-finite-value` | error | a declared number is NaN or infinite and cannot be placed |
+| `two-error-shapes` | error | a mark declares symmetric and asymmetric error bars at once |
+| `negative-error` | error | an error magnitude is negative, which is not a distance |
+
+A declaration has no storyboard: box numbers are drawn over a figure's artists,
+which a declaration does not have. The report is printed and the image is skipped
+with that reason. An unknown key, a mark kind the model does not have, and a
+member that cannot be read are input failures (exit 2) naming where they are
+wrong.
+
 ## Why it can be trusted
 
 Every check is proven to fire on a chart with the defect and to stay quiet on

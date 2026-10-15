@@ -219,13 +219,30 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   remote-tracking ref were removed; the primary checkout was fast-forwarded from
   the `v0.9.1` commit it had been left on.
 
+### Added
+
+- **`chartgx` inspects a chart declared as data**, so a figure can be checked
+  without matplotlib and without running anything: `chartgx inspect chart.json`
+  reads a figspec model and reports the problems directly. It is the route for a
+  chart a model generated, and for reviewing a file you would rather not execute.
+  The codes are the same wherever the concept is the same (`truncated-baseline`,
+  `empty-chart`, `log-nonpositive`, `no-title`, `no-xlabel`/`no-ylabel`), because
+  a finding must not have two names depending on which route produced it; four are
+  new because a figure cannot express them (`mismatched-lengths`,
+  `non-finite-value`, `two-error-shapes`, `negative-error`).
+  A declaration has no storyboard — box numbers are drawn over a figure's
+  artists — so the report is printed and the image is skipped with that reason.
+- The umbrella lists **every** tool that reads a suffix: `.json` is an OpenAPI
+  document to `apigx` and a chart declaration to `chartgx`, so the message names
+  both and asks which one is meant, instead of assuming.
+
 ### Verification
 
-- 1729 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1769 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 90 named defects, each killed by its intended
+- A bounded mutation catalogue of 94 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

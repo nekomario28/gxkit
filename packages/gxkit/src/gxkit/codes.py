@@ -12,6 +12,9 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "text-overlap": "error",
         "small-text": "info",
     },
+    # chartgx inspects two artifacts: a matplotlib figure (executed) and a chart
+    # declared as data (not executed, no matplotlib). The `declared-` prefix marks
+    # the codes that only the second route can report.
     "chartgx": {
         "truncated-baseline": "error",
         "empty-chart": "error",
@@ -32,6 +35,11 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "no-units": "info",
         "cut-value-axis": "info",
         "red-green": "info",
+        # Reported by the declared-model route, which a figure cannot express.
+        "mismatched-lengths": "error",
+        "non-finite-value": "error",
+        "two-error-shapes": "error",
+        "negative-error": "error",
     },
     "levelgx": {
         "no-spawn": "error",

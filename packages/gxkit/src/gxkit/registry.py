@@ -30,6 +30,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         ("fig", "figure"),
         ("Figure",),
         ("PLOT", "matplotlib"),
+        reads=(".py", ".json"),
     ),
     ToolSpec(
         "levelgx",

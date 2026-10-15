@@ -17,13 +17,31 @@ from PIL import Image
 
 from .checks import inspect_figure
 from .loader import load_figure
+from .model import inspect_model, load_model
 
 
 @dataclass
 class Chart:
+    """A matplotlib figure, loaded by running the script that builds it."""
+
     fig: Any
     path: Path
     name: str
+
+
+@dataclass
+class Declared:
+    """A chart declared as data: checked without matplotlib and without running it."""
+
+    model: dict[str, Any]
+    path: Path
+    name: str
+
+
+Artifact = Chart | Declared
+
+#: A declaration is JSON; a figure is Python.
+DECLARATION_SUFFIXES = (".json",)
 
 
 def _figure_name(fig: Any, fallback: str) -> str:
@@ -35,26 +53,49 @@ def _figure_name(fig: Any, fallback: str) -> str:
     return fallback
 
 
-def load(path: Path) -> Chart:
+def load(path: Path) -> Artifact:
+    path = Path(path)
+    if path.suffix.lower() in DECLARATION_SUFFIXES:
+        model = load_model(path)
+        title = model.get("title")
+        name = str(title) if isinstance(title, str) and title.strip() else path.stem
+        return Declared(model=model, path=path, name=name)
     fig, _ = load_figure(path)
-    return Chart(fig=fig, path=Path(path), name=_figure_name(fig, Path(path).stem))
+    return Chart(fig=fig, path=path, name=_figure_name(fig, path.stem))
 
 
-def inspect(chart: Chart) -> Report:
-    return inspect_figure(chart.fig, name=chart.name)
+def inspect(artifact: Artifact) -> Report:
+    if isinstance(artifact, Declared):
+        return inspect_model(artifact.model, name=artifact.name)
+    return inspect_figure(artifact.fig, name=artifact.name)
 
 
-def render(chart: Chart, out: Path | None, dpi: float | None) -> Path:
-    out = Path(out) if out else Path(f"{chart.path.stem}.png")
+def render(artifact: Artifact, out: Path | None, dpi: float | None) -> Path:
+    if isinstance(artifact, Declared):
+        raise ValueError(
+            "a declared model has no renderer here: chartgx draws matplotlib figures, "
+            "and a figspec model is rendered by figspec. Inspect it instead"
+        )
+    out = Path(out) if out else Path(f"{artifact.path.stem}.png")
     out.parent.mkdir(parents=True, exist_ok=True)
-    chart.fig.savefig(out, dpi=dpi, facecolor=chart.fig.get_facecolor())
+    artifact.fig.savefig(out, dpi=dpi, facecolor=artifact.fig.get_facecolor())
     return out
 
 
-def to_image(chart: Chart) -> Image.Image:
+def to_image(artifact: Artifact) -> Image.Image:
     from PIL import Image
 
-    fig = chart.fig
+    if isinstance(artifact, Declared):
+        # The storyboard boxes a matplotlib figure's artists. A declaration has no
+        # artists, so there is nothing to box — and printing a chart without boxes
+        # while the report numbers findings would claim the two agree when they do
+        # not. The report is still printed; only the image is skipped, with this
+        # reason.
+        raise ValueError(
+            "a declared model has no storyboard: box numbers are drawn over a "
+            "matplotlib figure's artists, which a declaration does not have"
+        )
+    fig = artifact.fig
     fig.canvas.draw()
     w, h = fig.canvas.get_width_height()
     return Image.frombytes("RGBA", (w, h), bytes(fig.canvas.buffer_rgba()))

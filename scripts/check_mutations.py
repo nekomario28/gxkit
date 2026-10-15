@@ -549,7 +549,7 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "gxkit-foreign-suffix-not-named",
                 "packages/gxkit/src/gxkit/cli.py",
-                "        if readers:",
+                "        if len(readers) == 1:",
                 "        if False:",
                 KIT_TEST + "test_cli_units.py::test_a_foreign_document_is_told_which_tool_reads_it",
             ),
@@ -773,6 +773,40 @@ def mutations(root: Path) -> list[Mutation]:
             "",
             KIT_TEST + "test_repo.py::test_every_uploaded_artifact_expires",
         )
+    )
+    # The declared-chart route must refuse what it cannot read, and must report
+    # the defect it finds under the tool's existing code.
+    cases.extend(
+        [
+            Mutation(
+                "declared-model-unknown-key-ignored",
+                "packages/chartgx/src/chartgx/model.py",
+                '    if unknown:\n        raise InvalidModel(f"{path}: unrecognised key(s) {unknown}")',
+                "    if False:\n        pass",
+                "packages/chartgx/tests/test_model_route.py::test_a_declaration_that_cannot_be_read_is_refused_where_it_is_wrong",
+            ),
+            Mutation(
+                "declared-model-truncated-baseline-missed",
+                "packages/chartgx/src/chartgx/model.py",
+                "        if minimum is not None and minimum > 0:",
+                "        if False:",
+                "packages/chartgx/tests/test_model_route.py::test_a_truncated_baseline_is_the_same_code_the_figure_route_uses",
+            ),
+            Mutation(
+                "declared-model-lengths-unchecked",
+                "packages/chartgx/src/chartgx/model.py",
+                '                expected = len(points) if shape == "symmetric" else len(points) * 2',
+                "                expected = len(magnitudes)",
+                "packages/chartgx/tests/test_model_route.py::test_error_magnitudes_must_match_the_points",
+            ),
+            Mutation(
+                "declared-model-storyboard-faked",
+                "packages/chartgx/src/chartgx/tool.py",
+                '        raise ValueError(\n            "a declared model has no storyboard: box numbers are drawn over a "\n            "matplotlib figure\'s artists, which a declaration does not have"\n        )',
+                "        return Image.new('RGB', (1, 1))",
+                "packages/chartgx/tests/test_model_route.py::test_the_tool_dispatches_a_declaration_without_touching_matplotlib",
+            ),
+        ]
     )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
