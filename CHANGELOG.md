@@ -20,6 +20,11 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   and column types are compared by family, so a PostgreSQL `SERIAL` key with an
   `INTEGER` reference is no longer a false mismatch — which also removes that
   false positive from declarations.
+- `flowgx` reads a Mermaid state diagram (`flowgx inspect checkout.mmd`, or
+  `flowgx inspect README.md` for the one `stateDiagram` block a document holds):
+  `[*] --> s` is the start, `s --> [*]` is accepting, `a --> b : event` is a
+  transition, and the same codes apply. Two initial states, a composite state and
+  a document with more than one diagram are refused with their line.
 - The umbrella says to name the tool for a document that is not a Python
   artifact, instead of reporting a syntax error in a file that has none.
 - `docs/CONTRACT.md`: what an integrator may rely on — codes, severities, exit
@@ -35,10 +40,11 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   and the release notes document the index proof.
 
 ### Verification
-- The bounded mutation catalogue grows to 48, covering the importer's
+- The bounded mutation catalogue grows to 52, covering the importer's
   authentication, version and malformed-input branches, the `.json` and `.sql`
-  routing, the DDL composite-key and unclosed-table refusals, the type families
-  and the foreign-document message.
+  routing, the DDL composite-key and unclosed-table refusals, the type families,
+  the Mermaid start/terminal markers and composite refusal, and the
+  foreign-document message.
 
 ## Unreleased — reaudit hardening
 

@@ -35,6 +35,19 @@ Or module-level `STATES` / `TRANSITIONS` / `START` / `ACCEPT` lists. Transitions
 are `(source, target)` or `(source, target, event)`. With no `accept`, states
 that have no outgoing transition are treated as accepting.
 
+Or point it at the Mermaid diagram a document already draws:
+
+```sh
+flowgx inspect checkout.mmd        # a diagram file
+flowgx inspect README.md           # the single stateDiagram block it holds
+```
+
+`[*] --> s` is the start, `s --> [*]` is accepting, and `a --> b : event` is a
+transition, so the same codes apply — a state nothing can reach is the same
+defect whether it was drawn or declared. Where Mermaid can express more than the
+machine can hold, the importer refuses with its line instead of guessing: two
+initial states, a composite state, and a document holding more than one diagram.
+
 ## The contract
 
 ```

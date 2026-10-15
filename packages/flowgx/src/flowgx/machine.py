@@ -106,6 +106,13 @@ def load_machine(path: str | Path) -> tuple[Machine, object]:
     from gxcore.loading import load_module, resolve
 
     path = Path(path)
+    # A Mermaid diagram is a state machine plenty of projects already draw; a
+    # diagram or Markdown path is read as one rather than executed as Python.
+    if path.suffix.lower() in {".mmd", ".mermaid", ".md", ".markdown"}:
+        from .mermaid import machine_from_file
+
+        return machine_from_file(path), path
+
     module = load_module(path)
     machine = resolve(
         module,

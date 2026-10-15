@@ -35,11 +35,13 @@ uvx chartgx inspect my_chart.py          # a plain matplotlib script
 uvx apigx  inspect openapi.json          # the spec your service publishes
 uvx framegx inspect clip.py              # the video your renderer wrote
 uvx schemagx inspect schema.sql          # the DDL your database runs
+uvx flowgx  inspect README.md           # the state diagram it draws
 ```
 
 `chartgx` runs the script and reads the figure it builds; `apigx` converts the
 OpenAPI 3 document and applies the same codes as a declaration; `framegx`
-probes the encoded file; `schemagx` converts the DDL. Nothing here needs a gxkit-specific declaration.
+probes the encoded file; `schemagx` converts the DDL; `flowgx` reads the
+state diagram. Nothing here needs a gxkit-specific declaration.
 
 Want all sixteen? Install the family instead — the contract is identical:
 

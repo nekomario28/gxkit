@@ -54,3 +54,11 @@ machine = f.Machine(
 
 The one that matters most is `no-exit`: a state you can reach but from which
 "done" is impossible. That is the workflow form of a soft-lock.
+
+`flowgx inspect checkout.mmd` reads a Mermaid state diagram instead of a
+declaration — `[*] --> s` is the start, `s --> [*]` is accepting, `a --> b :
+event` is a transition — and `flowgx inspect README.md` reads the one diagram a
+document holds. The same codes apply, so a state drawn with an incoming edge
+missing is `unreachable-state` exactly as it would be in a declaration. A
+composite state, two initial states, or several diagrams in one document exits 2
+with its line rather than a guess.
