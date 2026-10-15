@@ -219,6 +219,15 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   remote-tracking ref were removed; the primary checkout was fast-forwarded from
   the `v0.9.1` commit it had been left on.
 
+### Fixed
+
+- `netgx` reported only the **first** public entry that reaches a sensitive node,
+  so a second exposure route was invisible, and the finding was identified by the
+  sensitive node alone. Measured: with `a` and `b` both reaching `db`, one finding;
+  and changing the entry from `a` to `b` gave `new_errors: 0` under a baseline, so
+  the gate passed on a changed exposure route. Every route is reported now, each
+  identified by `(entry, sensitive)`.
+
 ### Added
 
 - **`chartgx` inspects a chart declared as data**, so a figure can be checked
@@ -242,7 +251,7 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 94 named defects, each killed by its intended
+- A bounded mutation catalogue of 96 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

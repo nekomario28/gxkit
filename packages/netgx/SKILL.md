@@ -38,7 +38,7 @@ A node kind is `public`, `edge`, `service` or `data`. Or module-level `NODES` /
 | code | severity | what it means |
 | --- | --- | --- |
 | `dangling-edge` | error | an edge names an unknown node |
-| `public-reaches-sensitive` | error | a public node can reach a sensitive one (path given) |
+| `public-reaches-sensitive` | error | a public node can reach a sensitive one (path given); one finding per entry route |
 | `self-loop` | warn | a node allows traffic to itself |
 | `duplicate-edge` | info | the same edge is listed twice |
 | `isolated-node` | info | a node with no traffic in or out |

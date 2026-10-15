@@ -76,6 +76,10 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
             )
         )
 
+    # Every public entry that reaches a sensitive node is its own exposure route:
+    # stopping at the first one hid the second, and the finding was identified by
+    # the sensitive node alone, so a baseline read a *changed* route as unchanged
+    # debt. Both were measured before this was fixed.
     for sensitive in net.sensitive_nodes():
         for entry in publics:
             path = shortest_path(graph, entry, sensitive)
@@ -87,9 +91,9 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
                         f"public {entry!r} can reach sensitive {sensitive!r}: " + " → ".join(path),
                         target=sensitive,
                         label=sensitive,
+                        identity=(entry, sensitive),
                     )
                 )
-                break
 
     incoming = reverse(graph)
     for node in net.names():
