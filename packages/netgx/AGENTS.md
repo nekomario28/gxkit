@@ -32,7 +32,8 @@ uv tool install ./packages/netgx    # puts `netgx` on PATH
 - `error` — `dangling-edge` (an edge to an unknown node),
   `public-reaches-sensitive` (a public node can reach sensitive data).
 - `warn` — `self-loop`.
-- `info` — `duplicate-edge`, `isolated-node`, `no-public`.
+- `info` — `duplicate-edge`, `isolated-node`, `no-public`, `no-nodes` (the
+  network declares nothing at all).
 
 Common fixes: `dangling-edge` → fix the node name or declare it;
 `public-reaches-sensitive` → remove the path or put a policy between;

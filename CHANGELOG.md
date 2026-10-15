@@ -127,6 +127,19 @@ tools apply to artifacts was not applied to gxcore's inputs:
 - The test that pinned the old behaviour (`test_invalid_severity_is_ignored`) is
   replaced by one that requires the refusal.
 
+A third sweep, over the tools' checks and the renderer:
+
+- `netgx` reported **nothing at all** for a network that declares no nodes, so
+  `inspect: no problems` stood for an empty artifact. It emits `no-nodes`
+  (info) as every other tool does for an empty declaration.
+- The storyboard's promise — "each located problem boxed and numbered, so the
+  text report and the picture agree" — was guarded only by "the image is not
+  blank". The box geometry is now a pure function (`gxcore.storyboard.labelled_boxes`)
+  and a test asserts, for every tool and every example, that each located problem
+  is numbered exactly once and that the number lands on a box drawn from that
+  problem's own location. Two mutants (off-by-one numbering, boxing an unlocated
+  problem) are killed.
+
 ### Verification
 
 - 1624 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and

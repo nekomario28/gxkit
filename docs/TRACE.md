@@ -22,7 +22,7 @@ checks (that every check can fail, that the docs agree) live in
 | `protogx` | protocols | `.py` | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py` |
 | `flowgx` | state machines | `.py`, `.mmd`, `.mermaid`, `.md`, `.markdown` | `flowgx.tool` | 11 | `broken_machine.py`, `good_machine.py` |
 | `apigx` | HTTP API contracts | `.py`, `.json` | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |
-| `netgx` | network topologies | `.py` | `netgx.tool` | 6 | `broken_network.py`, `good_network.py` |
+| `netgx` | network topologies | `.py` | `netgx.tool` | 7 | `broken_network.py`, `good_network.py` |
 | `envgx` | environment / config | `.py` | `envgx.tool` | 8 | `broken_env.py`, `good_env.py` |
 | `pipegx` | build pipelines | `.py` | `pipegx.tool` | 7 | `broken_pipeline.py`, `good_pipeline.py` |
 | `seedgx` | random-seed manifests | `.py` | `seedgx.tool` | 7 | `broken_seed.py`, `good_seed.py` |

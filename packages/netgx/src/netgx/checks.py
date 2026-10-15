@@ -62,6 +62,12 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
             )
         seen.add((src, dst))
 
+    if not net.nodes:
+        # Every other tool reports an empty declaration as information. Saying
+        # nothing would let "no problems" stand for an artifact that declares no
+        # topology at all.
+        out.append(Problem(INFO, "no-nodes", "the network declares no nodes"))
+
     publics = net.public()
     if net.nodes and not publics:
         out.append(
