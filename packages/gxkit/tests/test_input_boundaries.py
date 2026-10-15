@@ -88,6 +88,107 @@ def test_empty_network_still_checks_edge_endpoints():
 
 
 @pytest.mark.parametrize(
+    ("tool", "report_factory", "code"),
+    [
+        (
+            "depsgx",
+            lambda: __import__("depsgx").inspect_graph(
+                __import__("depsgx").ModuleGraph(
+                    modules=["a", "b", "c", "d"],
+                    depends=[("a", "b"), ("b", "a"), ("c", "d"), ("d", "c")],
+                )
+            ),
+            "cycle",
+        ),
+        (
+            "authzgx",
+            lambda: __import__("authzgx").inspect_auth(
+                __import__("authzgx").AuthModel(
+                    roles=["r1", "r2", "r3", "r4"],
+                    inherits=[("r1", "r2"), ("r2", "r1"), ("r3", "r4"), ("r4", "r3")],
+                )
+            ),
+            "cyclic-inheritance",
+        ),
+        (
+            "pipegx",
+            lambda: __import__("pipegx").inspect_pipeline(
+                __import__("pipegx").Pipeline(
+                    steps=[
+                        __import__("pipegx").Step("a", needs=["b"]),
+                        __import__("pipegx").Step("b", needs=["a"]),
+                        __import__("pipegx").Step("c", needs=["d"]),
+                        __import__("pipegx").Step("d", needs=["c"]),
+                    ]
+                )
+            ),
+            "cycle",
+        ),
+        (
+            "flowgx",
+            lambda: __import__("flowgx").inspect_machine(
+                __import__("flowgx").Machine(
+                    states=["a", "b", "c", "d"],
+                    transitions=[("a", "b"), ("b", "a"), ("c", "d"), ("d", "c")],
+                    start="a",
+                    accept=["a"],
+                )
+            ),
+            "cycle",
+        ),
+        (
+            "protogx",
+            lambda: __import__("protogx").inspect_protocol(
+                __import__("protogx").Protocol(
+                    states=["a", "b", "c", "d"],
+                    transitions=[
+                        ("a", "b", "m"),
+                        ("b", "a", "m"),
+                        ("c", "d", "m"),
+                        ("d", "c", "m"),
+                    ],
+                )
+            ),
+            "cycle",
+        ),
+        (
+            "schemagx",
+            lambda: __import__("schemagx").inspect_schema(
+                __import__("schemagx").Schema(
+                    tables={
+                        "a": {"id": "int"},
+                        "b": {"id": "int", "a_id": "int"},
+                        "c": {"id": "int"},
+                        "d": {"id": "int", "c_id": "int"},
+                    },
+                    primary_keys={"a": "id", "b": "id", "c": "id", "d": "id"},
+                    foreign_keys=[
+                        ("b.a_id", "a.id"),
+                        ("a.id", "b.id"),
+                        ("d.c_id", "c.id"),
+                        ("c.id", "d.id"),
+                    ],
+                )
+            ),
+            "cyclic-foreign-key",
+        ),
+    ],
+)
+def test_every_independent_cycle_is_a_finding_not_only_the_first(tool, report_factory, code):
+    """A single global cycle search hides the second component.
+
+    Measured before this was fixed: depsgx, authzgx, pipegx and schemagx each
+    reported one cycle for a graph with two, so a gate passed with the other one
+    present. Each finding is identified by its component, so a witness that
+    rotates is the same finding.
+    """
+    found = [p for p in report_factory().problems if p.code == code]
+    assert len(found) == 2, f"{tool}: {[(p.target, p.identity) for p in found]}"
+    components = [p.identity for p in found]
+    assert len(set(components)) == 2 and all(components), components
+
+
+@pytest.mark.parametrize(
     ("base", "path", "warn"),
     [
         ("/v1", "/v10/users", True),

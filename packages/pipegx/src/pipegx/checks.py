@@ -8,7 +8,7 @@ produced, and no two steps claim the same artifact.
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import find_cycle, topological_sort
+from gxcore.graph import cycle_witnesses, topological_sort
 
 from .model import Pipeline
 from .render import compute_layout, node_box
@@ -75,14 +75,14 @@ def inspect_pipeline(pipeline: Pipeline, name: str | None = None) -> Report:
                 )
             )
 
-    cycle = find_cycle(edges)
-    if cycle:
+    for witness, component in cycle_witnesses(edges):
         out.append(
             Problem(
                 ERROR,
                 "cycle",
-                f"the needs graph has a cycle: {' → '.join(cycle)}",
-                target=cycle[0],
+                f"the needs graph has a cycle: {' → '.join(witness)}",
+                target=witness[0],
+                identity=tuple(component),
             )
         )
     else:

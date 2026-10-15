@@ -23,8 +23,6 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.graph import find_cycle
-
 CONSTRAINT_WORDS = (
     "PRIMARY",
     "NOT",
@@ -122,19 +120,6 @@ class Schema:
             e.setdefault(ct, []).append(pt)
             e.setdefault(pt, [])
         return e
-
-    def cycle(self) -> list[str] | None:
-        # A table that references itself (manager_id -> users.id) is a tree, not
-        # a cycle; only edges between distinct tables can form one.
-        edges: dict[str, list[str]] = {t: [] for t in self.tables}
-        for child, parent in self.foreign_keys:
-            ct, _ = self.split(child)
-            pt, _ = self.split(parent)
-            if ct == pt:
-                continue
-            edges.setdefault(ct, []).append(pt)
-            edges.setdefault(pt, [])
-        return find_cycle(edges)
 
     def referenced_tables(self) -> set[str]:
         return {self.split(child)[0] for child, _ in self.foreign_keys} | {

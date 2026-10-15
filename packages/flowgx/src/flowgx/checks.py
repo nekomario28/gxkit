@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import can_reach, find_cycle, reachable
+from gxcore.graph import can_reach, cycle_witnesses, reachable
 from gxcore.layout import TextBox
 from gxcore.layout import check as check_layout
 
@@ -112,11 +112,18 @@ def inspect_machine(machine: Machine, name: str | None = None) -> Report:
                 )
             )
 
-    cycle: list[str] | None = find_cycle(edges)
-    if cycle:
-        path = " → ".join(cycle)
+    for witness, component in cycle_witnesses(edges):
+        path = " → ".join(witness)
         report.details.append(f"cycle: {path}")
-        out.append(Problem(INFO, "cycle", f"a cycle returns through {path}", target=cycle[0]))
+        out.append(
+            Problem(
+                INFO,
+                "cycle",
+                f"a cycle returns through {path}",
+                target=witness[0],
+                identity=tuple(component),
+            )
+        )
 
     # Reuse the shared text-layout checks on the node labels.
     positions, r = compute_layout(machine)

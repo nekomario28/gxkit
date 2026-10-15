@@ -9,7 +9,7 @@ plain reachability plus `gxcore.graph.shortest_path`.
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import find_cycle, reachable
+from gxcore.graph import cycle_witnesses, reachable
 
 from .authmodel import AuthModel
 from .render import compute_layout, node_box
@@ -66,14 +66,15 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
                 )
 
     # role inheritance must be acyclic
-    cycle: list[str] | None = find_cycle(model.role_edges())
-    if cycle:
+    cycles = cycle_witnesses(model.role_edges())
+    for witness, component in cycles:
         out.append(
             Problem(
                 ERROR,
                 "cyclic-inheritance",
-                f"role inheritance is cyclic: {_arrow(model, cycle)}",
-                target=cycle[0],
+                f"role inheritance is cyclic: {_arrow(model, witness)}",
+                target=witness[0],
+                identity=tuple(component),
             )
         )
 

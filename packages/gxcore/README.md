@@ -43,6 +43,10 @@ with a field/index. A conversion error must not trigger another shape's fallback
 Name collections use `convert_names`, which rejects a non-name member rather
 than coercing it into a name that matches nothing.
 
+`graph.cycle_witnesses` is the one owner of "a cycle finding per cyclic
+component, identified by that component" — six tools report cycles and each must
+report all of them, with a fingerprint that does not move when the witness does.
+
 A report must print on a console that cannot encode every character it names;
 escaping an unencodable character beats losing the verdict to an error.
 

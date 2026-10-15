@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections import Counter
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
-from gxcore.graph import can_reach, find_cycle, reachable
+from gxcore.graph import can_reach, cycle_witnesses, reachable
 
 from .model import Protocol
 from .render import compute_layout, node_box
@@ -142,11 +142,16 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                     )
                 )
 
-    cycle: list[str] | None = find_cycle(edges)
-    if cycle:
-        report.details.append("cycle: " + " → ".join(cycle))
+    for witness, component in cycle_witnesses(edges):
+        report.details.append("cycle: " + " → ".join(witness))
         out.append(
-            Problem(INFO, "cycle", f"a cycle returns through {' → '.join(cycle)}", target=cycle[0])
+            Problem(
+                INFO,
+                "cycle",
+                f"a cycle returns through {' → '.join(witness)}",
+                target=witness[0],
+                identity=tuple(component),
+            )
         )
 
     positions, r = compute_layout(proto)
