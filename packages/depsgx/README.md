@@ -64,6 +64,7 @@ inspect: 6 problems (5 errors)
 | `forbidden-dependency` | error | an explicitly banned dependency exists |
 | `self-dependency` | error | a module depends on itself |
 | `dangling-dependency` | error | a dependency names an undeclared module |
+| `dangling-reference` | error | `forbidden`, `layers` or `roots` names an undeclared module — a rule that names nothing cannot be applied |
 | `unreachable-module` | info | not reachable from any root — dead code |
 | `orphan-module` | info | nothing depends on it and it is not a root |
 | `duplicate-dependency` | info | the same edge is listed more than once |

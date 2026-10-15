@@ -13,16 +13,16 @@ checks (that every check can fail, that the docs agree) live in
 | --- | --- | --- | --- | --- | --- |
 | `chartgx` | matplotlib charts | `.py`, `.json` | `chartgx.tool` | 25 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
 | `levelgx` | game levels | `.py` | `levelgx.tool` | 8 | `broken_level.py`, `good_level.py`, `softlock_level.py` |
-| `authzgx` | permission models | `.py` | `authzgx.tool` | 12 | `escalate_auth.py`, `good_auth.py` |
-| `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 9 | `broken_modules.py`, `good_modules.py` |
-| `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 7 | `broken_schema.py`, `good_schema.py` |
+| `authzgx` | permission models | `.py` | `authzgx.tool` | 13 | `escalate_auth.py`, `good_auth.py` |
+| `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 10 | `broken_modules.py`, `good_modules.py` |
+| `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 8 | `broken_schema.py`, `good_schema.py` |
 | `docgx` | pages / slides | `.py` | `docgx.tool` | 7 | `crowded_page.py`, `good_page.py` |
 | `shadergx` | fragment shaders | `.py` | `shadergx.tool` | 7 | `broken_shader.py`, `good_shader.py`, `invalid_shader.py` |
 | `framegx` | rendered animations | `.py` | `framegx.tool` | 12 | `frozen_clip.py`, `good_clip.py` |
 | `protogx` | protocols | `.py` | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py` |
 | `flowgx` | state machines | `.py`, `.mmd`, `.mermaid`, `.md`, `.markdown` | `flowgx.tool` | 11 | `broken_machine.py`, `good_machine.py` |
 | `apigx` | HTTP API contracts | `.py`, `.json` | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |
-| `netgx` | network topologies | `.py` | `netgx.tool` | 7 | `broken_network.py`, `good_network.py` |
+| `netgx` | network topologies | `.py` | `netgx.tool` | 8 | `broken_network.py`, `good_network.py` |
 | `envgx` | environment / config | `.py` | `envgx.tool` | 8 | `broken_env.py`, `good_env.py` |
 | `pipegx` | build pipelines | `.py` | `pipegx.tool` | 7 | `broken_pipeline.py`, `good_pipeline.py` |
 | `seedgx` | random-seed manifests | `.py` | `seedgx.tool` | 7 | `broken_seed.py`, `good_seed.py` |

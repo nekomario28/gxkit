@@ -119,3 +119,10 @@ def test_examples_load_and_are_diagnosed():
     assert_fires(r, "cyclic-foreign-key", WARN)
     assert_fires(r, "missing-primary-key", INFO)
     assert_fires(r, "orphan-table", INFO)
+
+
+def test_a_root_that_is_not_a_table_is_reported():
+    schema = Schema(tables={"t": {"id": "int"}}, primary_keys={"t": "id"}, roots=["ghost"])
+    report = inspect_schema(schema)
+    assert_fires(report, "dangling-reference", ERROR)
+    assert "not a declared table" in report.problems[0].message

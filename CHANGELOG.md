@@ -221,6 +221,23 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
 
 ### Fixed
 
+- **A declared name that resolves to nothing is now reported, instead of being
+  skipped.** Six tools take lists of names they consume, and a typo in one of them
+  silently narrowed the analysis:
+  - `authzgx` skipped a `low` principal that is not a declared principal, so a
+    typo'd `low` or `sensitive` made "no escalation" an answer about a different
+    question (`dangling-reference`);
+  - `netgx` skipped a `sensitive` name that is not a node — and, when *none* of
+    them is a node, its `sensitive_nodes()` falls back to every `data` node, so the
+    exposure answer silently became about a different set (`dangling-reference`);
+  - `depsgx` ignored a `forbidden` pair, a layer member or a `roots` entry that
+    names no module, so the rule stopped being a rule (`dangling-reference`);
+  - `schemagx` ignored a `roots` entry that names no table (`dangling-reference`);
+  - `protogx` reported a deadlock for a `terminal` state that does not exist, and
+    said nothing about a `requests` key that names no message (`unknown-state`,
+    `unknown-message`);
+  - `flowgx` reported a dead end for an `accept` state that does not exist, without
+    naming it (`unknown-state`).
 - **`chartgx` now reads the model the way the renderer that owns it does.** Its
   declared-chart route reported no errors for three declarations that cannot be
   drawn — a scatter with no points, a one-point line, a grouped bar with no series

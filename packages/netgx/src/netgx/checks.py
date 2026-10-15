@@ -25,6 +25,21 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
     )
     out: list[Problem] = []
 
+    # A declared name this tool consumes must resolve. `sensitive` is the list the
+    # exposure question is made of, and its fallback makes silence worse than
+    # absence: when *none* of the names is a node, `sensitive_nodes()` uses every
+    # `data` node instead, so the answer is about a different set without saying so.
+    for node in net.sensitive:
+        if node not in declared:
+            out.append(
+                Problem(
+                    ERROR,
+                    "dangling-reference",
+                    f"`sensitive` names {node!r}, which is not a declared node",
+                    identity=("dangling-reference", "sensitive", node),
+                )
+            )
+
     seen: set[tuple[str, str]] = set()
     for src, dst in net.edges:
         for node in (src, dst):

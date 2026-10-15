@@ -37,6 +37,19 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
         )
     out: list[Problem] = []
 
+    # A declared name this tool consumes must resolve: a typo'd root would change
+    # what the schema's roots are without saying so.
+    for table in schema.roots:
+        if table not in declared:
+            out.append(
+                Problem(
+                    ERROR,
+                    "dangling-reference",
+                    f"`roots` names {table!r}, which is not a declared table",
+                    identity=("dangling-reference", "roots", table),
+                )
+            )
+
     for child, parent in schema.foreign_keys:
         ct, cc = schema.split(child)
         pt, pc = schema.split(parent)

@@ -100,3 +100,34 @@ def test_examples_load_and_are_diagnosed():
     assert_fires(r, "dangling-grant", ERROR)
     assert_fires(r, "unreachable-role", INFO)
     assert_fires(r, "orphan-permission", INFO)
+
+
+def test_a_declared_list_that_names_nothing_is_reported():
+    """`low` and `sensitive` are what the escalation check is made of.
+
+    Measured before: a typo'd `low` was skipped (`if principal not in
+    declared_principals: continue`) and `inspect` said nothing at all, so the
+    answer "no escalation" was about a question nobody asked.
+    """
+    base = dict(
+        principals=["u"],
+        roles=["r1"],
+        permissions=["secret"],
+        grants=[("r1", "secret")],
+        assigned=[("u", "r1")],
+        sensitive=["secret"],
+        low=["u"],
+    )
+    report = inspect_auth(AuthModel(**base))
+    assert_fires(report, "escalation", ERROR)
+
+    for field, value in (("low", ["ghost"]), ("sensitive", ["ghost"])):
+        report = inspect_auth(AuthModel(**(base | {field: value})))
+        assert_fires(report, "dangling-reference", ERROR), field
+        assert [p.code for p in report.problems if p.severity == ERROR] == ["dangling-reference"]
+        assert field in report.problems[0].message
+
+    # A role is not a principal, and saying so is the finding.
+    report = inspect_auth(AuthModel(**(base | {"low": ["r1"]})))
+    assert_fires(report, "dangling-reference", ERROR)
+    assert "not a declared principal" in report.problems[0].message

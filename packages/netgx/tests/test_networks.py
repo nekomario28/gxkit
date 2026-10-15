@@ -203,3 +203,24 @@ def test_a_replaced_exposure_route_is_new_debt(tmp_path):
 
     diff = json.loads(result.stdout)["baseline"]
     assert diff["new_errors"] == 1, diff
+
+
+def test_a_sensitive_name_that_is_not_a_node_is_reported():
+    """`sensitive` is the list the exposure question is made of.
+
+    Worse than silence: when *none* of the names is a node, `sensitive_nodes()`
+    falls back to every `data` node, so the analysis silently answers about a
+    different set.
+    """
+    net = Network(nodes={"a": "public", "b": "data"}, edges=[("a", "b")], sensitive=["b"])
+    assert_fires(inspect_network(net), "public-reaches-sensitive", ERROR)
+
+    net = Network(nodes={"a": "public", "b": "data"}, edges=[("a", "b")], sensitive=["ghost"])
+    report = inspect_network(net)
+    assert_fires(report, "dangling-reference", ERROR)
+    assert "not a declared node" in report.problems[0].message
+
+    # A half-right list is reported too: the name that resolves still works.
+    net = Network(nodes={"a": "public", "b": "data"}, edges=[("a", "b")], sensitive=["b", "ghost"])
+    codes = [p.code for p in inspect_network(net).problems]
+    assert "dangling-reference" in codes and "public-reaches-sensitive" in codes

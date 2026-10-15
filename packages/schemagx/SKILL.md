@@ -52,6 +52,7 @@ key or an orphan table.
 | code | severity | meaning |
 | --- | --- | --- |
 | `dangling-foreign-key` | error | a foreign key names an unknown table or column |
+| `dangling-reference` | error | `roots` names an unknown table |
 | `fk-type-mismatch` | warn | the two columns have different types |
 | `fk-to-non-primary-key` | warn | a foreign key points at a non-primary-key column |
 | `cyclic-foreign-key` | warn | a foreign-key cycle — inserts need deferred constraints; one finding per cyclic component |
