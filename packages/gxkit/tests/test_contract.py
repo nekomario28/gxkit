@@ -68,6 +68,37 @@ def test_contract_faulty_exits_1_honest_exits_0(name, capsys):
     assert report["problems"], f"{name}: --json reported no problems"
 
 
+@pytest.mark.parametrize("name", list(EXAMPLES))
+def test_a_baseline_round_trips_for_every_tool(tmp_path, capsys, name):
+    """Accepting an artifact and re-inspecting it reports nothing new.
+
+    The baseline is the "keep history" half of the contract, and every tool
+    supplies its own identities — which is where three real defects were found. A
+    round trip over the untouched artifact must therefore be all-persisted and
+    exit 0 for every one of them.
+    """
+    _require_capability(name)
+    tool = importlib.import_module(f"{name}.tool").TOOL
+    baseline = tmp_path / f"{name}.baseline.json"
+    faulty = _example(name, EXAMPLES[name][1])
+
+    assert run(tool, ["inspect", faulty, "--write-baseline", str(baseline), "--no-storyboard"]) == 1
+    captured = capsys.readouterr()
+    assert baseline.exists(), f"{name}: no baseline written ({captured.err})"
+
+    assert (
+        run(tool, ["inspect", faulty, "--baseline", str(baseline), "--json", "--no-storyboard"])
+        == 0
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert report["baseline"] == {
+        "new": 0,
+        "fixed": 0,
+        "persisted": len(report["problems"]),
+        "new_errors": 0,
+    }, f"{name}: {report['baseline']} for {len(report['problems'])} problems"
+
+
 def test_the_examples_cover_every_tool():
     from gxkit.registry import TOOLS
 

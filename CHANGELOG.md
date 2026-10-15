@@ -201,13 +201,19 @@ Writing that mutant exposed a weakness in the test: it asserted only the return
 code, so a `SystemExit` escaping the CLI would have surfaced as a confusing
 propagating exception rather than the claim it breaks. It now says so explicitly.
 
+An eighth sweep, over the baseline contract for every tool. Accepting an artifact
+and re-inspecting it must report nothing new — and each tool supplies its own
+finding identities, which is exactly where three real defects were found. The
+round trip was exercised for a few tools; it is now asserted for all sixteen,
+with a mutant that records an empty baseline and is killed.
+
 ### Verification
 
-- 1712 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1728 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 88 named defects, each killed by its intended
+- A bounded mutation catalogue of 89 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 
