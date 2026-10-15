@@ -92,11 +92,12 @@ declaration, because a figure cannot express them:
 | `two-error-shapes` | error | a mark declares symmetric and asymmetric error bars at once |
 | `negative-error` | error | an error magnitude is negative, which is not a distance |
 
-A declaration has no storyboard: box numbers are drawn over a figure's artists,
-which a declaration does not have. The report is printed and the image is skipped
-with that reason. An unknown key, a mark kind the model does not have, and a
-member that cannot be read are input failures (exit 2) naming where they are
-wrong.
+A declaration has no storyboard *here*: box numbers are drawn over a figure's
+artists, and a declaration has no artists, so the report is printed and the image is
+skipped with that reason. The renderer that owns the model can draw one —
+`figspec storyboard model.json -o model.storyboard.svg` boxes the marks these
+findings name. An unknown key, a mark kind the model does not have, and a member
+that cannot be read are input failures (exit 2) naming where they are wrong.
 
 ## Why it can be trusted
 

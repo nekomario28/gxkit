@@ -802,7 +802,12 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "declared-model-storyboard-faked",
                 "packages/chartgx/src/chartgx/tool.py",
-                '        raise ValueError(\n            "a declared model has no storyboard: box numbers are drawn over a "\n            "matplotlib figure\'s artists, which a declaration does not have"\n        )',
+                """        raise ValueError(
+            "a declared model has no storyboard here: box numbers are drawn over a "
+            "matplotlib figure's artists, which a declaration does not have. The "
+            "renderer that owns the model can draw one — `figspec storyboard "
+            "model.json -o model.storyboard.svg` boxes the marks these findings name"
+        )""",
                 "        return Image.new('RGB', (1, 1))",
                 "packages/chartgx/tests/test_model_route.py::test_the_tool_dispatches_a_declaration_without_touching_matplotlib",
             ),

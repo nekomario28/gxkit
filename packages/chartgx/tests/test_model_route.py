@@ -314,7 +314,11 @@ def test_the_tool_dispatches_a_declaration_without_touching_matplotlib(tmp_path)
     # producing a picture whose numbers have nothing to point at.
     with pytest.raises(ValueError, match="rendered by figspec"):
         TOOL.render(artifact, tmp_path / "out.png", None)
+    # The refusal names the route that *can* draw it: a reason a reader cannot act
+    # on is half a reason.
     with pytest.raises(ValueError, match="no storyboard"):
+        TOOL.to_image(artifact)
+    with pytest.raises(ValueError, match=r"figspec storyboard"):
         TOOL.to_image(artifact)
 
     # And the figure route still works in the same tool.
