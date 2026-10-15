@@ -35,6 +35,9 @@ implementation rather than with itself.
 | `crongx` | `overlap` = half-open intervals on one resource | adjacent runs, contained run, different resources, unspecified resource, zero/negative/infinite duration | correct, and each overlapping **pair** is its own finding identified by `(resource, a, b)` |
 | `netgx` | `public-reaches-sensitive` is transitive | `public → mid → sensitive`; through a cycle | correct |
 | `docgx` | `clipped-text` is measured, not estimated | a long unbroken word; CJK; a block past the right edge; a 1×1 page; many lines | correct — the boxes come from PIL's font metrics, and the renderer draws from those same boxes |
+| `pipegx` | `needs` are step names, `produces` are artifacts, order does not matter | a goal produced by a *later* step; a step needing a step declared later; a goal no step produces; a duplicated artifact; a cycle | correct |
+| `seedgx` | `missing-seed` is about *absence*, not falsiness | `seed=0`; `seed=None`; a negative seed; `2**64`; two streams sharing a seed; `deterministic=False` | correct — `0` is a seed, `None` is missing, and the range/duplicate/non-determinism claims fire on their own cases |
+| `framegx` | `frozen` means the picture does not change; `all-black` means nothing was drawn | a real moving clip; a still clip encoded as video; an all-black clip; a clip changed for one frame | correct, and the discriminating case holds: **one changed frame is not `frozen`** (the claim needs ~1.5 s of sameness), and real motion is clean |
 | `authzgx` | `escalation` is transitive through inheritance | one hop, three hops, two sensitive permissions | correct, with the path in the message |
 | `flowgx`, `protogx` | `unknown-state` for a state nobody declared | a transition to/from an undeclared state | correct |
 
@@ -58,9 +61,16 @@ implementation rather than with itself.
 - **`apigx.auth_schemes` is descriptive.** Endpoints carry `auth: bool`, not a
   scheme name, so there is no declared set for a scheme to resolve against; an
   unknown name there is documentation, not a broken reference.
-- **`seedgx`, `framegx` and `shadergx` were not probed adversarially** in this
-  pass. Their claims (`missing-seed`, `frozen`, `nan-output`) are about a real
-  artifact — a stream's seed, a decoded clip, a rendered frame — and their tests
-  drive the real decoder and the real software GL path, which is stronger than a
-  hand-built case for those claims. That is a reason, not a proof; the gap is
-  recorded here rather than left implied.
+- **`shadergx` was not probed by hand.** Its evidence is a *corpus* driven by
+  pixels: every valid shader in `tests/test_shader_corpus.py` must link — including
+  the constructs an agent reaches for (loops, `mat2` uniforms, array constructors)
+  — because a false `compile-error` would mean the tool lies about the language it
+  supports; every invalid one must surface a `compile-error`; and
+  `black-output`, `constant-output` and `nan-output` are unit-tested through the
+  real GL path. That attacks the direction that matters (false positives on valid
+  input) rather than the hand-built one, but it is not a hand-built probe.
+- **`levelgx`'s one-way tiles cannot express a directed cycle.** Each one-way
+  accepts entry only along its own arrow, so a ring of them is a set of dead ends.
+  That is a fact about the legend, recorded because it bounds what `soft-lock` can
+  ever be: a dead end reachable from the spawn, never a loop the player is stuck
+  in.

@@ -16,8 +16,13 @@ uv tool install ./packages/chartgx
 
 ## The loop
 
-1. Write the chart as a Python file that builds a matplotlib figure.
-2. `chartgx inspect chart.py` — prints the axes summary, each problem with a stable `code`, and writes `<name>.storyboard.png`. **Exit 1 on any error.**
+1. Write the chart as a Python file that builds a matplotlib figure — **or declare
+   it as data** in a figspec model (`chart.json`: `marks`, axes, labels). A
+   declaration is inspected **directly**: `chartgx inspect chart.json` needs no
+   matplotlib, runs none of the artifact's code, and needs no renderer file. The
+   umbrella asks which reader you mean when a suffix has more than one
+   (`/api/x` vs a chart), and `chartgx inspect chart.json` is how you answer.
+2. `chartgx inspect chart.py` — prints the axes summary, each problem with a stable `code`, and writes `<name>.storyboard.png`. **Exit 1 on any error.** Add `--no-storyboard` when the directory is read-only: the image is written beside the artifact, so a directory that cannot be written to is an input failure, not a clean report.
 3. Fix `error` and `warn` problems; inspect again. View the storyboard when you can — each numbered box proves a problem.
 4. `chartgx render chart.py -o chart.png` for the final still.
 5. `--json` gives the same report machine-readably.

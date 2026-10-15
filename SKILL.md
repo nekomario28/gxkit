@@ -146,6 +146,19 @@ uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/<tool
 
 `chartgx` also needs matplotlib; `shadergx` needs a GL context.
 
+## Flags that matter in a sandbox
+
+`--json` gives the report machine-readably; `--no-config` ignores a project's
+`.gxkit.toml`; `--no-storyboard` skips writing the image. Use the last one when the
+artifact's directory is **read-only** (a sandbox, a locked checkout, a CI mount):
+`inspect` writes `<name>.storyboard.png` beside the artifact by default, and a
+directory it cannot write to is an input failure (exit 2) rather than a report.
+
+An artifact that is **declared as data** (a `chart.json`, an OpenAPI document, a
+DDL file) is inspected directly, with nothing executed — no renderer file and no
+matplotlib. When a suffix has more than one reader the umbrella names them and
+asks which you mean; `gxkit inspect <tool> <file>` is how you answer.
+
 ## Working on gxkit itself
 
 - The shared core is `packages/gxcore` (the review loop + `graph`, `layout`,
