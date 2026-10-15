@@ -23,6 +23,37 @@ from .model import API, Endpoint
 
 METHODS = ("get", "put", "post", "delete", "patch", "head", "options", "trace")
 
+# Everything a path item or an operation may say. A key outside these is refused
+# rather than ignored: a mistyped `securty` would otherwise read as inherited
+# security and hide a public mutation, and a mistyped method would drop a route
+# without a word. Vendor extensions (`x-…`) are the spec's own escape hatch.
+PATH_ITEM_KEYS = frozenset(METHODS) | {"$ref", "summary", "description", "servers", "parameters"}
+OPERATION_KEYS = frozenset(
+    {
+        # `$ref` is legitimate and has its own refusal, below — refusing it as an
+        # unknown key would say less than why it is refused.
+        "$ref",
+        "tags",
+        "summary",
+        "description",
+        "externalDocs",
+        "operationId",
+        "parameters",
+        "requestBody",
+        "responses",
+        "callbacks",
+        "deprecated",
+        "security",
+        "servers",
+    }
+)
+
+
+def _unrecognised(keys: dict[str, Any], known: frozenset[str]) -> list[str]:
+    return sorted(
+        str(key) for key in keys if str(key) not in known and not str(key).lower().startswith("x-")
+    )
+
 
 def _security_of(operation: dict[str, Any], document: dict[str, Any]) -> bool:
     """An operation is authenticated when no alternative permits anonymous access.
@@ -98,6 +129,11 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     paths = document.get("paths")
     if not isinstance(paths, dict):
         raise InvalidArtifact(f"{source}: no 'paths' object")
+    if document.get("webhooks"):
+        raise InvalidArtifact(
+            f"{source}: 'webhooks' declares operations this importer does not read; "
+            "refusing rather than reporting a partial API"
+        )
     schemes = document.get("components", {})
     auth_schemes = (
         sorted(str(name) for name in schemes["securitySchemes"])
@@ -109,6 +145,12 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     for path, operations in paths.items():
         if not isinstance(operations, dict):
             raise InvalidArtifact(f"{source}: paths[{path!r}] is not an object")
+        unknown = _unrecognised(operations, PATH_ITEM_KEYS)
+        if unknown:
+            raise InvalidArtifact(
+                f"{source}: paths[{path!r}] has unrecognised key(s) {unknown}; refusing "
+                "rather than ignoring them, because a mistyped key changes the verdict"
+            )
         if "$ref" in operations:
             raise InvalidArtifact(
                 f"{source}: paths[{path!r}] is a reference; this importer does not resolve "
@@ -120,6 +162,12 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                 continue
             if not isinstance(operation, dict):
                 raise InvalidArtifact(f"{source}: paths[{path!r}].{method} is not an object")
+            unknown = _unrecognised(operation, OPERATION_KEYS)
+            if unknown:
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method} has unrecognised key(s) {unknown}; "
+                    "refusing rather than ignoring them"
+                )
             if "$ref" in operation:
                 raise InvalidArtifact(
                     f"{source}: paths[{path!r}].{method} is a reference; this importer does not "

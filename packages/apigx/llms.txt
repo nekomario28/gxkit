@@ -6,6 +6,7 @@ codes, exit codes, a storyboard) is shared with every other tool.
 
 - Install/run: uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/apigx" apigx inspect api.py
 - Write: a Python file building apigx.API(base="/v1", endpoints=[apigx.Endpoint("GET", "/v1/x", statuses=[200, 404])]); or ENDPOINTS / BASE / NAME.
+- Nothing is ignored: an unrecognised key in a path item or operation, a `webhooks` section, and a `$ref` exit 2 rather than being skipped (a mistyped method or `security` key would otherwise change the verdict).
 - Or point at the OpenAPI 3 JSON document the service publishes: apigx inspect openapi.json (paths/methods become endpoints, security becomes auth, numeric responses become statuses; a malformed document exits 2).
 - A mutating method (POST/PUT/PATCH/DELETE) with auth=False is an error.
 - apigx inspect api.py — exit 1 on any error; --json; --no-storyboard; -o name.png.

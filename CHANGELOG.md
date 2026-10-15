@@ -49,8 +49,18 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   `REFERENCES t` with no column invented `id` instead of resolving `t`'s primary
   key; and a `$ref` path item was dropped rather than refused.
 
+### Fixed
+- An importer now refuses what it cannot account for instead of narrowing what it
+  read: an unrecognised key in an OpenAPI path item or operation, a `webhooks`
+  section, and a `$ref` are refused with their location. A mistyped method
+  silently dropped a route, and a mistyped `security` key read as inherited
+  authentication, which hid a public mutation — both are now input failures.
+- `docs/CONTRACT.md` states the boundary this rests on: a tool reports a finding
+  or refuses the input, never a quiet partial read; and reading a foreign format
+  is this repository's code, which gxkit does not itself verify.
+
 ### Verification
-- The bounded mutation catalogue grows to 57, covering the importer's
+- The bounded mutation catalogue grows to 59, covering the importer's
   authentication, version and malformed-input branches, the `.json` and `.sql`
   routing, the DDL composite-key and unclosed-table refusals, the type families,
   the Mermaid start/terminal markers and composite refusal, and the

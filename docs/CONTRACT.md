@@ -69,6 +69,34 @@ Do not build on these; they may change in a minor version.
   needs `ffmpeg`; where they are absent the affected tests skip and the tool
   reports what it can still determine.
 
+## Silence is never a verdict
+
+A tool reports a finding or refuses the input. It never narrows what it read and
+then reports success about the part it skipped, and importers enforce this the
+same way: an unrecognised key, a statement outside the translated set, a
+construct the model cannot hold, or a reference that would have to be followed
+are all refused with their location rather than ignored. A document that reads as
+clean has been fully read.
+
+Where an importer can express more than the model, the refusal names the limit
+(a composite key, a composite or ambiguous diagram, OpenAPI 2, a `$ref`) instead
+of guessing — see each tool's `AGENTS.md`.
+
+## What this is not
+
+- **Not a conformance validator.** Reading an OpenAPI document or a SQL dump
+  means implementing that format's semantics, and nothing here verifies that
+  implementation against the specification. A wrong reading of a format is a
+  bug in this repository, found by review and tests, not by these tools: gxkit
+  inspects *artifacts*, not the code that reads them.
+- **Not a checker for this repository.** The family's own structure is held by
+  tests, the bounded mutation catalogue, the package and consumer gates, and a
+  `depsgx` run over its own module graph (`scripts/self_inspect.py`). Those find
+  structural regressions; they do not tell you whether a check is *correct*.
+- **Not a runtime or quality oracle.** A clean report means the declared
+  structure is coherent, not that the artifact works, looks right, or is
+  reproducible.
+
 ## Inspection, not sandboxing
 
 A Python artifact is executed to be inspected. That is the design: the artifact

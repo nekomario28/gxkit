@@ -482,6 +482,28 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # "Silence is never a verdict": an unhandled construct must be refused, and
+    # the refusal must be what the test sees.
+    cases.extend(
+        [
+            Mutation(
+                "openapi-unknown-keys-ignored",
+                "packages/apigx/src/apigx/openapi.py",
+                '    return sorted(\n        str(key) for key in keys if str(key) not in known and not str(key).lower().startswith("x-")\n    )',
+                "    return []",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_an_importer_refuses_what_it_cannot_account_for",
+            ),
+            Mutation(
+                "openapi-webhooks-ignored",
+                "packages/apigx/src/apigx/openapi.py",
+                '    if document.get("webhooks"):',
+                "    if False:",
+                KIT_TEST
+                + "test_foreign_inputs.py::test_an_importer_refuses_what_it_cannot_account_for",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
