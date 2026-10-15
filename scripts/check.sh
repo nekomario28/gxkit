@@ -36,6 +36,8 @@ if [ "$FULL" = 1 ]; then
   step uv build --all-packages -o dist
   step uvx twine check dist/*
   step uv run python scripts/release.py --check dist
+  # Prove the family resolves from an index, not only from this checkout.
+  step uv run python scripts/check_publish.py
 fi
 
 printf '\n\033[1;32mAll gates passed.\033[0m\n'

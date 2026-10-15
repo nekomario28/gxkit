@@ -30,6 +30,20 @@ api = a.API(
 An endpoint is `(method, path)` or a mapping with `auth`, `statuses` and
 `deprecated`. Or module-level `ENDPOINTS` / `BASE` / `NAME`.
 
+Or point it at the OpenAPI 3 document your service already publishes:
+
+```sh
+apigx inspect openapi.json
+```
+
+Paths and methods become endpoints, an operation's `security` (inherited from
+the document when it is absent, and an empty list meaning "requires none")
+becomes its authentication, its numeric responses become the documented statuses,
+and the first server's path becomes the base. The same codes then apply — an
+unauthenticated mutation in a published spec is the same defect as one in a
+declaration. OpenAPI 2 / Swagger is not supported, and a document that is not
+valid OpenAPI 3 is an input failure (exit 2) that names where it is wrong.
+
 Names are names: `auth_schemes` must be a list of strings. A malformed member
 or collection rejects the artifact with its field and index (exit 2) instead
 of disappearing, and a recognized declaration is never replaced by another.

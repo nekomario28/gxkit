@@ -30,12 +30,29 @@ uv publish dist/*.whl dist/*.tar.gz
 ```
 
 Publish **`gxcore` first** (the tools depend on it), then the tools, then the
-`gxkit-cli` umbrella. The tools already pin it (`gxcore>=0.4,<0.5`) so a
+`gxkit-cli` umbrella. The tools already pin it (`gxcore>=0.6,<0.7`) so a
 published tool does not resolve an unrelated `gxcore`.
 
 > **The name `gxkit` is taken on PyPI** (an unrelated package), so the umbrella
 > is distributed as **`gxkit-cli`**. The import package stays `gxkit` and the
 > command stays `gxkit`.
+
+## Prove the index before publishing
+
+The Git route installs from a checkout, so it cannot catch a dependency range
+only an index resolver would reject. `scripts/check_publish.py` builds every
+distribution, serves them from a local PEP 503 index, and installs the umbrella
+against that index alone — the same resolution a PyPI install performs, with
+nothing published. It runs in `scripts/check.sh --full` and in the packaging CI
+job.
+
+```sh
+uv run python scripts/check_publish.py          # build, then install from the index
+uv run python scripts/check_publish.py --skip-build   # reuse an existing dist/
+```
+
+Third-party dependencies (Pillow, matplotlib, moderngl, numpy) resolve from
+PyPI; the family's own packages resolve only from the local index.
 
 ## Check the names
 

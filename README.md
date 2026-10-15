@@ -24,6 +24,28 @@ ship — with a storyboard image as the evidence.
 
 ![gxkit: one shared core, an inspect tool for every artifact domain](docs/assets/architecture.svg)
 
+## Start with one tool
+
+Most people have one kind of artifact, and most of these tools read a file you
+already have — a chart script, a rendered video, a published API spec — with no
+declaration to write:
+
+```sh
+uvx chartgx inspect my_chart.py          # a plain matplotlib script
+uvx apigx  inspect openapi.json          # the spec your service publishes
+uvx framegx inspect clip.py              # the video your renderer wrote
+```
+
+`chartgx` runs the script and reads the figure it builds; `apigx` converts the
+OpenAPI 3 document and applies the same codes as a declaration; `framegx`
+probes the encoded file. Nothing here needs a gxkit-specific declaration.
+
+Want all sixteen? Install the family instead — the contract is identical:
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/gxkit" gxkit tools
+```
+
 ## The loop
 
 Every tool has the same contract, so an agent learns it once:
@@ -53,13 +75,17 @@ and explicit relationship identities. Older baselines are rejected: review the
 current findings, then deliberately recreate accepted debt with `--write-baseline`.
 Without a baseline, any `error` fails. An input that cannot be inspected exits 2.
 
-**One entry point.** You don't have to know which tool fits:
+**One entry point.** With the family installed you don't have to know which tool
+fits — it reads the artifact and routes:
 
 ```sh
 uv run gxkit tools              # what can be inspected
 uv run gxkit inspect chart.py   # detect the artifact and route it
 uv run gxkit codes              # every problem code and its severity
 ```
+
+A document that is not a Python artifact (an `openapi.json`) needs its tool
+named once: `gxkit inspect apigx openapi.json`.
 
 ## Tools
 
@@ -198,6 +224,9 @@ uvx --python 3.14 manimgx render docs/hero/gxkit_hero.py -r 720x720 --fps 24
 - [`SKILL.md`](SKILL.md) — the family agent skill; routes to each tool's skill.
 - [`docs/BUILDING.md`](docs/BUILDING.md) — how to add a tool: the checklist, the
   contract, the extraction rule, the pitfalls.
+- [`docs/CONTRACT.md`](docs/CONTRACT.md) — what an integrator may rely on:
+  codes, exit codes, the JSON report, the baseline, and what is explicitly not
+  promised.
 - [`docs/PLAN.md`](docs/PLAN.md) — goals and roadmap.
 - [`docs/LICENSING.md`](docs/LICENSING.md) — why MIT, and acknowledgements.
 - [`docs/agent-native-landscape.md`](docs/agent-native-landscape.md) — which

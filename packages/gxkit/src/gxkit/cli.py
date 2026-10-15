@@ -42,6 +42,16 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
             print(f"gxkit: unknown tool {explicit!r}; try `gxkit tools`", file=sys.stderr)
             return None
         return spec
+    if path.suffix.lower() != ".py":
+        # Detection reads a Python module, so a foreign document (an OpenAPI
+        # spec, say) cannot be recognised automatically. Saying which tool
+        # reads it beats reporting a syntax error in a file that has none.
+        print(
+            f"gxkit: {path.name} is not a Python artifact.\n"
+            f"  name the tool that reads it, e.g. `gxkit inspect apigx {path}`",
+            file=sys.stderr,
+        )
+        return None
     from gxcore.loading import load_module
 
     try:

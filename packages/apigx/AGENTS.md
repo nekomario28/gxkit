@@ -35,6 +35,12 @@ uv tool install ./packages/apigx    # puts `apigx` on PATH
 - `info` — `no-error-status`, `deprecated-endpoint`, `no-endpoints`.
 
 Common fixes: `duplicate-route` → drop one; `unauthenticated-mutation` → set
-`auth=True` or make it read-only; `unversioned-path` → move it under the base;
+`auth=True` (in an OpenAPI document, `security: []` on the operation means
+exactly this) or make it read-only; `unversioned-path` → move it under the base;
 `no-error-status` → document the 4xx/5xx it can return. Use `--json` to branch on
 the result.
+
+`apigx inspect openapi.json` reads the OpenAPI 3 document a service publishes
+instead of a declaration: paths and methods become endpoints, `security` becomes
+authentication, numeric responses become statuses. A document that is not valid
+OpenAPI 3 exits 2 and names where it is wrong.

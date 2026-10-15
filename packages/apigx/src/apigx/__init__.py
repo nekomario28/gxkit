@@ -9,6 +9,7 @@ from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_api
 from .model import API, Endpoint, api_from_parts, load_api
+from .openapi import api_from_document, api_from_file
 from .render import render_image
 from .tool import TOOL, Scene, main
 
@@ -22,6 +23,8 @@ __all__ = [
     "Problem",
     "Report",
     "Scene",
+    "api_from_document",
+    "api_from_file",
     "api_from_parts",
     "inspect_api",
     "load_api",
