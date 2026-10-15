@@ -57,12 +57,22 @@ def test_run_tool_forwards_the_flags(tmp_path, capsys):
 
 def test_a_foreign_document_is_told_which_tool_reads_it(tmp_path, capsys):
     """The registry declares what each tool reads, so name it instead of guessing."""
-    document = tmp_path / "openapi.json"
-    document.write_text("{}", encoding="utf-8")
+    document = tmp_path / "schema.sql"
+    document.write_text("", encoding="utf-8")
     assert cli._tool_for(document, None) is None
     err = capsys.readouterr().err
     assert "not a Python artifact" in err
-    assert "apigx" in err and "gxkit inspect apigx" in err
+    assert "schemagx" in err and "gxkit inspect schemagx" in err
+
+
+def test_a_suffix_two_tools_read_names_both(tmp_path, capsys):
+    """`.json` is an OpenAPI document to one tool and a chart declaration to
+    another, so which one is meant is the caller's decision, not a guess."""
+    document = tmp_path / "thing.json"
+    document.write_text("{}", encoding="utf-8")
+    assert cli._tool_for(document, None) is None
+    err = capsys.readouterr().err
+    assert "chartgx" in err and "apigx" in err and "name the one you mean" in err
 
 
 def test_a_file_no_tool_reads_says_so(tmp_path, capsys):

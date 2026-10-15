@@ -54,11 +54,21 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
         # suffixes each tool reads, so name the tool rather than making the reader
         # guess — and keep refusing to execute a non-Python file as Python.
         readers = [spec.name for spec in TOOLS if suffix in spec.reads]
-        if readers:
+        if len(readers) == 1:
             print(
                 f"gxkit: {path.name} is not a Python artifact.\n"
                 f"  The tool that reads {suffix} is {readers[0]}: "
                 f"gxkit inspect {readers[0]} {path}",
+                file=sys.stderr,
+            )
+        elif readers:
+            # Several tools read this suffix and they read it differently (a
+            # `.json` is an OpenAPI document to one and a chart declaration to
+            # another), so which one is meant is the caller's decision.
+            print(
+                f"gxkit: {path.name} is not a Python artifact.\n"
+                f"  {suffix} is read by {', '.join(readers)}; name the one you mean: "
+                f"gxkit inspect <tool> {path}",
                 file=sys.stderr,
             )
         else:
