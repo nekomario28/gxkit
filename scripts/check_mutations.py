@@ -828,6 +828,17 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # The identity inventory is a ratchet: a new finding that cannot be told apart
+    # from its sibling is refused until someone gives it a target or an identity.
+    cases.append(
+        Mutation(
+            "identity-debt-grows",
+            "packages/seedgx/src/seedgx/checks.py",
+            '                    f"stream {stream.name!r} has no seed — the run is not reproducible",\n                    target=target,',
+            '                    f"stream {stream.name!r} has no seed — the run is not reproducible",',
+            "packages/gxkit/tests/test_identity_inventory.py::test_the_identity_debt_only_shrinks",
+        )
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

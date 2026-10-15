@@ -230,6 +230,11 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
 
 ### Added
 
+- **`docs/IDENTITY.md`** — generated and ratcheted. It lists the error findings
+  that carry neither a `target` nor a relationship `identity`, so two of them in
+  one artifact share a baseline fingerprint and replacing one with another reads
+  as unchanged debt. **24 sites** across nine tools are listed; the count may only
+  shrink, and a mutant that removes a target proves the ratchet bites.
 - **`chartgx` inspects a chart declared as data**, so a figure can be checked
   without matplotlib and without running anything: `chartgx inspect chart.json`
   reads a figspec model and reports the problems directly. It is the route for a
@@ -251,7 +256,7 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 96 named defects, each killed by its intended
+- A bounded mutation catalogue of 97 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 

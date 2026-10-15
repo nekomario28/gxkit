@@ -127,6 +127,13 @@ command whose exit status is discarded: an inherited `--no-cov` and an appended
 POSIX coverage lanes; Windows still exercises inspector behavior. Real
 installation is a separate consumer gate.
 
+[`IDENTITY.md`](IDENTITY.md) is the other generated ratchet. A finding compared by its code
+alone — no `target`, no relationship `identity` — cannot be told apart from a
+sibling, so replacing one with another reads as unchanged baseline debt. The
+document lists those sites from the source, the freshness test refuses a stale
+file, and the count may only shrink: fixing a site means lowering the limit in
+`test_identity_inventory.py`, and raising it needs a reason in the commit.
+
 `scripts/check_mutations.py` first runs green controls, then restores named
 faults in disposable source copies. Rejection counts only when the intended
 test assertion fails, not when collection or imports break. It runs in the
