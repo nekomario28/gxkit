@@ -763,6 +763,17 @@ def mutations(root: Path) -> list[Mutation]:
             KIT_TEST + "test_contract.py::test_a_baseline_round_trips_for_every_tool[chartgx]",
         )
     )
+    # An upload with no retention accumulates silently in a repository nobody
+    # looks at; 148 artifacts and ~53 MB had built up before anyone did.
+    cases.append(
+        Mutation(
+            "artifact-retention-removed",
+            ".github/workflows/ci.yml",
+            "          retention-days: 7\n",
+            "",
+            KIT_TEST + "test_repo.py::test_every_uploaded_artifact_expires",
+        )
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

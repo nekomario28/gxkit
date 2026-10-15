@@ -132,6 +132,29 @@ def _require_failure_propagates(script: str, *, from_file: bool, label: str, add
     assert status != 0, f"{label}: a failing coverage run is swallowed"
 
 
+def check_artifacts(root: Path) -> None:
+    """Every artifact upload must expire.
+
+    Nothing downloads the built distributions from a CI run, so without a
+    retention they accumulate silently — 148 of them and ~53 MB had built up
+    before anyone looked.
+    """
+    workflow = yaml.safe_load((root / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    uploads = [
+        (job_name, step)
+        for job_name, job in workflow["jobs"].items()
+        for step in job.get("steps", [])
+        if str(step.get("uses", "")).startswith("actions/upload-artifact")
+    ]
+    assert uploads, "the workflow uploads no artifacts; remove this check with the upload"
+    for job_name, step in uploads:
+        retention = step.get("with", {}).get("retention-days")
+        assert isinstance(retention, int) and 1 <= retention <= 30, (
+            f"{job_name}: an uploaded artifact declares no sensible retention-days "
+            f"({retention!r}); without one it accumulates"
+        )
+
+
 def _check_calls(
     calls: list[list[str]],
     names: set[str],
