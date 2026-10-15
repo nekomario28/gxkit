@@ -28,11 +28,13 @@ from gxcore.loading import InvalidArtifact
 #:
 #: The codes are chartgx's existing ones wherever the concept is the same
 #: (`empty-chart`, `truncated-baseline`, `no-title`, `log-nonpositive`,
-#: `no-xlabel`/`no-ylabel`), because a user who has seen a finding from the figure
-#: route must not have to learn a second name for it here. Only the four that the
-#: model can express and a figure cannot are new.
+#: `no-xlabel`/`no-ylabel`, `mismatched-lengths`, ...), because a user who has seen
+#: a finding from the figure route must not have to learn a second name for it
+#: here. Only what the model can express and a figure cannot is new.
 MODEL_CODES: dict[str, str] = {
     "empty-chart": ERROR,
+    "short-line": ERROR,
+    "ambiguous-labels": ERROR,
     "truncated-baseline": ERROR,
     "log-nonpositive": ERROR,
     "mismatched-lengths": ERROR,
@@ -44,7 +46,23 @@ MODEL_CODES: dict[str, str] = {
     "no-ylabel": WARN,
 }
 
-MARK_KINDS = ("line", "scatter", "bar", "grouped_bar")
+MARK_KINDS = ("line", "scatter", "bar", "grouped_bar", "heatmap")
+
+#: The fields each kind may carry. An unknown field is refused rather than
+#: ignored: a mistyped optional field (`colr` for `color`) would otherwise leave
+#: the drawing to the default and report a clean figure.
+MARK_FIELDS: dict[str, frozenset[str]] = {
+    "line": frozenset({"kind", "points", "y_err", "y_err_asymmetric", "color", "label"}),
+    "scatter": frozenset({"kind", "points", "y_err", "y_err_asymmetric", "size", "color", "label"}),
+    "bar": frozenset({"kind", "categories", "values", "color", "label"}),
+    "grouped_bar": frozenset({"kind", "categories", "series"}),
+    "heatmap": frozenset({"kind", "values", "row_labels", "col_labels", "color_map", "label"}),
+}
+
+#: The colour ramps the model names, matching the declaration this tool reads.
+COLOR_MAPS = frozenset(
+    {"viridis", "turbo", "inferno", "magma", "plasma", "cividis", "warm", "cool", "cubehelix"}
+)
 FIGURE_FIELDS = {
     "marks",
     "title",
@@ -93,6 +111,18 @@ def load_model(path: str | Path) -> dict[str, Any]:
             raise InvalidModel(
                 f"{path}: marks[{index}].kind is {kind!r}, expected one of {list(MARK_KINDS)}"
             )
+        unknown = sorted(key for key in mark if key not in MARK_FIELDS[str(kind)])
+        if unknown:
+            raise InvalidModel(
+                f"{path}: marks[{index}] has unrecognised key(s) {unknown} for a {kind} mark"
+            )
+        if kind == "heatmap":
+            declared = mark.get("color_map")
+            if declared is not None and declared not in COLOR_MAPS:
+                raise InvalidModel(
+                    f"{path}: marks[{index}].color_map is {declared!r}, "
+                    f"expected one of {sorted(COLOR_MAPS)}"
+                )
     return model
 
 
@@ -161,8 +191,10 @@ def _series_of(mark: dict[str, Any], where: str) -> list[tuple[str, list[float]]
     if mark["kind"] == "bar":
         return [("bar mark", _number_list(mark.get("values"), f"{where}.values"))]
     series = mark.get("series")
-    if not isinstance(series, list) or not series:
-        raise InvalidModel(f"{where}.series: expected a non-empty list of series")
+    if not isinstance(series, list):
+        # An *empty* list is readable — it declares nothing to draw, which is a
+        # finding (`empty-chart`), not a member the loader cannot read.
+        raise InvalidModel(f"{where}.series: expected a list of series")
     out: list[tuple[str, list[float]]] = []
     for position, one in enumerate(series):
         _expect_object(one, f"{where}.series[{position}]")
@@ -175,6 +207,26 @@ def _series_of(mark: dict[str, Any], where: str) -> list[tuple[str, list[float]]
     return out
 
 
+def _matrix(mark: dict[str, Any], where: str) -> list[list[float]]:
+    """The declared matrix, as rows of numbers."""
+    rows = mark.get("values")
+    if not isinstance(rows, list):
+        raise InvalidModel(f"{where}.values: expected a list of rows")
+    out: list[list[float]] = []
+    for position, row in enumerate(rows):
+        out.append(_number_list(row, f"{where}.values[{position}]"))
+    return out
+
+
+def _labels(mark: dict[str, Any], field: str, where: str) -> list[str] | None:
+    declared = mark.get(field)
+    if declared is None:
+        return None
+    if not isinstance(declared, list) or not all(isinstance(name, str) for name in declared):
+        raise InvalidModel(f"{where}.{field}: expected a list of strings")
+    return cast("list[str]", declared)
+
+
 def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
     """Check a chart declaration and report in this tool's own codes."""
     marks: list[dict[str, Any]] = model.get("marks", [])
@@ -185,8 +237,13 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
     )
     problems: list[Problem] = []
 
-    def report_problem(code: str, message: str, target: str | None = None) -> None:
-        problems.append(Problem(MODEL_CODES[code], code, message, target=target))
+    def report_problem(
+        code: str,
+        message: str,
+        target: str | None = None,
+        identity: tuple[str, ...] = (),
+    ) -> None:
+        problems.append(Problem(MODEL_CODES[code], code, message, target=target, identity=identity))
 
     if not marks:
         report_problem("empty-chart", "the figure declares no marks, so there is nothing to read")
@@ -196,13 +253,67 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
     if minimum is not None:
         minimum = _number(minimum, f"{name}: y_min")
 
+    # Two marks cannot both name one axis: a row label belongs to the row it is
+    # next to, and picking one set would caption the other's data with it.
+    named: list[list[str]] = []
+    for mark in marks:
+        if mark["kind"] == "heatmap":
+            labels = _labels(mark, "row_labels", f"{name}: marks")
+            if labels is not None:
+                named.append(labels)
+
     for index, mark in enumerate(marks):
         kind = mark["kind"]
         target = f"m[{index}]"
         where = f"{name}: marks[{index}]"
 
+        if kind == "heatmap":
+            rows = _matrix(mark, where)
+            if not rows or any(not row for row in rows):
+                report_problem(
+                    "empty-chart",
+                    "heatmap mark declares no cells, so there is nothing to draw",
+                    target,
+                )
+                continue
+            width = len(rows[0])
+            for position, row in enumerate(rows):
+                if len(row) != width:
+                    report_problem(
+                        "mismatched-lengths",
+                        f"heatmap row {position} has {len(row)} cells for {width} columns",
+                        target,
+                    )
+            if any(not math.isfinite(value) for row in rows for value in row):
+                report_problem(
+                    "non-finite-value", "heatmap declares a cell that cannot be placed", target
+                )
+            row_labels = _labels(mark, "row_labels", where)
+            if row_labels is not None and len(row_labels) != len(rows):
+                report_problem(
+                    "mismatched-lengths",
+                    f"heatmap declares {len(row_labels)} row labels for {len(rows)} rows",
+                    target,
+                )
+            col_labels = _labels(mark, "col_labels", where)
+            if col_labels is not None and len(col_labels) != width:
+                report_problem(
+                    "mismatched-lengths",
+                    f"heatmap declares {len(col_labels)} column labels for {width} columns",
+                    target,
+                )
+            continue
+
         if kind in ("line", "scatter"):
             points = _points(mark, where)
+            if not points:
+                report_problem("empty-chart", f"{kind} mark declares no points to draw", target)
+            if kind == "line" and len(points) == 1:
+                report_problem(
+                    "short-line",
+                    "a line needs at least two points, and this one has 1",
+                    target,
+                )
             coordinates = [value for point in points for value in point]
             declared = _error_arrays(mark, where)
             if len(declared) == 2:
@@ -243,7 +354,12 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
             isinstance(label, str) for label in categories
         ):
             raise InvalidModel(f"{where}.categories: expected a list of strings")
-        for label, values in _series_of(mark, where):
+        if not categories:
+            report_problem("empty-chart", "a bar mark declares no categories to draw", target)
+        read = _series_of(mark, where)
+        if kind == "grouped_bar" and not read:
+            report_problem("empty-chart", "grouped_bar mark declares no series to draw", target)
+        for label, values in read:
             if len(values) != len(categories):
                 report_problem(
                     "mismatched-lengths",
@@ -264,6 +380,24 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
                 f"bars start at y={minimum:g}, not 0, so their lengths no longer mean their values",
                 target,
             )
+
+    if len(named) > 1 and any(labels != named[0] for labels in named):
+        # The finding is about the *pair*: which two marks disagree. A figure whose
+        # ambiguity involves different marks is different debt, so the two marks
+        # are its identity.
+        first = named[0]
+        for labels in named[1:]:
+            if labels != first:
+                report_problem(
+                    "ambiguous-labels",
+                    "two marks declare different row labels for the same axis, so one "
+                    "would caption the other's data",
+                    # The identity is the two rival namings themselves, not their
+                    # positions: a figure whose rows are named differently is a
+                    # different disagreement, and replacing one partner for another
+                    # must read as new debt.
+                    identity=("ambiguous-labels", ", ".join(first), ", ".join(labels)),
+                )
 
     if marks and not model.get("title"):
         report_problem("no-title", "the figure has no title, so a reader cannot tell what it shows")

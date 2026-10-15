@@ -172,6 +172,14 @@ def test_every_code_in_the_table_is_reachable_from_these_tests():
                 }
             ]
         },
+        {"marks": [{"kind": "scatter", "points": []}]},
+        {"marks": [{"kind": "line", "points": [[0.0, 1.0]]}]},
+        {
+            "marks": [
+                {"kind": "heatmap", "values": [[1.0]], "row_labels": ["north"]},
+                {"kind": "heatmap", "values": [[2.0]], "row_labels": ["south"]},
+            ]
+        },
     ]
     for model in cases:
         produced |= {problem.code for problem in inspect_model(model).problems}
@@ -208,7 +216,28 @@ def test_every_code_in_the_table_is_reachable_from_these_tests():
             '{"marks": [{"kind": "line", "points": [], "y_err_asymmetric": "x"}]}',
             "expected a list of [lower, upper]",
         ),
-        ('{"marks": [{"kind": "grouped_bar", "categories": ["a"]}]}', "non-empty list of series"),
+        (
+            '{"marks": [{"kind": "bar", "categories": ["a"], "values": [1.0], "colr": "red"}]}',
+            "unrecognised key",
+        ),
+        (
+            '{"marks": [{"kind": "heatmap", "values": [[1.0]], "ramp": "viridis"}]}',
+            "unrecognised key",
+        ),
+        (
+            '{"marks": [{"kind": "heatmap", "values": [[1.0]], "color_map": "rainbow"}]}',
+            "color_map",
+        ),
+        ('{"marks": [{"kind": "heatmap", "values": 42}]}', "list of rows"),
+        ('{"marks": [{"kind": "heatmap", "values": [[1.0], "x"]}]}', "expected a list of numbers"),
+        (
+            '{"marks": [{"kind": "heatmap", "values": [[1.0]], "row_labels": [1]}]}',
+            "list of strings",
+        ),
+        (
+            '{"marks": [{"kind": "grouped_bar", "categories": ["a"], "series": 42}]}',
+            "expected a list of series",
+        ),
         (
             '{"marks": [{"kind": "grouped_bar", "categories": ["a"], "series": [1]}]}',
             "expected an object",
@@ -327,3 +356,133 @@ def test_the_tool_dispatches_a_declaration_without_touching_matplotlib(tmp_path)
     assert chartgx.__doc__ is not None
     assert Declared.__name__ == "Declared"
     assert Chart.__name__ == "Chart"
+
+
+# --------------------------------------------------------------------------- #
+# The matrix, and the empty mark
+# --------------------------------------------------------------------------- #
+
+
+def heat(values: list[list[float]], **extra: object) -> dict:
+    return {"kind": "heatmap", "values": values} | extra
+
+
+def test_a_matrix_is_checked_without_matplotlib():
+    model = clean() | {"marks": [heat([[31.5, 34.2], [22.0, 25.5]], color_map="viridis")]}
+    assert inspect_model(model).errors == 0
+
+
+def test_a_ragged_matrix_disagrees_with_itself():
+    report = inspect_model({"marks": [heat([[1.0, 2.0, 3.0], [4.0, 5.0]])]})
+    assert_fires(report, "mismatched-lengths", ERROR)
+    assert "row 1 has 2 cells for 3 columns" in report.problems[0].message
+
+
+def test_label_counts_have_to_match_the_matrix():
+    report = inspect_model({"marks": [heat([[1.0, 2.0]], row_labels=["a", "b"])]})
+    assert_fires(report, "mismatched-lengths", ERROR)
+    assert "2 row labels for 1 rows" in report.problems[0].message
+    report = inspect_model({"marks": [heat([[1.0, 2.0]], col_labels=["one"])]})
+    assert_fires(report, "mismatched-lengths", ERROR)
+    assert "1 column labels for 2 columns" in report.problems[0].message
+
+
+def test_a_matrix_with_no_cells_is_nothing_to_draw():
+    for values in ([], [[]]):
+        assert_fires(inspect_model({"marks": [heat(values)]}), "empty-chart", ERROR)
+
+
+def test_a_non_finite_cell_cannot_be_coloured():
+    assert_fires(inspect_model({"marks": [heat([[1.0, float("nan")]])]}), "non-finite-value", ERROR)
+
+
+def test_colour_is_not_a_length_and_not_on_the_axis():
+    # Neither a trimmed axis nor a log one is a finding for a matrix.
+    for extra in ({"y_min": 1}, {"y_scale": "log"}):
+        report = inspect_model({"marks": [heat([[0.0, 2.0]])]} | extra)
+        assert report.errors == 0, [problem.code for problem in report.problems]
+
+
+def test_the_two_names_are_part_of_the_finding_not_just_its_code():
+    """A different disagreement is different debt.
+
+    The identity is the two rival namings, so a baseline sees a figure whose rows
+    are named differently as new rather than as unchanged.
+    """
+    from gxcore.baseline import Baseline, compare
+
+    def ambiguous(second: str) -> dict:
+        return {
+            "marks": [
+                heat([[1.0]], row_labels=["north"]),
+                heat([[2.0]], row_labels=[second]),
+            ]
+        }
+
+    before = inspect_model(ambiguous("south"))
+    after = inspect_model(ambiguous("southwest"))
+    diff = compare(after, Baseline.of(before)).as_dict()
+    # The three warnings (no title, no axis labels) persist; the error does not.
+    assert diff["new_errors"] == 1, diff
+    assert diff["new"] == 1 and diff["fixed"] == 1, diff
+
+
+def test_two_names_for_one_axis_are_refused_rather_than_picked_between():
+    report = inspect_model(
+        {
+            "marks": [
+                heat([[1.0]], row_labels=["north"]),
+                heat([[2.0]], row_labels=["south"]),
+            ]
+        }
+    )
+    assert_fires(report, "ambiguous-labels", ERROR)
+
+
+def test_an_empty_mark_is_an_error_rather_than_a_clean_report():
+    """Measured before: `chartgx inspect` reported no errors and exited 0.
+
+    figspec refused the same declaration, so the two routes disagreed about a
+    declaration both of them read.
+    """
+    for mark in (
+        {"kind": "scatter", "points": []},
+        {"kind": "bar", "categories": [], "values": []},
+        {"kind": "grouped_bar", "categories": ["a"], "series": []},
+        heat([]),
+    ):
+        report = inspect_model({"marks": [mark]})
+        assert_fires(report, "empty-chart", ERROR), mark
+        assert report.errors == 1, mark
+
+
+def test_a_one_point_line_is_short_rather_than_empty():
+    # A matplotlib line with one point draws a marker, so this code can only come
+    # from a declaration — and it is not `empty-chart`, because the mark is not
+    # empty: one point is there and a line cannot be drawn through it.
+    report = inspect_model({"marks": [{"kind": "line", "points": [[1.0, 2.0]]}]})
+    assert_fires(report, "short-line", ERROR)
+    assert "empty-chart" not in {problem.code for problem in report.problems}
+
+
+def test_an_unknown_field_inside_a_mark_is_refused_not_ignored(tmp_path):
+    """A typo on an optional field used to be silently dropped."""
+    for payload in (
+        {"kind": "bar", "categories": ["a"], "values": [1.0], "colr": "red"},
+        {"kind": "scatter", "points": [[1.0, 1.0]], "seze": 4},
+        {"kind": "heatmap", "values": [[1.0]], "color": "viridis"},
+    ):
+        path = tmp_path / "model.json"
+        path.write_text(json.dumps({"marks": [payload]}), encoding="utf-8")
+        with pytest.raises(InvalidModel, match="unrecognised key"):
+            load_model(path)
+
+
+def test_an_unknown_ramp_is_refused_rather_than_defaulted(tmp_path):
+    path = tmp_path / "model.json"
+    path.write_text(
+        json.dumps({"marks": [{"kind": "heatmap", "values": [[1.0]], "color_map": "rainbow"}]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(InvalidModel, match="rainbow"):
+        load_model(path)
