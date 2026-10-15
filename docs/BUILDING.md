@@ -114,8 +114,12 @@ the defect into a real artifact (a figure, a level, a machine), not a mock.
 A presence check is not a gate proof. `scripts/guard_contracts.py` checks the
 actual setup handoff and records pytest arguments from trusted shell scripts
 with external commands stubbed out. Comments and echo output cannot stand in
-for execution. The shell observer runs on POSIX coverage lanes; Windows still
-exercises inspector behavior. Real installation is a separate consumer gate.
+for execution. It also replays the environment those commands run in and then a
+failing coverage run, because argv evidence alone cannot tell enforcement from a
+command whose exit status is discarded: an inherited `--no-cov` and an appended
+`|| true` are both mutations the guard must reject. The shell observer runs on
+POSIX coverage lanes; Windows still exercises inspector behavior. Real
+installation is a separate consumer gate.
 
 `scripts/check_mutations.py` first runs green controls, then restores named
 faults in disposable source copies. Rejection counts only when the intended

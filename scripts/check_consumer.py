@@ -101,6 +101,40 @@ class Consumer:
             "persisted": 0,
             "new_errors": 1,
         }
+        # A replaced unknown endpoint is new debt, not unchanged debt.
+        net_baseline = self.root / "net-baseline.json"
+        net_before = self.artifact(
+            "net_before.py",
+            'NODES = {"known": "service"}\nEDGES = [("known", "missing_a")]\n',
+        )
+        self.inspect(net_before, 1, "--write-baseline", str(net_baseline))
+        net_after = self.artifact(
+            "net_after.py",
+            'NODES = {"known": "service"}\nEDGES = [("known", "missing_b")]\n',
+        )
+        report = self.inspect(net_after, 1, "--baseline", str(net_baseline))
+        assert report["baseline"]["new_errors"] == 1, report["baseline"]
+        print("consumer: a replaced edge endpoint is a new error", flush=True)
+        # An artifact's own directory change must not redirect the inspection.
+        relative = self.root / "relative"
+        (relative / "elsewhere").mkdir(parents=True)
+        (relative / "artifact.py").write_text(
+            'import os\nSTREAMS = [("bad", None)]\nos.chdir("elsewhere")\n', encoding="utf-8"
+        )
+        (relative / "elsewhere" / "artifact.py").write_text(
+            'STREAMS = [("good", 1)]\n', encoding="utf-8"
+        )
+        moved = subprocess.run(
+            [str(self.cli), "inspect", "artifact.py", "--no-config", "--no-storyboard"],
+            cwd=relative,
+            env=self.env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert moved.returncode == 1 and "missing-seed" in moved.stdout, moved.stdout
+        print("consumer: a relative input survives the artifact changing directory", flush=True)
         # A later invocation executes again, but detection cannot execute twice.
         counter = self.root / "counter"
         once = self.artifact(

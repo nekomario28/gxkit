@@ -3,6 +3,31 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased — reaudit hardening
+
+### Fixed
+- A network finding is identified by its own relationship: replacing the unknown
+  endpoint of one edge is a new error, not unchanged baseline debt.
+- Requested inputs are resolved once before any artifact executes, so an
+  artifact's own directory change cannot redirect routing, loading or the
+  project configuration to another file.
+- Recognised declarations fail closed on their auxiliary collections: environment
+  references, pipeline goals and API auth schemes must be lists of names, and a
+  non-name member is rejected with its field and index.
+- The coverage gate is provable in both directions: an inherited pytest option
+  override and a swallowed failing run are both rejected by the named guard.
+- A report prints on a console that cannot encode every character it names. A
+  message naming an edge arrow on a Windows code page turned a real verdict into
+  an input failure; unencodable characters are escaped instead.
+
+### Verification
+- `scripts/guard_contracts.py` replays the environment its stubbed commands run
+  in and then a failing coverage run, and `scripts/check_mutations.py` carries
+  eleven more bounded mutants (39 total) covering these repairs.
+- gxcore is staged at 0.6.0 for `convert_names`; changed domain packages and
+  gxkit-cli receive patch versions. No release tag or PyPI publication is
+  created by this branch.
+
 ## Unreleased — inspection correctness hardening
 
 ### Fixed

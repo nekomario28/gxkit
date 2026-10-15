@@ -46,6 +46,9 @@ inspect: 4 problems (2 errors)
 - **Exit code 1** when any `error`-severity problem is found.
 - `--json` prints the same report machine-readably; `--no-storyboard` skips the
   image; `-o name.png` names it.
+- A baseline records findings by relationship. `dangling-edge` is identified by
+  its edge and unknown endpoint, so pointing one edge at a different unknown
+  node is a new error, not unchanged debt.
 
 ## Checks
 

@@ -30,6 +30,10 @@ api = a.API(
 An endpoint is `(method, path)` or a mapping with `auth`, `statuses` and
 `deprecated`. Or module-level `ENDPOINTS` / `BASE` / `NAME`.
 
+Names are names: `auth_schemes` must be a list of strings. A malformed member
+or collection rejects the artifact with its field and index (exit 2) instead
+of disappearing, and a recognized declaration is never replaced by another.
+
 ## The contract
 
 ```

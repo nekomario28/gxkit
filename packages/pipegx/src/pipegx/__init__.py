@@ -27,4 +27,4 @@ __all__ = [
     "pipeline_from_parts",
     "render_image",
 ]
-__version__ = "0.1.1"
+__version__ = "0.1.2"

@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items
+from gxcore.loading import convert_items, convert_names
 
 
 @dataclass
@@ -80,7 +80,7 @@ def _as_pipeline(value: object) -> Pipeline | None:
     if isinstance(value, dict) and "steps" in value:
         return Pipeline(
             steps=convert_items(value["steps"], _as_step, field="steps"),
-            goals=[str(g) for g in value.get("goals", [])],
+            goals=convert_names(value.get("goals", []), field="goals"),
             name=str(value.get("name", "pipeline")),
         )
     if isinstance(value, (list, tuple)):
@@ -104,7 +104,7 @@ def load_pipeline(path: str | Path) -> tuple[Pipeline, object]:
         if steps is not None:
             pipeline = Pipeline(
                 steps=convert_items(steps, _as_step, field="STEPS"),
-                goals=[str(g) for g in getattr(module, "GOALS", [])],
+                goals=convert_names(getattr(module, "GOALS", []), field="GOALS"),
             )
     if pipeline is None:
         raise ValueError(

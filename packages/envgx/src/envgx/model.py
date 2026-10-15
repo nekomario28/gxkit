@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items
+from gxcore.loading import convert_items, convert_names
 
 TYPES = ("str", "int", "float", "bool")
 
@@ -70,7 +70,7 @@ def _as_environment(value: object) -> Environment | None:
     if isinstance(value, dict) and "variables" in value:
         return Environment(
             variables=convert_items(value["variables"], _as_variable, field="variables"),
-            references=[str(r) for r in value.get("references", [])],
+            references=convert_names(value.get("references", []), field="references"),
             name=str(value.get("name", "env")),
         )
     if isinstance(value, (list, tuple)):
@@ -107,7 +107,7 @@ def load_environment(path: str | Path) -> tuple[Environment, object]:
             )
             env = Environment(
                 variables=variables,
-                references=[str(r) for r in getattr(module, "REFERENCES", [])],
+                references=convert_names(getattr(module, "REFERENCES", []), field="REFERENCES"),
             )
     if env is None:
         raise ValueError(

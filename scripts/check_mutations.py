@@ -45,6 +45,8 @@ def mutations(root: Path) -> list[Mutation]:
     assert prompt, "the control README must contain its prompt before mutation"
     coverage_test = repo + "test_the_coverage_floor_names_every_distribution"
     floor = "--cov-fail-under=100"
+    gates = KIT_TEST + "test_inspection_gates.py::"
+    parents = KIT_TEST + "test_declared_inputs.py::"
     cases = [
         Mutation(
             "prompt-deleted",
@@ -239,6 +241,111 @@ def mutations(root: Path) -> list[Mutation]:
             "",
             CORE_TEST
             + "test_loading.py::test_future_annotations_follow_the_artifact_not_the_loader",
+        )
+    )
+    # A report must survive a console that cannot encode every character it
+    # names; losing it to an encoding error would turn a verdict into exit 2.
+    cases.append(
+        Mutation(
+            "report-output-not-tolerated",
+            "packages/gxcore/src/gxcore/cli.py",
+            "def run(tool: Tool, argv: list[str] | None = None) -> int:\n    printable_output()\n",
+            "def run(tool: Tool, argv: list[str] | None = None) -> int:\n",
+            gates + "test_a_report_survives_a_console_that_cannot_encode_it",
+        )
+    )
+    # A replaced relationship must not read as unchanged debt: the finding names
+    # its own edge and endpoint, and a baseline compares identities.
+    cases.append(
+        Mutation(
+            "network-relationship-unidentified",
+            "packages/netgx/src/netgx/checks.py",
+            "                        identity=(src, dst, node),\n",
+            "",
+            gates + "test_replacing_an_unknown_edge_endpoint_is_a_new_error",
+        )
+    )
+    # An artifact's own directory change must not redirect the inspection.
+    cases.extend(
+        [
+            Mutation(
+                "relative-input-not-resolved",
+                "packages/gxkit/src/gxkit/cli.py",
+                "        target = Path(raw).resolve()",
+                "        target = Path(raw)",
+                gates
+                + "test_a_relative_input_keeps_its_identity_when_the_artifact_changes_directory",
+            ),
+            Mutation(
+                "direct-tool-config-looked-up-after-load",
+                "packages/gxcore/src/gxcore/cli.py",
+                "apply_config(report, load_config(path.parent), tool.name)",
+                "apply_config(report, load_config(Path(args.file).resolve().parent), tool.name)",
+                gates + "test_a_direct_tool_reads_its_own_config_directory",
+            ),
+        ]
+    )
+    # A recognized declaration must fail closed instead of coercing its members.
+    cases.extend(
+        [
+            Mutation(
+                "name-member-coerced",
+                "packages/gxcore/src/gxcore/loading.py",
+                '    if not isinstance(value, str):\n        raise InvalidArtifact(f"expected a name, not {value!r}")\n    return value',
+                "    return str(value)",
+                parents + "test_a_malformed_name_reports_its_field_and_index",
+            ),
+            Mutation(
+                "name-collection-unvalidated",
+                "packages/gxcore/src/gxcore/loading.py",
+                "    return convert_items(values, _name, field=field)",
+                "    return [str(value) for value in values]",
+                parents + "test_a_recognized_parent_with_an_invalid_collection_is_not_replaced",
+            ),
+            Mutation(
+                "envgx-parent-names-coerced",
+                "packages/envgx/src/envgx/model.py",
+                'references=convert_names(value.get("references", []), field="references"),',
+                'references=[str(r) for r in value.get("references", [])],',
+                parents + "test_a_recognized_parent_with_an_invalid_collection_is_not_replaced",
+            ),
+            Mutation(
+                "pipegx-parent-names-coerced",
+                "packages/pipegx/src/pipegx/model.py",
+                'goals=convert_names(value.get("goals", []), field="goals"),',
+                'goals=[str(g) for g in value.get("goals", [])],',
+                parents + "test_a_recognized_parent_with_an_invalid_collection_is_not_replaced",
+            ),
+            Mutation(
+                "apigx-parent-names-coerced",
+                "packages/apigx/src/apigx/model.py",
+                'auth_schemes=convert_names(value.get("auth_schemes", []), field="auth_schemes"),',
+                'auth_schemes=list(value.get("auth_schemes", [])),',
+                parents + "test_a_recognized_parent_with_an_invalid_collection_is_not_replaced",
+            ),
+        ]
+    )
+    # The coverage gate must be provable in both directions: an environment
+    # override cannot disable it, and a failing run cannot be discarded.
+    workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    marker = "      - name: Tests with a coverage floor\n"
+    assert workflow.count(marker) == 1
+    cases.append(
+        Mutation(
+            "coverage-disabled-by-environment",
+            ".github/workflows/ci.yml",
+            marker,
+            marker + '        env:\n          PYTEST_ADDOPTS: "--no-cov"\n',
+            coverage_test,
+        )
+    )
+    cases.append(
+        Mutation(
+            "coverage-failure-swallowed",
+            "scripts/check.sh",
+            floor,
+            floor + " || true",
+            coverage_test,
         )
     )
     return cases

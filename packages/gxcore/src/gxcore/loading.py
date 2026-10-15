@@ -55,6 +55,21 @@ def convert_items(values: object, convert: Callable[[Any], T | None], *, field: 
     return result
 
 
+def _name(value: object) -> str:
+    if not isinstance(value, str):
+        raise InvalidArtifact(f"expected a name, not {value!r}")
+    return value
+
+
+def convert_names(values: object, *, field: str) -> list[str]:
+    """Convert a declared name collection, or reject it with field and index.
+
+    Names are read as names: coercing an arbitrary object to `str` would turn a
+    malformed declaration into a name that silently matches nothing.
+    """
+    return convert_items(values, _name, field=field)
+
+
 _MODULES: ContextVar[dict[Path, ModuleType] | None] = ContextVar("gx_modules", default=None)
 
 

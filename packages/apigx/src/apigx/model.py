@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items
+from gxcore.loading import convert_items, convert_names
 
 MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -84,7 +84,7 @@ def _as_api(value: object) -> API | None:
             endpoints=convert_items(value["endpoints"], _as_endpoint, field="endpoints"),
             base=str(value.get("base", "/v1")),
             name=str(value.get("name", "api")),
-            auth_schemes=list(value.get("auth_schemes", [])),
+            auth_schemes=convert_names(value.get("auth_schemes", []), field="auth_schemes"),
         )
     if isinstance(value, (list, tuple)):
         return API(endpoints=convert_items(value, _as_endpoint, field="endpoints"))
@@ -115,5 +115,5 @@ def api_from_parts(
         endpoints=list(endpoints or []),
         base=base,
         name=name,
-        auth_schemes=list(auth_schemes or []),
+        auth_schemes=convert_names(auth_schemes or [], field="auth_schemes"),
     )

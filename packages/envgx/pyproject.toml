@@ -1,6 +1,6 @@
 [project]
 name = "envgx"
-version = "0.1.1"
+version = "0.1.2"
 description = "Inspect an environment/config declaration for undeclared references, secret defaults and type mistakes — codes, exit codes, storyboards."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
-    "gxcore>=0.5,<0.6",
+    "gxcore>=0.6,<0.7",
     "Pillow>=9",
 ]
 

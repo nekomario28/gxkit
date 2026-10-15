@@ -126,7 +126,10 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
     files: list[Path] = []
     for raw in positional:
-        target = Path(raw)
+        # Resolve every input before any artifact executes: an artifact may
+        # change the process directory, and a relative path would then name a
+        # different file for routing, loading and reporting alike.
+        target = Path(raw).resolve()
         if target.is_dir():
             found = sorted(target.rglob("*.py"))
             if not found:
