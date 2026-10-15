@@ -47,7 +47,12 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
         for s in (t[0], t[1]):
             if declared and s not in declared:
                 out.append(
-                    Problem(ERROR, "unknown-state", f"transition names undeclared state {s!r}")
+                    Problem(
+                        ERROR,
+                        "unknown-state",
+                        f"transition names undeclared state {s!r}",
+                        identity=(f"transition:{t[0]}->{t[1]}", s),
+                    )
                 )
         message = proto.message_of(t)
         if message and proto.messages and message not in proto.messages:
@@ -57,23 +62,29 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                     "unknown-message",
                     f"transition uses undeclared message {message!r}",
                     target=t[0],
+                    identity=(f"transition:{t[0]}->{t[1]}", message),
                 )
             )
-    for message in proto.responses.values():
+    for request, message in proto.responses.items():
         if proto.messages and message not in proto.messages:
             out.append(
                 Problem(
-                    ERROR, "unknown-message", f"a response names undeclared message {message!r}"
+                    ERROR,
+                    "unknown-message",
+                    f"a response names undeclared message {message!r}",
+                    identity=(f"response:{request}", message),
                 )
             )
 
     for message in proto.messages:
         if message not in used:
+            # The message is the finding: two unhandled messages are two defects.
             out.append(
                 Problem(
                     ERROR,
                     "unhandled-message",
                     f"message {message!r} is declared but no transition handles it",
+                    identity=(message,),
                 )
             )
 

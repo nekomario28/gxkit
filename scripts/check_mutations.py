@@ -834,11 +834,51 @@ def mutations(root: Path) -> list[Mutation]:
         Mutation(
             "identity-debt-grows",
             "packages/seedgx/src/seedgx/checks.py",
-            '                    f"stream {stream.name!r} has no seed — the run is not reproducible",\n                    target=target,',
-            '                    f"stream {stream.name!r} has no seed — the run is not reproducible",',
-            "packages/gxkit/tests/test_identity_inventory.py::test_the_identity_debt_only_shrinks",
+            "    report.problems = out",
+            '    out.append(Problem(ERROR, "missing-seed", "a finding with no location"))\n    report.problems = out',
+            "packages/gxkit/tests/test_identity_inventory.py::test_no_finding_that_can_repeat_is_indistinguishable",
         )
     )
+    # Each relationship identity must be load-bearing: removing it makes a
+    # replaced relationship read as unchanged debt.
+    identities = "packages/gxkit/tests/test_relationship_identities.py::"
+    for name, path, before in [
+        (
+            "identity-pipeline-goal",
+            "packages/pipegx/src/pipegx/checks.py",
+            "                    identity=(goal,),\n",
+        ),
+        (
+            "identity-protogx-message",
+            "packages/protogx/src/protogx/checks.py",
+            "                    identity=(message,),\n",
+        ),
+        (
+            "identity-authzgx-grant",
+            "packages/authzgx/src/authzgx/checks.py",
+            '                    identity=(f"grant:{role}:{perm}", "role", role),\n',
+        ),
+        (
+            "identity-schemagx-fk",
+            "packages/schemagx/src/schemagx/checks.py",
+            '                    identity=(child, parent, "parent-column", pc),\n',
+        ),
+    ]:
+        cases.append(
+            Mutation(
+                name,
+                path,
+                before,
+                "",
+                identities + "test_a_pipeline_with_two_unproduced_goals_reports_two"
+                if name.endswith("goal")
+                else identities + "test_a_protocol_with_two_unhandled_messages_reports_two"
+                if "message" in name
+                else identities + "test_two_dangling_grants_are_two_findings"
+                if "grant" in name
+                else identities + "test_two_dangling_foreign_keys_are_two_findings",
+            )
+        )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")

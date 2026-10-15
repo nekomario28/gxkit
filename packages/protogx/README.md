@@ -67,7 +67,7 @@ inspect: 9 problems (8 errors)
 | `no-start` | error | no start state (or it is not declared) |
 | `unknown-state` | error | a transition names an undeclared state |
 | `unknown-message` | error | a transition or response names an undeclared message |
-| `unhandled-message` | error | a declared message no transition handles |
+| `unhandled-message` | error | a declared message no transition handles; one finding per message |
 | `nondeterministic` | error | one state handles the same message two ways |
 | `deadlock` | error | a reachable non-terminal state has no way out |
 | `no-exit` | error | a reachable state can never reach a terminal state |

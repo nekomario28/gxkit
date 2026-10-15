@@ -40,11 +40,28 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
     out: list[Problem] = []
 
     # references that name something undeclared
+    # Each finding names a relationship and the side of it that does not resolve:
+    # `(grant, role)` and `(grant, permission)` are different defects, and
+    # replacing one unknown name with another is a new one.
     for role, perm in model.grants:
         if role not in declared_roles:
-            out.append(Problem(ERROR, "dangling-grant", f"grant names unknown role {role!r}"))
+            out.append(
+                Problem(
+                    ERROR,
+                    "dangling-grant",
+                    f"grant names unknown role {role!r}",
+                    identity=(f"grant:{role}:{perm}", "role", role),
+                )
+            )
         if perm not in declared_perms:
-            out.append(Problem(ERROR, "dangling-grant", f"grant names unknown permission {perm!r}"))
+            out.append(
+                Problem(
+                    ERROR,
+                    "dangling-grant",
+                    f"grant names unknown permission {perm!r}",
+                    identity=(f"grant:{role}:{perm}", "permission", perm),
+                )
+            )
     for principal, role in model.assigned:
         if principal not in declared_principals:
             out.append(
@@ -52,17 +69,28 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
                     ERROR,
                     "dangling-assignment",
                     f"assignment names unknown principal {principal!r}",
+                    identity=(f"assignment:{principal}:{role}", "principal", principal),
                 )
             )
         if role not in declared_roles:
             out.append(
-                Problem(ERROR, "dangling-assignment", f"assignment names unknown role {role!r}")
+                Problem(
+                    ERROR,
+                    "dangling-assignment",
+                    f"assignment names unknown role {role!r}",
+                    identity=(f"assignment:{principal}:{role}", "role", role),
+                )
             )
     for child, parent in model.inherits:
         for role in (child, parent):
             if role not in declared_roles:
                 out.append(
-                    Problem(ERROR, "dangling-inherit", f"inheritance names unknown role {role!r}")
+                    Problem(
+                        ERROR,
+                        "dangling-inherit",
+                        f"inheritance names unknown role {role!r}",
+                        identity=(f"inherit:{child}:{parent}", role, role),
+                    )
                 )
 
     # role inheritance must be acyclic

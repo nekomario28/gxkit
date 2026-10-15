@@ -42,7 +42,12 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
         pt, pc = schema.split(parent)
         if ct not in declared:
             out.append(
-                Problem(ERROR, "dangling-foreign-key", f"{child!r} references unknown table {ct!r}")
+                Problem(
+                    ERROR,
+                    "dangling-foreign-key",
+                    f"{child!r} references unknown table {ct!r}",
+                    identity=(child, parent, "table", ct),
+                )
             )
         elif cc not in schema.tables[ct]:
             out.append(
@@ -51,12 +56,16 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
                     "dangling-foreign-key",
                     f"{child!r} references unknown column {cc!r}",
                     target=ct,
+                    identity=(child, parent, "column", cc),
                 )
             )
         if pt not in declared:
             out.append(
                 Problem(
-                    ERROR, "dangling-foreign-key", f"{parent!r} references unknown table {pt!r}"
+                    ERROR,
+                    "dangling-foreign-key",
+                    f"{parent!r} references unknown table {pt!r}",
+                    identity=(child, parent, "parent-table", pt),
                 )
             )
             continue
@@ -67,6 +76,7 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
                     "dangling-foreign-key",
                     f"{parent!r} references unknown column {pc!r}",
                     target=pt,
+                    identity=(child, parent, "parent-column", pc),
                 )
             )
             continue
