@@ -108,6 +108,49 @@ def _self():
     return runpy.run_path(str(SELF))
 
 
+PREPUBLISH = ROOT / "scripts" / "prepublish_check.py"
+
+
+def _quoted(value: str) -> str:
+    return '"' + value + '"'
+
+
+# Assembled from pieces, never written whole: this file is tracked, and the gate
+# this tests scans the tracked tree, so a literal sample would make the gate fail
+# on its own test.
+@pytest.mark.parametrize(
+    ("text", "rule"),
+    [
+        ("aws = " + _quoted("AKIA" + "A" * 16), "aws-access-key"),
+        ("token = " + _quoted("ghp_" + "a" * 24), "github-token"),
+        ("key = " + _quoted("sk-" + "a" * 24), "openai-key"),
+        ("key = " + _quoted("sk-" + "ant-" + "a" * 24), "anthropic-key"),
+        ("hook = " + _quoted("xoxb-" + "1234567890"), "slack-token"),
+        ("-----BEGIN " + "RSA PRIVATE KEY-----", "private-key-block"),
+        ("password = " + _quoted("hunter2" * 2), "hardcoded-secret"),
+        ("HOME=" + "/" + "home/someone/project", "unix-home-path"),
+        ("path = C:" + "\\" + "Users\\someone\\project", "windows-home-path"),
+    ],
+)
+def test_the_prepublication_rules_can_fire(text, rule):
+    """A rule that cannot fire is not a gate, so each is shown firing."""
+    found = runpy.run_path(str(PREPUBLISH))["findings_in"](text)
+    assert rule in {found_rule for found_rule, _where, _line, _text in found}, found
+
+
+def test_the_prepublication_rules_accept_ordinary_text():
+    found = runpy.run_path(str(PREPUBLISH))["findings_in"](
+        "key = os.environ['API_KEY']\npath = pathlib.Path('docs/README.md')\n"
+    )
+    assert found == []
+
+
+def test_no_tracked_file_carries_a_credential_or_a_machine_path():
+    """The gate itself, run over the real tree: this is what CI blocks on."""
+    scan_head = runpy.run_path(str(PREPUBLISH))["scan_head"]
+    assert scan_head() == []
+
+
 def test_the_family_accepts_its_own_module_graph():
     """The real graph, inspected by the tool that would report a break in it."""
     assert _self()["main"]() == 0

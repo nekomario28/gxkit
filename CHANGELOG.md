@@ -140,13 +140,29 @@ A third sweep, over the tools' checks and the renderer:
   problem's own location. Two mutants (off-by-one numbering, boxing an unlocated
   problem) are killed.
 
+A fourth sweep, over the gates themselves: **a gate that cannot be shown failing
+is a log line, not a gate.** Every one is now proven by a mutant.
+
+- `scripts/prepublish_check.py` — the credential and machine-path rule — had no
+  test at all: its only red proof was a manual probe. Its rules are a pure
+  function with one test per rule now, and the live gate runs inside the suite
+  over the tracked tree, so a tracked credential fails the tests rather than only
+  the CI step. The samples are assembled from pieces, because a literal sample
+  would make the gate fail on its own test file.
+- The catalogue covers the gates: the hygiene rules, `release.py::check_dist`
+  (LICENSE and unexpected-wheel), `make_trace.py`'s generated column,
+  `self_inspect.py`'s sibling rule, and `inspect_path.sh`'s refusal of a
+  directory with no artifacts.
+- Writing them found a **missing test**: `check_dist` refuses a wheel with no
+  `LICENSE`, and nothing proved that check could fire. It has one now.
+
 ### Verification
 
-- 1624 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
+- 1673 tests, 100% statement coverage, strict mypy, ruff, shellcheck, zizmor and
   a dependency audit; every distribution built, checked with `twine` and against
   its `pyproject`; a public-Git consumer install at an exact revision; and the
   index installation gate.
-- A bounded mutation catalogue of 70 named defects, each killed by its intended
+- A bounded mutation catalogue of 80 named defects, each killed by its intended
   assertion after green controls, running in the local gate and in CI.
 - CI runs the suite on Ubuntu 3.10–3.13, Windows and macOS.
 
