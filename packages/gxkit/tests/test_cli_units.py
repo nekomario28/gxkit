@@ -60,7 +60,7 @@ def test_a_foreign_document_is_told_which_tool_reads_it(tmp_path, capsys):
     document.write_text("{}", encoding="utf-8")
     assert cli._tool_for(document, None) is None
     err = capsys.readouterr().err
-    assert "not a Python artifact" in err and "apigx" in err
+    assert "not a Python artifact" in err and "gxkit tools" in err
 
 
 def test_codes_command_runs(capsys):

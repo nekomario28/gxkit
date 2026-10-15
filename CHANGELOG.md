@@ -13,8 +13,15 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   server's path becomes the base. The same codes apply. OpenAPI 2 / Swagger is
   not supported, and a malformed document is an input failure that names where
   it is wrong.
-- The umbrella says which tool reads a document that is not a Python artifact,
-  instead of reporting a syntax error in a file that has none.
+- `schemagx` reads a SQL DDL file (`schemagx inspect schema.sql`): `CREATE TABLE`
+  becomes tables, `PRIMARY KEY` and `FOREIGN KEY ... REFERENCES` become the keys,
+  and the same codes apply. Composite keys and anything that is not a
+  `CREATE TABLE` statement are refused with their line rather than guessed at,
+  and column types are compared by family, so a PostgreSQL `SERIAL` key with an
+  `INTEGER` reference is no longer a false mismatch — which also removes that
+  false positive from declarations.
+- The umbrella says to name the tool for a document that is not a Python
+  artifact, instead of reporting a syntax error in a file that has none.
 - `docs/CONTRACT.md`: what an integrator may rely on — codes, severities, exit
   codes, the JSON report, the baseline, the CLI shape, supported Pythons — and
   what is explicitly not promised.
@@ -28,9 +35,10 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
   and the release notes document the index proof.
 
 ### Verification
-- The bounded mutation catalogue grows to 44, covering the importer's
-  authentication, version and malformed-input branches, the `.json` routing and
-  the foreign-document message.
+- The bounded mutation catalogue grows to 48, covering the importer's
+  authentication, version and malformed-input branches, the `.json` and `.sql`
+  routing, the DDL composite-key and unclosed-table refusals, the type families
+  and the foreign-document message.
 
 ## Unreleased — reaudit hardening
 

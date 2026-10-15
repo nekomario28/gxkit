@@ -92,6 +92,53 @@ def test_a_declaration_still_inspects_after_the_importer(tmp_path):
     assert "unauthenticated-mutation" in _codes(json.loads(result.stdout))
 
 
+SQL = """
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE posts (
+    id BIGSERIAL PRIMARY KEY,
+    author_id INTEGER,
+    FOREIGN KEY (author_id) REFERENCES users (email)
+);
+"""
+
+
+def test_a_sql_file_is_inspected_by_the_same_codes(tmp_path):
+    document = tmp_path / "schema.sql"
+    document.write_text(SQL, encoding="utf-8")
+    result = _inspect(document, tool="schemagx")
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = json.loads(result.stdout)
+    assert set(_codes(report)) == {"fk-type-mismatch", "fk-to-non-primary-key"}
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        ("SELECT 1;\n", "not a CREATE TABLE statement"),
+        ("CREATE TABLE a (id INT, PRIMARY KEY (id, x));\n", "composite primary key"),
+        ("CREATE TABLE a (id INT) trailing;\n", "expected ';' after the table body"),
+    ],
+)
+def test_a_sql_file_that_cannot_be_read_says_where_it_is_wrong(tmp_path, content, expected):
+    document = tmp_path / "schema.sql"
+    document.write_text(content, encoding="utf-8")
+    result = _inspect(document, tool="schemagx")
+    assert result.returncode == 2, result.stdout
+    assert expected in result.stderr and "Traceback" not in result.stderr
+
+
+def test_a_sql_document_needs_the_tool_named(tmp_path):
+    document = tmp_path / "schema.sql"
+    document.write_text(SQL, encoding="utf-8")
+    result = _inspect(document)
+    assert result.returncode == 2
+    assert "not a Python artifact" in result.stderr
+
+
 @pytest.mark.parametrize(
     ("content", "expected"),
     [
@@ -118,5 +165,5 @@ def test_a_document_needs_the_tool_named(tmp_path):
     document.write_text(json.dumps(DOCUMENT), encoding="utf-8")
     result = _inspect(document)
     assert result.returncode == 2
-    assert "apigx" in result.stderr and "Traceback" not in result.stderr
+    assert "not a Python artifact" in result.stderr and "Traceback" not in result.stderr
     assert "SyntaxError" not in result.stderr

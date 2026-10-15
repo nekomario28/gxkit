@@ -370,6 +370,40 @@ def mutations(root: Path) -> list[Mutation]:
             ),
         ]
     )
+    # The DDL importer must not guess where the schema is ambiguous, and must
+    # keep reading a dump whose keys are spelled the way a dialect spells them.
+    cases.extend(
+        [
+            Mutation(
+                "ddl-composite-key-guessed",
+                "packages/schemagx/src/schemagx/ddl.py",
+                "        if len(columns) != 1:\n            raise InvalidArtifact(",
+                "        if False:\n            raise InvalidArtifact(",
+                "packages/schemagx/tests/test_ddl.py::test_a_file_that_is_not_readable_ddl_says_where_it_is_wrong",
+            ),
+            Mutation(
+                "ddl-unclosed-table-accepted",
+                "packages/schemagx/src/schemagx/ddl.py",
+                '    raise InvalidArtifact("a CREATE TABLE is never closed")',
+                "    return len(text)",
+                "packages/schemagx/tests/test_ddl.py::test_a_file_that_is_not_readable_ddl_says_where_it_is_wrong",
+            ),
+            Mutation(
+                "ddl-type-families-dropped",
+                "packages/schemagx/src/schemagx/model.py",
+                "    return TYPE_FAMILIES.get(text, text)",
+                "    return text",
+                "packages/schemagx/tests/test_ddl.py::test_synonymous_types_are_the_same_family",
+            ),
+            Mutation(
+                "ddl-json-not-routed",
+                "packages/schemagx/src/schemagx/model.py",
+                '    if Path(path).suffix.lower() == ".sql":',
+                "    if False:",
+                "packages/gxkit/tests/test_foreign_inputs.py::test_a_sql_file_is_inspected_by_the_same_codes",
+            ),
+        ]
+    )
     # The coverage gate must be provable in both directions: an environment
     # override cannot disable it, and a failing run cannot be discarded.
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
@@ -463,9 +497,12 @@ def main() -> int:
                 path.write_text(original.replace(case.before, case.after), encoding="utf-8")
                 result = _pytest(copy, env, [case.test])
                 output = result.stdout + result.stderr
+                # `pytest.raises` reports an intended rejection that stopped
+                # happening as "DID NOT RAISE", not as an AssertionError.
+                asserted = "AssertionError" in output or "DID NOT RAISE" in output
                 killed = (
                     result.returncode == 1
-                    and "AssertionError" in output
+                    and asserted
                     and f"FAILED {case.test}" in output
                     and "ERROR collecting" not in output
                 )

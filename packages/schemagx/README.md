@@ -31,6 +31,21 @@ schema = s.Schema(
 Or module-level `TABLES` / `PRIMARY_KEYS` / `FOREIGN_KEYS` / `ROOTS`. Foreign
 keys point from the referencing (child) table to the referenced (parent) table.
 
+Or point it at the SQL DDL your database already has:
+
+```sh
+schemagx inspect schema.sql
+```
+
+`CREATE TABLE` becomes tables, `PRIMARY KEY` (inline or table-level) becomes the
+primary key, and `FOREIGN KEY ... REFERENCES` (inline or table-level) becomes the
+foreign key — the same codes then apply, so a foreign-key cycle in a dump is the
+same defect as one in a declaration. Column types are compared by family, so a
+PostgreSQL `SERIAL` key with an `INTEGER` reference is not a mismatch. Two limits
+are refused rather than guessed at: a composite primary or foreign key (the model
+records one column per key), and any statement that is not `CREATE TABLE` — both
+reported with their line.
+
 ## The contract
 
 ```
