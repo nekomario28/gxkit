@@ -33,16 +33,19 @@ def build() -> str:
         "if this file and the generator disagree.",
         "",
         "Each tool is one package, one `tool.py` module, one group in `gxkit.codes`, and",
-        "a set of example artifacts. The invariant checks (that every check can fail,",
-        "that the docs agree) live in `packages/gxkit/tests/`.",
+        "a set of example artifacts. `reads` is the file suffixes the tool accepts,",
+        "declared in `gxkit.registry` and checked against the loader. The invariant",
+        "checks (that every check can fail, that the docs agree) live in",
+        "`packages/gxkit/tests/`.",
         "",
-        "| tool | inspects | module | codes | examples |",
-        "| --- | --- | --- | --- | --- |",
+        "| tool | inspects | reads | module | codes | examples |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for spec in TOOLS:
         codes = CODEBOOK.get(spec.name, {})
+        reads = ", ".join(f"`{suffix}`" for suffix in spec.reads)
         lines.append(
-            f"| `{spec.name}` | {spec.inspects} | `{spec.module}` "
+            f"| `{spec.name}` | {spec.inspects} | {reads} | `{spec.module}` "
             f"| {len(codes)} | {_examples(spec.name)} |"
         )
     lines.append("")

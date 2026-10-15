@@ -46,4 +46,10 @@ consumer route is proven at an immutable revision; before publication the index
 route must be proven too, because a family that resolves from Git can still fail
 to resolve from an index when one package's range is wrong.
 
-Decisions belong in [choices](choices.md).
+Decisions belong in [choices](choices.md). The architecture the importers and
+gates rest on is recorded as durable rationale in
+[`../done/inspection-correctness-hardening.md`](../done/inspection-correctness-hardening.md).
+
+Remaining, and owned by the repository owner: the release itself — claiming the
+names, `uv publish` in dependency order, the tag, and consolidating the
+CHANGELOG's Unreleased sections into a release section.

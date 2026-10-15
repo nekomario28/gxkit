@@ -40,7 +40,9 @@ schemagx inspect schema.sql
 `CREATE TABLE` becomes tables, `PRIMARY KEY` (inline or table-level) becomes the
 primary key, and `FOREIGN KEY ... REFERENCES` (inline or table-level) becomes the
 foreign key — the same codes then apply, so a foreign-key cycle in a dump is the
-same defect as one in a declaration. Column types are compared by family, so a
+same defect as one in a declaration. `REFERENCES t` without a column means `t`'s
+primary key, resolved once every table has been read (and refused if `t` declares
+none); a statement between two tables is refused rather than skipped. Column types are compared by family, so a
 PostgreSQL `SERIAL` key with an `INTEGER` reference is not a mismatch. Two limits
 are refused rather than guessed at: a composite primary or foreign key (the model
 records one column per key), and any statement that is not `CREATE TABLE` — both

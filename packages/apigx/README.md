@@ -36,10 +36,13 @@ Or point it at the OpenAPI 3 document your service already publishes:
 apigx inspect openapi.json
 ```
 
-Paths and methods become endpoints, an operation's `security` (inherited from
-the document when it is absent, and an empty list meaning "requires none")
-becomes its authentication, its numeric responses become the documented statuses,
-and the first server's path becomes the base. The same codes then apply — an
+Paths and methods become endpoints, an operation's `security` becomes its
+authentication, its numeric responses become the documented statuses, and the
+first server's path becomes the base — with each operation path prefixed by it,
+as OpenAPI defines. Security is read as OpenAPI means it: a missing `security`
+inherits the document's, `[]` requires none, and an empty requirement (`[{}]`) is
+an alternative that requires nothing, so a route listing it is public however many
+schemes stand beside it. The same codes then apply — an
 unauthenticated mutation in a published spec is the same defect as one in a
 declaration. OpenAPI 2 / Swagger is not supported, and a document that is not
 valid OpenAPI 3 is an input failure (exit 2) that names where it is wrong.

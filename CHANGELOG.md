@@ -39,8 +39,18 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 - The README leads with the single-tool route on a file the reader already has,
   and the release notes document the index proof.
 
+### Fixed
+- Reading OpenAPI and SQL DDL as the formats define them, after an independent
+  review found five ways the importers could be silently wrong: an anonymous
+  `security` alternative (`[{}]`) was read as authenticated, which hid a public
+  mutation; an operation path was compared against the server's path without
+  being prefixed by it, so a correctly versioned endpoint read as unversioned; a
+  statement between two `CREATE TABLE`s was skipped instead of refused; a
+  `REFERENCES t` with no column invented `id` instead of resolving `t`'s primary
+  key; and a `$ref` path item was dropped rather than refused.
+
 ### Verification
-- The bounded mutation catalogue grows to 52, covering the importer's
+- The bounded mutation catalogue grows to 57, covering the importer's
   authentication, version and malformed-input branches, the `.json` and `.sql`
   routing, the DDL composite-key and unclosed-table refusals, the type families,
   the Mermaid start/terminal markers and composite refusal, and the

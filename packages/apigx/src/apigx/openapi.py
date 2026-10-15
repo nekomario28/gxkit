@@ -25,15 +25,18 @@ METHODS = ("get", "put", "post", "delete", "patch", "head", "options", "trace")
 
 
 def _security_of(operation: dict[str, Any], document: dict[str, Any]) -> bool:
-    """An operation is authenticated when it requires a security scheme.
+    """An operation is authenticated when no alternative permits anonymous access.
 
     A missing `security` inherits the document's; an empty list means the
-    operation deliberately requires none. Both are meaningful, so neither is
-    defaulted away.
+    operation deliberately requires none. Alternatives are ORed, and an empty
+    requirement object (`security: [{}]`) is an alternative that requires
+    nothing — so it makes the operation anonymous however many schemes are
+    listed beside it. Reading it as authenticated would hide a public mutation.
     """
-    if "security" in operation:
-        return bool(operation["security"])
-    return bool(document.get("security"))
+    requirements = operation["security"] if "security" in operation else document.get("security")
+    if not isinstance(requirements, list) or not requirements:
+        return False
+    return all(isinstance(requirement, dict) and requirement for requirement in requirements)
 
 
 def _statuses(responses: object) -> list[int]:
@@ -49,15 +52,31 @@ def _statuses(responses: object) -> list[int]:
     return sorted(codes)
 
 
-def _base(document: dict[str, Any], paths: list[str]) -> str:
-    """The versioned base, from the first server's path when it has one."""
+def _server_path(document: dict[str, Any]) -> str:
+    """The path prefix every operation path is relative to, if the document says.
+
+    OpenAPI defines an endpoint as the server's URL path followed by the path
+    item, so `/items` under `servers: [{"url": "https://api.example.com/v1"}]` is
+    `/v1/items`. Comparing the unprefixed form against the base would report a
+    correctly versioned endpoint as unversioned.
+    """
     servers = document.get("servers")
-    if isinstance(servers, list) and servers:
-        first = servers[0]
-        if isinstance(first, dict):
-            path = urlparse(str(first.get("url", ""))).path.rstrip("/")
-            if path:
-                return path
+    if isinstance(servers, list) and servers and isinstance(servers[0], dict):
+        return urlparse(str(servers[0].get("url", ""))).path.rstrip("/")
+    return ""
+
+
+def _endpoint_path(server_path: str, path: str) -> str:
+    if not server_path:
+        return path
+    return server_path + (path if path.startswith("/") else f"/{path}")
+
+
+def _base(document: dict[str, Any], paths: list[str]) -> str:
+    """The versioned base: the server's path, or the paths' shared prefix."""
+    server_path = _server_path(document)
+    if server_path:
+        return server_path
     if len(paths) > 1:
         prefix = paths[0]
         for path in paths[1:]:
@@ -85,20 +104,31 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
         if isinstance(schemes, dict) and isinstance(schemes.get("securitySchemes"), dict)
         else []
     )
+    server_path = _server_path(document)
     endpoints: list[Endpoint] = []
     for path, operations in paths.items():
         if not isinstance(operations, dict):
             raise InvalidArtifact(f"{source}: paths[{path!r}] is not an object")
+        if "$ref" in operations:
+            raise InvalidArtifact(
+                f"{source}: paths[{path!r}] is a reference; this importer does not resolve "
+                "references, and skipping it would drop the route without saying so"
+            )
         for method in METHODS:
             operation = operations.get(method)
             if operation is None:
                 continue
             if not isinstance(operation, dict):
                 raise InvalidArtifact(f"{source}: paths[{path!r}].{method} is not an object")
+            if "$ref" in operation:
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method} is a reference; this importer does not "
+                    "resolve references"
+                )
             endpoints.append(
                 Endpoint(
                     method.upper(),
-                    str(path),
+                    _endpoint_path(server_path, str(path)),
                     auth=_security_of(operation, document),
                     statuses=_statuses(operation.get("responses")),
                     deprecated=bool(operation.get("deprecated", False)),

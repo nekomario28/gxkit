@@ -148,21 +148,26 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
     tables: dict[str, dict[str, str]] = {}
     primary_keys: dict[str, str] = {}
     foreign_keys: list[tuple[str, str]] = []
+    pending: list[tuple[str, str, int]] = []
     position = 0
     found = False
-    while position < len(cleaned):
-        match = CREATE_TABLE.search(cleaned, position)
-        if match is None:
-            remainder = cleaned[position:].strip()
-            if remainder:
-                line = _line_of(cleaned, position + len(cleaned[position:]) - len(remainder))
-                if OTHER_STATEMENT.match(remainder):
-                    raise InvalidArtifact(
-                        f"{source}:{line}: only CREATE TABLE is read; "
-                        "declare the schema in Python for anything else"
-                    )
-                raise InvalidArtifact(f"{source}:{line}: not a CREATE TABLE statement")
+    while True:
+        while position < len(cleaned) and cleaned[position] in " \t\r\n":
+            position += 1
+        if position >= len(cleaned):
             break
+        # `match`, never `search`: a statement between two tables must be refused
+        # rather than skipped, or an ALTER could add a constraint nothing sees.
+        match = CREATE_TABLE.match(cleaned, position)
+        if match is None:
+            line = _line_of(cleaned, position)
+            statement = cleaned[position : position + 40].strip()
+            if OTHER_STATEMENT.match(statement):
+                raise InvalidArtifact(
+                    f"{source}:{line}: only CREATE TABLE is read; "
+                    "declare the schema in Python for anything else"
+                )
+            raise InvalidArtifact(f"{source}:{line}: not a CREATE TABLE statement")
         found = True
         table = _unquote(match.group("name"))
         if table in tables:
@@ -175,11 +180,15 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         columns: dict[str, str] = {}
         for item_line, item in _items(body, 0, cleaned, open_paren + 1):
             if TABLE_CONSTRAINT.match(item):
-                primary, foreign = _table_constraint(item, table, f"{source}:{item_line}")
+                primary, foreign, unresolved = _table_constraint(
+                    item, table, f"{source}:{item_line}"
+                )
                 if primary is not None:
                     primary_keys[table] = primary
                 if foreign is not None:
                     foreign_keys.append(foreign)
+                if unresolved is not None:
+                    pending.append((*unresolved, item_line))
                 continue
             column = COLUMN.match(item)
             if column is None:
@@ -192,8 +201,12 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
             reference = REFERENCES.search(rest)
             if reference is not None:
                 parent = _unquote(reference.group("table"))
-                parent_column = _unquote(reference.group("column") or "id")
-                foreign_keys.append((f"{table}.{name}", f"{parent}.{parent_column}"))
+                target = reference.group("column")
+                child = f"{table}.{name}"
+                if target is None:
+                    pending.append((child, parent, item_line))
+                else:
+                    foreign_keys.append((child, f"{parent}.{_unquote(target)}"))
             if re.search(r"\bPRIMARY\s+KEY\b", rest, re.IGNORECASE):
                 if table in primary_keys:
                     raise InvalidArtifact(
@@ -211,6 +224,14 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         position += 1
     if not found:
         raise InvalidArtifact(f"{source}: no CREATE TABLE statement")
+    for child, parent, line in pending:
+        primary = primary_keys.get(parent)
+        if primary is None:
+            raise InvalidArtifact(
+                f"{source}:{line}: {child} references {parent!r} without a column, and "
+                f"{parent!r} declares no primary key to mean"
+            )
+        foreign_keys.append((child, f"{parent}.{primary}"))
     return Schema(
         tables=tables,
         primary_keys=primary_keys,
@@ -221,8 +242,12 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
 
 def _table_constraint(
     item: str, table: str, where: str
-) -> tuple[str | None, tuple[str, str] | None]:
-    """(primary key column, foreign key pair) from a table-level constraint."""
+) -> tuple[str | None, tuple[str, str] | None, tuple[str, str] | None]:
+    """(primary key column, foreign key pair, unresolved pair) for one constraint.
+
+    The third element is a foreign key whose parent column was omitted, which can
+    only be resolved once every table has been read.
+    """
     primary = PRIMARY_KEY.match(item)
     if primary is not None:
         columns = _columns_of(primary.group("columns"))
@@ -231,19 +256,21 @@ def _table_constraint(
                 f"{where}: a composite primary key on {table!r} is not representable; "
                 "declare the schema in Python"
             )
-        return columns[0], None
+        return columns[0], None, None
     foreign = FOREIGN_KEY.match(item)
     if foreign is not None:
         columns = _columns_of(foreign.group("columns"))
-        target = _columns_of(foreign.group("target") or "") or ["id"]
+        target = _columns_of(foreign.group("target") or "")
+        parent = _unquote(foreign.group("table"))
+        if foreign.group("target") is None:
+            return None, None, (f"{table}.{columns[0]}", parent)
         if len(columns) != 1 or len(target) != 1:
             raise InvalidArtifact(
                 f"{where}: a composite foreign key on {table!r} is not representable; "
                 "declare the schema in Python"
             )
-        parent = _unquote(foreign.group("table"))
-        return None, (f"{table}.{columns[0]}", f"{parent}.{target[0]}")
-    return None, None
+        return None, (f"{table}.{columns[0]}", f"{parent}.{target[0]}"), None
+    return None, None, None
 
 
 def schema_from_file(path: str | Path) -> Schema:

@@ -45,11 +45,44 @@ def test_a_table_level_foreign_key_is_read():
     assert schema.foreign_keys == [("b.a_id", "a.id")]
 
 
-def test_a_foreign_key_without_a_column_assumes_the_conventional_one():
+def test_a_foreign_key_without_a_column_means_the_primary_key():
+    """SQL means the referenced table's primary key, whatever it is called."""
     schema = schema_from_ddl(
-        "CREATE TABLE a (id INT PRIMARY KEY);\nCREATE TABLE b (a_id INT REFERENCES a);\n"
+        "CREATE TABLE a (key INT PRIMARY KEY);\nCREATE TABLE b (a_key INT REFERENCES a);\n"
     )
-    assert schema.foreign_keys == [("b.a_id", "a.id")]
+    assert schema.foreign_keys == [("b.a_key", "a.key")]
+
+
+def test_a_table_level_foreign_key_without_a_column_means_the_primary_key():
+    schema = schema_from_ddl(
+        "CREATE TABLE a (key INT PRIMARY KEY);\n"
+        "CREATE TABLE b (a_key INT, FOREIGN KEY (a_key) REFERENCES a);\n"
+    )
+    assert schema.foreign_keys == [("b.a_key", "a.key")]
+
+
+def test_a_reference_to_a_table_without_a_primary_key_is_refused():
+    with pytest.raises(InvalidArtifact, match="no primary key"):
+        schema_from_ddl(
+            "CREATE TABLE a (x INT);\nCREATE TABLE b (y INT REFERENCES a);\n",
+            source="schema.sql",
+        )
+
+
+def test_a_reference_may_name_a_table_declared_later():
+    schema = schema_from_ddl(
+        "CREATE TABLE b (a_key INT REFERENCES a);\nCREATE TABLE a (key INT PRIMARY KEY);\n"
+    )
+    assert schema.foreign_keys == [("b.a_key", "a.key")]
+
+
+def test_a_statement_between_two_tables_is_refused_not_skipped():
+    """Searching past an ALTER would drop the constraint it adds."""
+    with pytest.raises(InvalidArtifact, match="only CREATE TABLE"):
+        schema_from_ddl(
+            "CREATE TABLE a (id INT);\nALTER TABLE a ADD COLUMN x INT;\nCREATE TABLE b (id INT);\n",
+            source="schema.sql",
+        )
 
 
 def test_a_table_level_primary_key_is_read():
