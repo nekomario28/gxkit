@@ -186,6 +186,68 @@ def test_a_diagram_that_cannot_be_read_says_where_it_is_wrong(tmp_path, content,
 
 
 @pytest.mark.parametrize(
+    ("tool", "document", "unhandled"),
+    [
+        (
+            "apigx",
+            {
+                "openapi": "3.0.3",
+                "info": {"title": "X"},
+                "paths": {"/a": {"psot": {"responses": {}}}},
+            },
+            "a mistyped method, which would drop the route",
+        ),
+        (
+            "apigx",
+            {
+                "openapi": "3.0.3",
+                "info": {"title": "X"},
+                "security": [{"bearer": []}],
+                "paths": {"/a": {"post": {"securty": [], "responses": {"201": {}}}}},
+            },
+            "a mistyped security key, which would read as authenticated",
+        ),
+        (
+            "apigx",
+            {
+                "openapi": "3.0.3",
+                "info": {"title": "X"},
+                "webhooks": {"ping": {"post": {"responses": {}}}},
+                "paths": {"/a": {"get": {"responses": {}}}},
+            },
+            "declared operations outside paths",
+        ),
+        (
+            "schemagx",
+            "CREATE INDEX i ON a (x);\nCREATE TABLE a (id INT);\n",
+            "a statement it does not translate",
+        ),
+        ("schemagx", "CREATE TABLE a (id INT) ENGINE=InnoDB;\n", "a clause it does not translate"),
+        ("flowgx", "stateDiagram-v2\n    [*] --> a\n    a ~~> b\n", "a line it cannot read"),
+    ],
+)
+def test_an_importer_refuses_what_it_cannot_account_for(tmp_path, tool, document, unhandled):
+    """Silence is never a verdict: an unhandled construct must be refused.
+
+    A converter that quietly narrows what it inspects reports success about a
+    document it did not fully read, which is the failure this family exists to
+    prevent. Each of these was reachable before: a mistyped method dropped a
+    route, a mistyped `security` read as inherited authentication (hiding a
+    public mutation), and an `ENGINE=` clause went unread.
+    """
+    path = tmp_path / "artifact"
+    if isinstance(document, dict):
+        path = path.with_suffix(".json")
+        path.write_text(json.dumps(document), encoding="utf-8")
+    else:
+        path = path.with_suffix(".sql" if tool == "schemagx" else ".mmd")
+        path.write_text(document, encoding="utf-8")
+    result = _inspect(path, tool=tool)
+    assert result.returncode == 2, f"{unhandled}: {result.stdout}{result.stderr}"
+    assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize(
     ("content", "expected"),
     [
         ("{ not json", "not JSON"),

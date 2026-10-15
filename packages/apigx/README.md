@@ -47,6 +47,12 @@ unauthenticated mutation in a published spec is the same defect as one in a
 declaration. OpenAPI 2 / Swagger is not supported, and a document that is not
 valid OpenAPI 3 is an input failure (exit 2) that names where it is wrong.
 
+Nothing is ignored: a key the importer does not recognise in a path item or an
+operation, a `webhooks` section, and a `$ref` that would have to be followed are
+all refused. That is deliberate — a mistyped method would otherwise drop a route,
+and a mistyped `security` would read as inherited authentication and hide a
+public mutation.
+
 Names are names: `auth_schemes` must be a list of strings. A malformed member
 or collection rejects the artifact with its field and index (exit 2) instead
 of disappearing, and a recognized declaration is never replaced by another.

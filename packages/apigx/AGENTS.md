@@ -43,4 +43,6 @@ the result.
 `apigx inspect openapi.json` reads the OpenAPI 3 document a service publishes
 instead of a declaration: paths and methods become endpoints, `security` becomes
 authentication, numeric responses become statuses. A document that is not valid
-OpenAPI 3 exits 2 and names where it is wrong.
+OpenAPI 3 exits 2 and names where it is wrong. An unrecognised key in a path item
+or an operation, a `webhooks` section, and a `$ref` are refused rather than
+ignored, so a mistyped method or security key cannot quietly change the verdict.

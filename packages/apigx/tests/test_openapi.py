@@ -147,6 +147,53 @@ def test_a_reference_is_refused_rather_than_dropped(path_item):
         api_from_document(_doc(paths={"/items": path_item}))
 
 
+@pytest.mark.parametrize(
+    ("path_item", "expected"),
+    [
+        # A mistyped method would drop the route; ignoring it would report an API
+        # that does not contain what the document declares.
+        ({"psot": {"responses": {}}}, "unrecognised key"),
+        # A mistyped `security` would read as inherited authentication.
+        ({"post": {"securty": [], "responses": {}}}, "unrecognised key"),
+    ],
+)
+def test_an_unrecognised_key_is_refused_rather_than_ignored(path_item, expected):
+    with pytest.raises(InvalidArtifact, match=expected):
+        api_from_document(_doc(paths={"/items": path_item}))
+
+
+def test_a_vendor_extension_is_allowed_because_the_spec_allows_it():
+    api = api_from_document(_doc(paths={"/items": {"get": {"responses": {}, "x-internal": True}}}))
+    assert [endpoint.verb for endpoint in api.endpoints] == ["GET"]
+
+
+def test_operations_outside_paths_are_refused_rather_than_skipped():
+    """`webhooks` holds operations too; reading paths only would be partial."""
+    document = _doc()
+    document["webhooks"] = {"ping": {"post": {"responses": {}}}}
+    with pytest.raises(InvalidArtifact, match="webhooks"):
+        api_from_document(document)
+
+
+def test_the_whole_operation_vocabulary_is_accepted():
+    operation = {
+        "tags": ["a"],
+        "summary": "s",
+        "description": "d",
+        "externalDocs": {"url": "https://example.com"},
+        "operationId": "op",
+        "parameters": [],
+        "requestBody": {},
+        "responses": {"200": {}},
+        "callbacks": {},
+        "deprecated": False,
+        "security": [{"bearer": []}],
+        "servers": [],
+    }
+    api = api_from_document(_doc(paths={"/a": {"post": operation}}))
+    assert [endpoint.verb for endpoint in api.endpoints] == ["POST"]
+
+
 def test_security_schemes_become_the_declared_scheme_names():
     api = api_from_document(_doc())
     assert api.auth_schemes == ["bearer"]
