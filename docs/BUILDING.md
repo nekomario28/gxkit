@@ -73,8 +73,11 @@ renderer   artifact -> PIL.Image
 
 ```python
 main, TOOL = scene_tool(
-    name="schemagx", description="…",
-    load=load_schema, inspect=inspect_schema, to_image=render_image,
+    name="schemagx",
+    description="…",
+    load=load_schema,
+    inspect=inspect_schema,
+    to_image=render_image,
 )
 ```
 
@@ -168,6 +171,7 @@ removed; *tested* means a test holds it; *convention* means a reviewer holds it.
 | --- | --- |
 | A link, file or asset in the docs that does not exist (`docs/PLAN.md` in a README) | `test_no_broken_internal_link` — every relative link, not only the ones with a `#fragment` (widened after exactly this mistake; proved) |
 | A README whose pasted output no longer matches the tool | `test_a_tool_readme_shows_a_transcript_it_can_still_produce` and the root-README check: counts exactly, `(code, severity)` as a prefix (proved) |
+| A rendered asset whose *composition* is wrong — sixteen cubes that looked like they overlapped, a title with the ring drawn through it | the hero's radius, cube size and vertical drop are **derived from the domain count** against measured constants (the projection's squash, px per unit, the title band), with the spacing ratio and the title clearance asserted for several counts; a count that cannot be drawn uncrowded is refused. The clip is then checked by `framegx` — gxkit's own tool on gxkit's own asset (proved) |
 | A rendered asset (a figure, a hero) left behind by a code change | the architecture SVG is regenerated and compared; the hero records its scene's hash and cube count in `docs/assets/hero.json` (proved, both) |
 | A test that passes because it was skipped | `conftest.py` fails the session when a test skips on a machine with every capability (`GXKIT_REQUIRE_ALL_CAPABILITIES=1`, set by the gate, Linux CI and the mutation harness; proved) |
 | A test that asserts a value it just constructed, or that would not fail if the rule were deleted | the mutation catalogue: 116 named faults, each required to make its test fail **with an assertion** (proved) |

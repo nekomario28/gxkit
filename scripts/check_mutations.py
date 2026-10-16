@@ -848,6 +848,20 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/gxkit/tests/test_docs.py::test_the_committed_hero_matches_what_was_rendered",
             ),
             Mutation(
+                "hero-assumes-no-projection-squash",
+                "docs/hero/hero_domains.py",
+                "SQUASH = 0.81",
+                "SQUASH = 1.0",
+                "packages/gxkit/tests/test_docs.py::test_the_hero_cannot_crowd_its_cubes",
+            ),
+            Mutation(
+                "hero-leaves-no-room-for-the-title",
+                "docs/hero/hero_domains.py",
+                "TEXT_BAND_PX = 190.0",
+                "TEXT_BAND_PX = 0.0",
+                "packages/gxkit/tests/test_docs.py::test_the_hero_leaves_room_for_its_title",
+            ),
+            Mutation(
                 "hero-green-in-palette",
                 "docs/hero/hero_domains.py",
                 '    "#2563eb",',

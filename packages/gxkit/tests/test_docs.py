@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import math
 import pathlib
 import re
 import shutil
@@ -528,11 +529,17 @@ def test_the_committed_hero_matches_what_was_rendered():
     from PIL import Image
 
     manifest = json.loads((ROOT / "docs" / "assets" / "hero.json").read_text(encoding="utf-8"))
+    maker = _script_module("make_hero_manifest.py")
     for key, path in (
         ("scene_sha256", ROOT / "docs" / "hero" / "gxkit_hero.py"),
         ("domains_sha256", ROOT / "docs" / "hero" / "hero_domains.py"),
     ):
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        # A token stream, not the bytes: reformatting or re-commenting the scene is
+        # not a new picture, and demanding a re-render for one would teach whoever
+        # hit it to loosen this guard. (`ast.dump` was the first attempt: the same
+        # source dumps differently on 3.10 and 3.13, so CI failed on three of the
+        # four Pythons while passing locally.)
+        digest = maker.source_digest(path)
         assert digest == manifest[key], (
             f"{path.name} changed since the hero was rendered; re-render it "
             "(docs/hero/gxkit_hero.py's docstring has the commands) and update "
@@ -681,3 +688,101 @@ def test_the_root_readmes_worked_example_still_works():
     pytest.fail(
         f"the root README shows {problems}p/{errors}e {pasted}, which {tool} no longer produces"
     )
+
+
+def test_the_hero_cannot_crowd_its_cubes():
+    """Sixteen cubes half a cube-width apart *looked* like they overlapped.
+
+    They did not touch in 3D (1.25 diagonals apart), but the ring is seen at an
+    angle: at the old 62° elevation its minor axis was 0.49 of its major one, so on
+    screen the gap was 0.8 diagonals. The spacing is now computed *on screen*, and
+    these constants are the measurements it is computed from — a test pins them to
+    their measured values so they cannot be loosened to make a picture fit.
+
+    To re-measure: render four cubes at the compass points of a radius-3 ring (see
+    `docs/hero/gxkit_hero.py`), read their pixel centres, and take minor/major.
+    """
+    hero = _hero_module()
+    assert pytest.approx(0.81, abs=0.005) == hero.SQUASH, "measured at phi=40"
+    assert pytest.approx(73.0, abs=0.5) == hero.PX_PER_UNIT, "measured at 720x720"
+    assert hero.FRAME_HALF_PX == 360.0
+    assert hero.CROWDING >= 1.2, "below this the cubes look like they touch"
+
+    for count in (len(TOOL_PACKAGES), 20, 24):
+        spacing, diagonal = hero.spacing(count)
+        # When `MAX_SIDE` does not bind the two are equal by construction, so the
+        # comparison needs the tolerance of doing the same arithmetic twice.
+        assert spacing >= hero.CROWDING * diagonal * 0.999, (
+            f"{count} cubes: {spacing:.3f} of screen spacing for a {diagonal:.3f} "
+            "diagonal — the ring would read as overlapping"
+        )
+
+
+def test_the_hero_leaves_room_for_its_title():
+    """The text is drawn in frame space, so a ring that grows upward walks into it.
+
+    Measured before the fix: the subtitle's descenders ended at 155 px and the cube
+    tops were also at 155 px.
+    """
+    hero = _hero_module()
+    assert pytest.approx(190.0, abs=1.0) == hero.TEXT_BAND_PX, "measured from a render"
+    band = (hero.FRAME_HALF_PX - hero.TEXT_BAND_PX) / hero.PX_PER_UNIT
+    for count in (len(TOOL_PACKAGES), 20, 24):
+        _radius, side, _depth, drop = hero.geometry(count)
+        reach = hero.RADIUS * hero.SQUASH + side * math.sqrt(3) / 2 + drop
+        assert reach <= band + 1e-9, (
+            f"{count} cubes reach {reach:.3f} units above the centre with only "
+            f"{band:.3f} free above the title"
+        )
+        assert drop <= 0.0, "the ring may only be dropped, never raised"
+
+
+def test_a_count_that_cannot_be_drawn_is_refused_not_crowded():
+    """The honest failure: two rings, not a tighter squeeze."""
+    hero = _hero_module()
+    with pytest.raises(ValueError, match="cannot be drawn uncrowded"):
+        hero.geometry(60)
+
+
+def test_the_committed_clip_survives_its_own_inspector():
+    """gxkit's own tool, on gxkit's own asset.
+
+    `docs/BUILDING.md` says the hero clip is checked with `framegx`; this is that
+    claim, run: the file decodes, is not one flat colour, and is not frozen.
+    """
+    import shutil
+
+    pytest.importorskip("framegx")
+    if shutil.which("ffprobe") is None:
+        pytest.skip("ffprobe is not installed, so the clip cannot be decoded here")
+    from framegx import Video, inspect_video
+
+    # A `Video` is a path plus expectations; the loader form wants a Python
+    # artifact, and this is the artifact itself.
+    report = inspect_video(Video(str(ROOT / "docs" / "assets" / "hero.gif")))
+    codes = {problem.code for problem in report.problems}
+    assert not codes & {"missing-file", "probe-error", "no-frames"}, codes
+    assert "all-black" not in codes and "frozen" not in codes, (
+        f"the hero is not moving: {sorted(codes)}"
+    )
+
+
+def test_the_hero_digest_ignores_layout_and_comments_but_not_code(tmp_path):
+    """The guard's own behaviour: what counts as a change to the picture.
+
+    Two earlier versions were not portable (a tree dump and a token stream), so the
+    digest is the source with comments removed and whitespace collapsed — and this
+    is what that means in practice.
+    """
+    maker = _script_module("make_hero_manifest.py")
+    assert maker.without_comments("x = 1  # note").strip() == "x = 1"
+    assert "#22c55e" in maker.without_comments('colour = "#22c55e"  # keeps its hash')
+
+    a = tmp_path / "a.py"
+    b = tmp_path / "b.py"
+    c = tmp_path / "c.py"
+    a.write_text("SQUASH = 0.81\nCROWDING = 1.25\n", encoding="utf-8")
+    b.write_text("SQUASH = 0.81  # measured\n\n  CROWDING = 1.25\n", encoding="utf-8")
+    c.write_text("SQUASH = 1.0\nCROWDING = 1.25\n", encoding="utf-8")
+    assert maker.source_digest(a) == maker.source_digest(b), "layout or comments changed it"
+    assert maker.source_digest(a) != maker.source_digest(c), "a value did not"

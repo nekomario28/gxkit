@@ -1,13 +1,15 @@
 {
   "scene": "docs/hero/gxkit_hero.py",
-  "scene_sha256": "42dcba6d504a0fd35081170e39b1dfb5631b497dd80352419f7cecd490e7494d",
+  "scene_sha256": "91ba61b7de33bd0f81600266530255e88f79d8a40c75a58d03c3bd4d0b0ba994",
   "domains_source": "docs/hero/hero_domains.py",
-  "domains_sha256": "96e529ef1d0524bfe7a6c7912a471f16d2bb5ccaa7ff4c3ebb34d50c361a1b48",
+  "domains_sha256": "02106259994585a507d7ee91c11a2a50be8a33aab22b7b091e9fec1fadc154a0",
+  "hash_of": "the scene's source with comments and layout removed, so reformatting or re-commenting does not demand a re-render while any change to what the code means does",
   "domains": 16,
   "gif": "docs/assets/hero.gif",
-  "gif_sha256": "fb80d7b6fab936ca0847228f6f050dbc3fabcb3659831c778ce9f89542c1f362",
+  "gif_sha256": "d6c8cd62b92b5d6c7233c9ad92004007e89a4f80c169f54f755d90a4c6df06d0",
   "width": 560,
   "height": 560,
   "frames": 114,
-  "duration_seconds": 9.5
+  "duration_seconds": 9.5,
+  "notes": "Rendered with ManimGX at 720x720/24fps then converted (see the scene's docstring). The composition numbers in hero_domains.geometry() were measured against this render: 1.25 cube-diagonals of screen spacing, and the ring dropped so its top clears the 190 px title band."
 }
