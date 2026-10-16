@@ -654,7 +654,17 @@ def _is_missing_capability(error: Exception) -> bool:
         return True
     text = f"{type(error).__name__}: {error}".lower()
     return any(
-        word in text for word in ("moderngl", "ffmpeg", "matplotlib", "no gl", "no module named")
+        word in text
+        for word in (
+            "moderngl",
+            "ffmpeg",
+            "ffprobe",
+            "matplotlib",
+            "no gl",
+            "no module named",
+            "is not installed",
+            "missingcapability",
+        )
     )
 
 

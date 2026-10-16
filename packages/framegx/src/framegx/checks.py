@@ -15,7 +15,7 @@ from gxcore import ERROR, WARN, Problem, Report
 from gxcore.geometry import union
 
 from .clip import Video
-from .probe import VideoError, mean_volume_db, probe, sample_frames
+from .probe import MissingCapability, VideoError, mean_volume_db, probe, sample_frames
 from .render import cell_box
 
 _BLACK_LEVEL = 5.0  # 0..255 mean below this is "black"
@@ -55,6 +55,11 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
 
     try:
         meta = probe(media)
+    except MissingCapability:
+        # Not a fault in the artifact: the machine cannot read any clip. Refusing
+        # (exit 2) sends the caller to install ffmpeg, where a `probe-error`
+        # finding would send them to fix a file that is fine.
+        raise
     except VideoError as exc:
         out.append(Problem(ERROR, "probe-error", _compact(str(exc))))
         report.problems = out
@@ -112,6 +117,8 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
 
     try:
         frames = sample_frames(media, video.sample_fps)
+    except MissingCapability:
+        raise
     except VideoError as exc:
         out.append(Problem(ERROR, "probe-error", _compact(str(exc))))
         report.problems = out

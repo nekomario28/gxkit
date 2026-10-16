@@ -20,8 +20,28 @@ class VideoError(Exception):
     """ffprobe or ffmpeg could not read the file."""
 
 
+class MissingCapability(VideoError):
+    """A program this tool drives is not installed on this machine.
+
+    Distinct from a file that cannot be read on purpose: a missing `ffprobe` is not
+    a fault in the artifact, so it must not be reported as one. It escapes as a
+    refusal (exit 2) naming the program, which is what the contract promises.
+    """
+
+
 def _run(args: list[str], **kw: Any) -> subprocess.CompletedProcess[Any]:
-    return subprocess.run(args, capture_output=True, **kw)
+    """Run an ffmpeg tool, naming it when it is not installed.
+
+    `subprocess` says only "no such file or directory", and on Windows not even
+    which program, so the refusal did not name what was missing — which the contract
+    promises it does. Measured on Windows CI, where `ffprobe` is absent.
+    """
+    try:
+        return subprocess.run(args, capture_output=True, **kw)
+    except FileNotFoundError as exc:
+        raise MissingCapability(
+            f"{args[0]} is not installed or not on PATH ({exc.strerror})"
+        ) from exc
 
 
 def probe(path: str | Path) -> dict[str, Any]:

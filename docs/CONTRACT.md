@@ -20,7 +20,7 @@ the other way, because that would silently weaken an existing gate.
 | --- | --- |
 | 0 | inspected, no `error` |
 | 1 | inspected, at least one `error` (or, with `--baseline`, at least one *new* error) |
-| 2 | the input could not be inspected: missing, unreadable, malformed, or it called `sys.exit` |
+| 2 | the input could not be inspected: missing, unreadable, malformed, it called `sys.exit`, or the tool needs a capability this machine does not have (a missing `ffprobe`) — the refusal names what is missing |
 
 A `warn` or `info` never fails a build.
 
@@ -87,8 +87,12 @@ Do not build on these; they may change in a minor version.
   dataclasses are public and useful, but only the CLI contract above is
   guaranteed.
 - **Capability-bound behaviour.** `shadergx` needs a GL context and `framegx`
-  needs `ffmpeg`; where they are absent the affected tests skip and the tool
-  reports what it can still determine.
+  needs `ffmpeg`. Where a capability is absent the affected tests skip, and the
+  tool does one of two measured things: it **refuses the input with exit 2** naming
+  the missing program (`framegx` without `ffprobe` — measured), or it **reports
+  what it can still determine** (a GL driver that cannot compile the shader's
+  features is a `compile-error`, not a refusal). Which of the two happens is a
+  property of where the capability is missing, not of the artifact.
 
 ## Silence is never a verdict
 

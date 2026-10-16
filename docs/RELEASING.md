@@ -4,6 +4,37 @@ The packages are built with `uv build` and published to PyPI with `uv publish`.
 Publishing needs a PyPI API token; it is the one step that must be run by the
 owner.
 
+## When it is ready to publish
+
+"Another review found something" is not a reason to hold a release; it is the
+normal state of software, and the useful question is whether what it found was
+*inside the published promise* or beside it. The gate is therefore:
+
+1. **No known defect is unfixed.** Every finding so far carries a guard (a test, a
+   mutation, a generated ratchet), so the same class cannot come back unnoticed.
+2. **The promise has not moved.** `docs/CONTRACT.md` is the promise, and during the
+   work that produced this release it was *created* and then only added to: over
+   the period, 13 codes were added, **0 removed**, and **0 severities moved**. The
+   contract allows exactly that — "which codes a tool can emit … the set grows" —
+   and a baseline absorbs a new finding. A change to an exit code, a JSON key, a CLI
+   flag or a model field name would be a different matter and would need the
+   document updated first.
+3. **The promise is checked, not asserted.** `packages/gxkit/tests/test_contract_conformance.py`
+   drives the *installed console scripts* and falsifies each Stable sentence: the
+   three exit codes, the report's keys, the flags doing what they say, the umbrella's
+   `tools`/`codes`/routing, the baseline forgiving an old error and failing a new
+   one, every tool reading a Python file and the three document readers reading
+   their own document. Each test names the sentence it holds.
+4. **What is not promised is written down.** The boundaries live in that document's
+   "Not stable" section, `docs/SEMANTICS.md` (what each claim was measured against),
+   `docs/IDENTITY.md` (the sites a finding is identified by) and
+   `docs/SKILL-EVAL.md` (what the skill evaluation does not cover).
+
+A first release has an advantage worth naming: nobody depends on it yet, so a
+correction that *adds* a finding — the shape every fix in this work took — cannot
+break a consumer. After 1.0.0, the same corrections ship as patch or minor
+releases, and the baseline is what lets a user take them without a red build.
+
 ## What has been verified without a token
 
 The publish step is the one part no test can complete here, so it was measured as

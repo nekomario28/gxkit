@@ -1,0 +1,19 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Orders (with faults)", "version": "1.0.0"},
+  "servers": [{"url": "https://api.example.com/v1"}],
+  "paths": {
+    "/orders": {
+      "get": {
+        "summary": "List orders",
+        "responses": {"200": {"description": "ok"}, "401": {"description": "no token"}}
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Create a user without a token, outside the base, and with no error status",
+        "responses": {"201": {"description": "created"}}
+      }
+    }
+  }
+}

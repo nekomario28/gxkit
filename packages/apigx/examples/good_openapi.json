@@ -1,0 +1,20 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Orders", "version": "1.0.0"},
+  "servers": [{"url": "https://api.example.com/v1"}],
+  "paths": {
+    "/orders": {
+      "get": {
+        "summary": "List orders",
+        "security": [{"bearer": []}],
+        "responses": {"200": {"description": "ok"}, "401": {"description": "no token"}}
+      },
+      "post": {
+        "summary": "Create an order",
+        "security": [{"bearer": []}],
+        "responses": {"201": {"description": "created"}, "400": {"description": "bad request"}}
+      }
+    }
+  },
+  "components": {"securitySchemes": {"bearer": {"type": "http", "scheme": "bearer"}}}
+}
