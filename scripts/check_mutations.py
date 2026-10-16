@@ -793,6 +793,20 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/chartgx/tests/test_model_route.py::test_a_truncated_baseline_is_the_same_code_the_figure_route_uses",
             ),
             Mutation(
+                "skip-instead-of-asserting",
+                "packages/levelgx/tests/test_levels.py",
+                '    assert_fires(r, "soft-lock", ERROR)',
+                '    import pytest; pytest.skip("dodging the assertion")',
+                "packages/levelgx/tests/test_levels.py::test_softlock_is_an_error",
+            ),
+            Mutation(
+                "readme-link-dangling-unanchored",
+                "README.md",
+                "[`docs/TRACE.md`](docs/TRACE.md)",
+                "[`docs/TRACE.md`](docs/NOTHING.md)",
+                "packages/gxkit/tests/test_docs.py::test_no_broken_internal_link",
+            ),
+            Mutation(
                 "readme-transcript-drift",
                 "packages/apigx/src/apigx/checks.py",
                 '                    WARN,\n                    "unversioned-path",',
@@ -1082,6 +1096,7 @@ def main() -> int:
                 str(path) for path in sorted(copy.glob("packages/*/src"))
             ),
             "PYTHONDONTWRITEBYTECODE": "1",
+            "GXKIT_REQUIRE_ALL_CAPABILITIES": "1",
             "PYTEST_ADDOPTS": "",
         }
         # Assert imports resolve to the disposable code, not editable installs.
@@ -1112,16 +1127,29 @@ def main() -> int:
                 path.write_text(original.replace(case.before, case.after), encoding="utf-8")
                 result = _pytest(copy, env, [case.test])
                 output = result.stdout + result.stderr
-                # A test can fail three ways and all three count: an assertion,
-                # a `pytest.raises` that stopped raising ("DID NOT RAISE"), and a
-                # `pytest.fail` with a message ("Failed: ...").
+                # A test can fail in several ways and they all count: an
+                # assertion, a `pytest.raises` that stopped raising ("DID NOT
+                # RAISE"), a `pytest.fail` with a message ("Failed: ..."), or an
+                # exception the guard itself raises (a duplicate YAML key). What
+                # must not count is a failure to *collect* the test — handled below.
                 asserted = any(
-                    marker in output for marker in ("AssertionError", "DID NOT RAISE", "Failed:")
+                    marker in output
+                    for marker in (
+                        "AssertionError",
+                        "DID NOT RAISE",
+                        "Failed:",
+                        f"FAILED {case.test}",
+                    )
                 )
+                # The named test must be the one that failed. Usually pytest says
+                # `FAILED <nodeid>`; a session-level guard (a test that skipped on a
+                # machine with every capability) names it in its own failure text
+                # instead, so the test's own name plus a failure marker also counts.
+                named = f"FAILED {case.test}" in output or case.test.split("::")[-1] in output
                 killed = (
                     result.returncode == 1
                     and asserted
-                    and f"FAILED {case.test}" in output
+                    and named
                     and "ERROR collecting" not in output
                 )
                 if not killed:

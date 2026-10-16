@@ -247,7 +247,13 @@ def _headings(path) -> set[str]:
     return {_slug(m.group(1)) for m in re.finditer(r"^#{1,6}\s+(.*)$", text, re.M)}
 
 
-def test_no_broken_internal_anchor():
+def test_no_broken_internal_link():
+    """Every relative link in the documentation points at something that exists.
+
+    This checked only links that carried a `#fragment`, so a link to a file that
+    was never there — `docs/PLAN.md` in a README, the mistake that got this test
+    widened — passed unnoticed. A reader is the only one who would find out.
+    """
     broken: list[str] = []
     for path in _docs_text():
         if path.suffix != ".md":
@@ -255,15 +261,15 @@ def test_no_broken_internal_anchor():
         text = path.read_text(encoding="utf-8")
         for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", text):
             target = target.strip()
-            if target.startswith(("http://", "https://", "mailto:")):
+            if target.startswith(("http://", "https://", "mailto:")) or not target:
                 continue
             file_part, _, anchor = target.partition("#")
-            if not anchor:
+            if not file_part and not anchor:
                 continue
             target_path = path if not file_part else (path.parent / file_part)
             if not target_path.exists():
                 broken.append(f"{path}: {target} (file missing)")
-            elif target_path.suffix == ".md" and anchor not in _headings(target_path):
+            elif anchor and target_path.suffix == ".md" and anchor not in _headings(target_path):
                 broken.append(f"{path}: {target} (no such heading)")
     assert not broken, broken
 
