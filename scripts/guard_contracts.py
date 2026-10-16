@@ -124,6 +124,41 @@ def _pytest_calls(
     return calls, environments, output
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """A YAML loader that refuses duplicate mapping keys."""
+
+
+def _no_duplicates(loader, node, deep=False):  # pyyaml callback
+    seen: set[object] = set()
+    for key_node, _value in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(
+                "while constructing a mapping",
+                node.start_mark,
+                f"found a duplicate key {key!r} — the last one would silently win",
+                key_node.start_mark,
+            )
+        seen.add(key)
+    return loader.construct_mapping(node, deep=deep)
+
+
+_StrictLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicates)
+
+
+def _workflow(root: Path) -> dict:
+    """The CI workflow, refusing a document with duplicate keys.
+
+    `yaml.safe_load` keeps the last of a duplicated key and says nothing, so a
+    second `env:` block on the coverage step would hide an override behind the
+    first one. A workflow this guard cannot read completely is not one it can
+    certify.
+    """
+    return yaml.load(
+        (root / ".github/workflows/ci.yml").read_text(encoding="utf-8"), Loader=_StrictLoader
+    )
+
+
 def _require_failure_propagates(script: str, *, from_file: bool, label: str, addopts: str) -> None:
     """A failing coverage run must fail the script that claims to gate on it."""
     status, _calls, _environments, _output = _run(
@@ -139,7 +174,7 @@ def check_artifacts(root: Path) -> None:
     retention they accumulate silently — 148 of them and ~53 MB had built up
     before anyone looked.
     """
-    workflow = yaml.safe_load((root / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    workflow = _workflow(root)
     uploads = [
         (job_name, step)
         for job_name, job in workflow["jobs"].items()
@@ -193,7 +228,7 @@ def check_coverage(root: Path) -> None:
     local_calls, local_env, _output = _pytest_calls(local, from_file=True)
     _check_calls(local_calls, names, "scripts/check.sh", environments=local_env)
     _require_failure_propagates(local, from_file=True, label="scripts/check.sh", addopts="")
-    workflow = yaml.safe_load((root / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    workflow = _workflow(root)
     job = workflow["jobs"]["test"]
     assert "if" not in job, "the coverage job must not be conditionally disabled"
     steps = [step for step in job["steps"] if step.get("name") == "Tests with a coverage floor"]

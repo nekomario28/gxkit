@@ -23,6 +23,10 @@ step uv run ruff check packages scripts
 step uv run ruff format --check packages scripts
 step uvx --from shellcheck-py shellcheck scripts/*.sh
 step uv run mypy packages/*/src
+# Every capability is present here (the gate installs matplotlib and uses ffmpeg and
+# GL), so a skipping test would be a disabled check: conftest.py turns that into a
+# failure. Windows CI leaves the variable unset and skips the capability-bound ones.
+export GXKIT_REQUIRE_ALL_CAPABILITIES=1
 step uv run pytest \
   --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \
   --cov=authzgx --cov=depsgx --cov=schemagx --cov=docgx --cov=shadergx \

@@ -156,6 +156,39 @@ inspection and baseline exit semantics from outside the workspace. The package
 CI job uses its exact checkout revision; a remote URL run additionally checks
 that the same revision is publicly retrievable.
 
+## The mistakes agent-written code makes, and what catches each
+
+An agent writes confidently and verifies narrowly. The mistakes below are the ones
+this repository has actually seen — in its own history, or in a review of code an
+agent wrote — with the mechanism that catches each. Where the column says *proved*,
+a mutation or a control in `scripts/check_mutations.py` fails when the guard is
+removed; *tested* means a test holds it; *convention* means a reviewer holds it.
+
+| the mistake | what catches it |
+| --- | --- |
+| A link, file or asset in the docs that does not exist (`docs/PLAN.md` in a README) | `test_no_broken_internal_link` — every relative link, not only the ones with a `#fragment` (widened after exactly this mistake; proved) |
+| A README whose pasted output no longer matches the tool | `test_a_tool_readme_shows_a_transcript_it_can_still_produce` and the root-README check: counts exactly, `(code, severity)` as a prefix (proved) |
+| A rendered asset (a figure, a hero) left behind by a code change | the architecture SVG is regenerated and compared; the hero records its scene's hash and cube count in `docs/assets/hero.json` (proved, both) |
+| A test that passes because it was skipped | `conftest.py` fails the session when a test skips on a machine with every capability (`GXKIT_REQUIRE_ALL_CAPABILITIES=1`, set by the gate, Linux CI and the mutation harness; proved) |
+| A test that asserts a value it just constructed, or that would not fail if the rule were deleted | the mutation catalogue: 116 named faults, each required to make its test fail **with an assertion** (proved) |
+| A check that never fires ("decorative") | every catalogued code must be produced by an example, and `gxcore.testing` requires a check to fire and to stay quiet (proved) |
+| A `# pragma: no cover` added to make the 100% floor green | `test_the_coverage_exclusions_are_the_declared_ones`: the two exclusions are named with reasons (proved by the list being closed) |
+| Silently ignoring input: an unknown key, a mistyped name, a value outside a closed set | refusal with field and index, in every loader; `dangling-reference` for a declared name that resolves to nothing (tested per tool) |
+| A gate that is green because it did not run what you think | `scripts/guard_contracts.py` observes the executed argv **and environment**, then replays a failing run (proved) |
+| A second YAML key that silently wins over the first — adding an `env:` block to the coverage step disabled the guard that watched it | the guard parses the workflow with a loader that **refuses duplicate keys**; a document it cannot read completely is not one it certifies (proved — this was found by a mutation surviving) |
+| A boundary case off by one: half-open intervals, adjacent runs, a range's own ends | property tests against NetworkX/Shapely, plus explicit boundary cases; a mutation found a log-axis test that only compared the range's two ends, where a log map and a linear one agree (proved) |
+| Copy-paste drift across sixteen similar packages | one canonical set, with a test per consumer (registry, codes, README rows, `docs/TRACE.md`, coverage flags); the reds name the places you forgot |
+| A broad `except` that swallows a failure | 26 sites in `src`, all deliberate; the two that fall back on a private matplotlib registry have named tests (`test_twins_is_empty_when_there_is_no_twin_registry`) rather than silence |
+| A claim in the docs the code does not provide | `docs/CONTRACT.md` splits stable from not-stable, and the codebook/README/llms tables are tests |
+| An agent that says "done" without running anything | `scripts/check.sh` is one command and CI runs the same list; the mutation catalogue is part of it |
+
+Two things no repository can catch, and they are why the columns above say
+*convention* nowhere: an agent that reports a result it did not observe, and an
+agent that reads a requirement wrongly and implements it correctly. Both are
+handled by the workflow — a fresh-context review (`codex review`), a decision audit
+of the session, and the `docs/SEMANTICS.md` habit of measuring a claim instead of
+arguing for it.
+
 ## 5. Disciplines that catch real bugs
 
 - **Look at the storyboard image.** Every rendering bug in this project — a

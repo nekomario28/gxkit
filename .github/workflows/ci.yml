@@ -43,6 +43,10 @@ jobs:
         run: python3 scripts/prepublish_check.py
       - run: uv sync --all-packages --locked
       - name: Tests with a coverage floor
+        env:
+          # This lane installs ffmpeg, GL libraries and matplotlib, so a skipping
+          # test would be a disabled check rather than a missing capability.
+          GXKIT_REQUIRE_ALL_CAPABILITIES: "1"
         run: |
           uv run pytest \
             --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \

@@ -174,3 +174,36 @@ def test_the_layering_rule_rejects_every_forbidden_direction():
         "'chartgx' must not depend on the sibling tool 'crongx'"
     ]
     assert check(modules, [("crongx", "gxkit")]) == ["'crongx' must not depend on the umbrella"]
+
+
+#: The only places allowed to opt out of the coverage floor, and why. An agent
+#: reaching for a 100% floor reaches for this pragma, and a handful of silent ones
+#: turns the floor into decoration.
+EXCLUDED_FROM_COVERAGE = {
+    "packages/gxcore/src/gxcore/config.py": "tomllib import guard: 3.11+ only",
+    "packages/shadergx/src/shadergx/gl.py": "import guard for a missing GL binding",
+}
+
+
+def test_the_coverage_exclusions_are_the_declared_ones():
+    """Every `# pragma: no cover` is named here with its reason.
+
+    The floor is only worth what it excludes: a pragma added to make a red line
+    green is how a 100% floor stops meaning anything. Adding one is fine — it just
+    has to be a decision someone wrote down.
+    """
+    found: dict[str, list[str]] = {}
+    for path in sorted((ROOT / "packages").glob("*/src/**/*.py")):
+        text = path.read_text(encoding="utf-8")
+        lines = [line.strip() for line in text.splitlines() if "pragma: no cover" in line]
+        if lines:
+            found[path.relative_to(ROOT).as_posix()] = lines
+    assert set(found) == set(EXCLUDED_FROM_COVERAGE), (
+        f"coverage exclusions changed: {sorted(set(found) ^ set(EXCLUDED_FROM_COVERAGE))}"
+    )
+    for path, lines in found.items():
+        assert lines, path
+        # Each exclusion states *why*, not just that it is excluded.
+        assert all(len(line.split("no cover")[1].strip(" -:")) >= 8 for line in lines), (
+            f"{path} excludes a line without a reason: {lines}"
+        )
