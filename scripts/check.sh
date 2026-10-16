@@ -40,6 +40,11 @@ if [ "$FULL" = 1 ]; then
   step uv build --all-packages -o dist
   step uvx twine check dist/*
   step uv run python scripts/release.py --check dist
+  # The publish command itself, which the owner's token would otherwise be the
+  # first to exercise. `--dry-run` parses the metadata of every file in `dist` the
+  # way an upload would; the token is a placeholder, and a whole run against a
+  # local index was measured separately (see docs/RELEASING.md).
+  step env UV_PUBLISH_TOKEN=check-only uv publish --dry-run dist/*.whl dist/*.tar.gz
   # Prove the family resolves from an index, not only from this checkout.
   step uv run python scripts/check_publish.py
 fi
