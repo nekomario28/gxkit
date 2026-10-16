@@ -16,6 +16,7 @@ A `.gxkit.toml` anywhere up the tree from the artifact is read by every tool:
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -81,7 +82,16 @@ def _severities(value: object, *, where: str) -> dict[str, str]:
     return {str(code): str(severity) for code, severity in value.items()}
 
 
-def load(start: str | Path) -> Config:
+def load(start: str | Path, known_tools: Iterable[str] | None = None) -> Config:
+    """The configuration for a directory, or empty.
+
+    `known_tools` is what makes a *typo'd table name* refusable: `[chartgxx]` looks
+    exactly like a tool table, so only a caller that knows the family can tell that
+    it is inert — and a table that silently does nothing is the silent-narrowing
+    failure this module refuses everywhere else. A single tool cannot judge that (a
+    workspace file legitimately holds tables for its siblings), so it passes
+    nothing and the umbrella passes the registry.
+    """
     file = find(start)
     if file is None:
         return Config()
@@ -98,6 +108,10 @@ def load(start: str | Path) -> Config:
     for name, value in data.items():
         if name in RESERVED or not isinstance(value, dict):
             continue
+        if known_tools is not None and name not in known_tools:
+            raise ValueError(
+                f"{where}: [{name}] is not a tool; known tools are {sorted(known_tools)}"
+            )
         extra = sorted(set(value) - RESERVED)
         if extra:
             # A mistyped `ignoer` would otherwise sit in the file looking active.

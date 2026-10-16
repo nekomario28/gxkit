@@ -44,6 +44,13 @@ FOREIGN_KEY = re.compile(
     r"REFERENCES\s+(?P<table>" + IDENTIFIER + r")\s*(?:\((?P<target>[^)]*)\))?",
     re.IGNORECASE,
 )
+#: Clauses inside `CREATE TABLE` that this model has no place for. Recognised so
+#: they can be *reported*; a statement outside `CREATE TABLE` is refused outright.
+NOT_MODELLED = re.compile(
+    r"\b(NOT\s+NULL|DEFAULT|UNIQUE|CHECK|EXCLUDE|AUTOINCREMENT|AUTO_INCREMENT|"
+    r"COLLATE|GENERATED|ON\s+DELETE|ON\s+UPDATE|ON\s+CONFLICT)\b",
+    re.IGNORECASE,
+)
 TABLE_CONSTRAINT = re.compile(
     r"^(?:CONSTRAINT\b|PRIMARY\s+KEY\b|FOREIGN\s+KEY\b|UNIQUE\b|CHECK\b|EXCLUDE\b)",
     re.IGNORECASE,
@@ -190,6 +197,7 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
     tables: dict[str, dict[str, str]] = {}
     primary_keys: dict[str, str] = {}
     foreign_keys: list[tuple[str, str]] = []
+    not_modelled: list[tuple[str, str]] = []
     pending: list[tuple[str, str, int]] = []
     position = 0
     found = False
@@ -220,7 +228,10 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         close_paren = _matching_paren(cleaned, open_paren)
         body = cleaned[open_paren + 1 : close_paren]
         columns: dict[str, str] = {}
+        seen_not_modelled: set[str] = set()
         for item_line, item in _items(body, 0, cleaned, open_paren + 1):
+            for clause in NOT_MODELLED.findall(item):
+                seen_not_modelled.add(" ".join(str(clause).upper().split()))
             if TABLE_CONSTRAINT.match(item):
                 primary, foreign, unresolved = _table_constraint(
                     item, table, f"{source}:{item_line}"
@@ -255,6 +266,8 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
                         f"{source}:{item_line}: table {table!r} declares two primary keys"
                     )
                 primary_keys[table] = name
+        if seen_not_modelled:
+            not_modelled.append((table, ", ".join(sorted(seen_not_modelled))))
         tables[table] = columns
         position = close_paren + 1
         while position < len(cleaned) and cleaned[position] in " \t\r\n":
@@ -278,6 +291,7 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         tables=tables,
         primary_keys=primary_keys,
         foreign_keys=foreign_keys,
+        not_modelled=not_modelled,
         name=Path(source).stem or "schema",
     )
 

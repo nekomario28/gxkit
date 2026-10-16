@@ -249,8 +249,8 @@ def mutations(root: Path) -> list[Mutation]:
         Mutation(
             "report-output-not-tolerated",
             "packages/gxcore/src/gxcore/cli.py",
-            "def run(tool: Tool, argv: list[str] | None = None) -> int:\n    printable_output()\n",
-            "def run(tool: Tool, argv: list[str] | None = None) -> int:\n",
+            "def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:\n    printable_output()\n",
+            "def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:\n",
             gates + "test_a_report_survives_a_console_that_cannot_encode_it",
         )
     )
@@ -279,8 +279,8 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "direct-tool-config-looked-up-after-load",
                 "packages/gxcore/src/gxcore/cli.py",
-                "apply_config(report, load_config(path.parent), tool.name)",
-                "apply_config(report, load_config(Path(args.file).resolve().parent), tool.name)",
+                "apply_config(report, load_config(path.parent, known_tools), tool.name)",
+                "apply_config(report, load_config(Path(args.file).resolve().parent, known_tools), tool.name)",
                 gates + "test_a_direct_tool_reads_its_own_config_directory",
             ),
         ]
@@ -798,6 +798,50 @@ def mutations(root: Path) -> list[Mutation]:
                 '    assert_fires(r, "soft-lock", ERROR)',
                 '    import pytest; pytest.skip("dodging the assertion")',
                 "packages/levelgx/tests/test_levels.py::test_softlock_is_an_error",
+            ),
+            Mutation(
+                "baseline-identity-shape-unchecked",
+                "packages/gxcore/src/gxcore/baseline.py",
+                "            if identity is not None and (",
+                "            if False and (",
+                "packages/gxcore/tests/test_baseline.py::test_a_record_shape_that_would_match_wrongly_is_refused_with_field_and_index",
+            ),
+            Mutation(
+                "config-table-name-unchecked",
+                "packages/gxcore/src/gxcore/config.py",
+                "        if known_tools is not None and name not in known_tools:",
+                "        if False:",
+                "packages/gxcore/tests/test_config.py::test_a_table_that_names_no_tool_is_refused_when_the_caller_knows_the_family",
+            ),
+            Mutation(
+                "apigx-root-key-unchecked",
+                "packages/apigx/src/apigx/openapi.py",
+                "    unknown = _unrecognised(document, ROOT_KEYS)",
+                "    unknown = []",
+                "packages/apigx/tests/test_openapi.py::test_a_key_nothing_reads_is_refused_wherever_it_sits",
+            ),
+            Mutation(
+                "schemagx-not-modelled-silent",
+                "packages/schemagx/src/schemagx/ddl.py",
+                "        if seen_not_modelled:",
+                "        if False:",
+                "packages/schemagx/tests/test_ddl.py::test_a_clause_the_model_cannot_carry_is_reported_not_dropped",
+            ),
+            Mutation(
+                "cli-output-skip-ignored",
+                "packages/gxcore/src/gxcore/cli.py",
+                """        except Exception as exc:
+            if args.output:""",
+                """        except Exception as exc:
+            if False:""",
+                "packages/gxkit/tests/test_contract_conformance.py::test_a_requested_storyboard_that_cannot_be_drawn_is_refused",
+            ),
+            Mutation(
+                "trace-codes-column-unlabelled",
+                "docs/TRACE.md",
+                "| tool | inspects | reads | module | codes (#) | examples |",
+                "| tool | inspects | reads | module | codes | examples |",
+                "packages/gxkit/tests/test_contract_conformance.py::test_the_trace_table_labels_its_codes_column_as_a_count",
             ),
             Mutation(
                 "report-omits-a-documented-key",

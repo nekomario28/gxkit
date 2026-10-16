@@ -114,6 +114,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "cyclic-foreign-key": "warn",
         "missing-primary-key": "info",
         "orphan-table": "info",
+        "not-modelled": "info",
         "no-tables": "info",
     },
     "docgx": {

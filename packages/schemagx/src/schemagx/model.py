@@ -98,6 +98,12 @@ class Schema:
     primary_keys: dict[str, str] = field(default_factory=dict)
     foreign_keys: list[tuple[str, str]] = field(default_factory=list)
     roots: list[str] = field(default_factory=list)
+    #: Clauses a *reader* saw and this model does not carry, as `(table, kinds)`.
+    #: The model is about reference integrity, so `NOT NULL`, `DEFAULT`, `UNIQUE`
+    #: and the rest are not represented — but they are reported, because a reader
+    #: that drops what it read and then says "clean" is the silence this family
+    #: refuses. Hand-written schemas leave it empty.
+    not_modelled: list[tuple[str, str]] = field(default_factory=list)
     name: str = "schema"
 
     def table_names(self) -> list[str]:

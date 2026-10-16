@@ -141,7 +141,9 @@ def _run_tool(spec: ToolSpec, file: Path, args: argparse.Namespace) -> int:
     if args.write_baseline:
         forwarded += ["--write-baseline", args.write_baseline]
     print(f"gxkit: {spec.name} — {spec.inspects}", file=sys.stderr)
-    return run(tool, forwarded)
+    # The umbrella knows every tool, so a config table for a name that is not one
+    # is a typo rather than a sibling's settings.
+    return run(tool, forwarded, known_tools={spec.name for spec in TOOLS})
 
 
 def _cmd_inspect(args: argparse.Namespace) -> int:

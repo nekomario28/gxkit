@@ -118,3 +118,20 @@ def test_cli_applies_config(tmp_path):
     )
     assert run(tool, ["inspect", str(src), "--no-storyboard"]) == 1  # upgraded by config
     assert run(tool, ["inspect", str(src), "--no-storyboard", "--no-config"]) == 0
+
+
+def test_a_table_that_names_no_tool_is_refused_when_the_caller_knows_the_family(tmp_path):
+    """`[chartgxx]` looks exactly like a tool table, and does nothing.
+
+    Measured before this guard: a typo'd table name was accepted in silence, so the
+    rule inside it was inert — the silent-narrowing failure this module refuses
+    everywhere else. Only a caller that knows the family can tell; a single tool
+    legitimately sees tables for its siblings in a workspace file.
+    """
+    (tmp_path / ".gxkit.toml").write_text('[chartgxx]\nignore = ["red-green"]\n', encoding="utf-8")
+    with pytest.raises(ValueError, match=r"\[chartgxx\] is not a tool"):
+        load(tmp_path, known_tools={"chartgx", "levelgx"})
+
+    # Without the family list the name cannot be judged, so it is kept.
+    config = load(tmp_path)
+    assert "chartgxx" in config.per_tool, config.per_tool

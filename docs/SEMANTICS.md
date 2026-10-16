@@ -74,3 +74,27 @@ implementation rather than with itself.
   That is a fact about the legend, recorded because it bounds what `soft-lock` can
   ever be: a dead end reachable from the spawn, never a loop the player is stuck
   in.
+
+## Reviewed by an independent agent, pointed at the contract
+
+`codex` (the usual independent reviewer) had hit its quota, so the review ran through
+`opencode` with `deepseek-v4.1-flash-free`: one prompt, read-only, told to falsify
+`docs/CONTRACT.md`'s Stable section and to report only what would make a promise false
+or break a consumer who relies on it. It found **six**, none of which any test had
+been aiming at. Every one was reproduced here before it was fixed, and each fix
+carries a test and a mutation.
+
+| # | what it found | reproduced as | now |
+| --- | --- | --- | --- |
+| 1 | A baseline record's `identity`, `target` and `label` were never validated. `identity` written as a *string* iterates into characters, never matches, and reports the same finding as **both new and fixed** — a broken gate. Written as an *int* it raised a bare `TypeError`, naming neither the field nor the index the contract promises. | `new: 1, fixed: 1, new_errors: 1` with nothing changed | every optional field is validated with `problems[i].<field>` named (`test_a_record_shape_that_would_match_wrongly_is_refused_with_field_and_index`) |
+| 2 | `.gxkit.toml` accepted `[chartgxx]` — a table for a tool that does not exist — so a typo'd rule was inert and silent. | exit 0, no message | the umbrella validates table names against the registry (`[chartgxx] is not a tool; known tools are […]`); a single tool cannot judge and does not pretend to |
+| 3 | `apigx` read the document root, `info` and `components` with `.get()` and never checked them, so an unknown root key or a misspelled `titl` reported **clean**. | `errors 0, problems []` | every key at every level is accounted for, `x-` extensions allowed; a `paths` key that is not a path is refused too |
+| 4 | `schemagx` matched `UNIQUE`, `CHECK` and `EXCLUDE` in `CREATE TABLE` and then dropped them; `NOT NULL` and `DEFAULT` went the same way. | `inspect: 1 problem (0 errors)` — an unrelated notice | a **`not-modelled`** info per table naming the clauses, while reference integrity is still checked. The contract's "silence is never a verdict" now reads *refused **or reported as not carried***, which is what the tools do |
+| 5 | `chartgx` publishes `.json` in the registry and `docs/TRACE.md` while the contract named **three** document readers — and `inspect -o sb.png` on a declaration wrote **no file** and exited with the inspection code, so a CI step publishing the image would publish nothing and pass. | `keys: [... no storyboard …]`, no `sb.png` | the contract names the fourth reader (and says it has no storyboard here); an explicit `-o` that cannot be honoured is **exit 2** naming the reason |
+| 6 | `docs/TRACE.md`'s "codes" column is a *count*, while the contract sent a reader there for the code set. | the column reads `25` | the column says `codes (#)`, and the contract sends the reader to `gxkit codes` for the set |
+
+It also listed what it checked and found nothing in: no documented exit code that
+cannot occur, no JSON key missing sometimes (82 runs across 16 tools), no flag that
+does nothing, no documented input refused, and no case where `inspect` and the
+storyboard disagree about which problem is which. That list is the useful half of a
+review: it says where *not* to look next.

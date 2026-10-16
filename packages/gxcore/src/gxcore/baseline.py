@@ -85,6 +85,28 @@ class Baseline:
             for required in ("code", "severity"):
                 if not isinstance(record.get(required), str):
                     raise ValueError(f"{path}: problems[{index}].{required}: expected a string")
+            # The optional fields decide *which* finding a record matches, so a
+            # wrongly-shaped one is worse than a missing record: measured, an
+            # `identity` written as a string is iterated into characters, never
+            # matches, and reports the same finding as both new and fixed; an
+            # `identity` written as an int raised a bare TypeError that named
+            # neither the field nor the index, which the contract promises.
+            for optional in ("target", "label"):
+                value = record.get(optional)
+                if value is not None and not isinstance(value, str):
+                    raise ValueError(
+                        f"{path}: problems[{index}].{optional}: expected a string or null, "
+                        f"not {type(value).__name__}"
+                    )
+            identity = record.get("identity")
+            if identity is not None and (
+                not isinstance(identity, list)
+                or not all(isinstance(item, str) for item in identity)
+            ):
+                raise ValueError(
+                    f"{path}: problems[{index}].identity: expected a list of strings, "
+                    f"not {type(identity).__name__}"
+                )
         return cls(name=data.get("name", ""), problems=list(problems))
 
     def save(self, path: str | Path) -> None:

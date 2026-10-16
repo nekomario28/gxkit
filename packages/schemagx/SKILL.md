@@ -58,6 +58,7 @@ key or an orphan table.
 | `cyclic-foreign-key` | warn | a foreign-key cycle — inserts need deferred constraints; one finding per cyclic component |
 | `missing-primary-key` | info | a table has no primary key |
 | `orphan-table` | info | nothing references the table and it references nothing |
+| `not-modelled` | info | a clause the model does not carry, named per table |
 | `no-tables` | info | the schema declares no tables |
 
 Cycles come from `gxcore.graph.find_cycle`. Every check has a test that proves
