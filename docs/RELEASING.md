@@ -4,6 +4,27 @@ The packages are built with `uv build` and published to PyPI with `uv publish`.
 Publishing needs a PyPI API token; it is the one step that must be run by the
 owner.
 
+## What has been verified without a token
+
+The publish step is the one part no test can complete here, so it was measured as
+far as it goes:
+
+- **`uv publish --dry-run` over the built `dist/`** parses every file's metadata the
+  way an upload would. It is part of `scripts/check.sh --full`.
+- **A whole publish against a local index**: with a placeholder token and a server
+  accepting uploads on `127.0.0.1`, `uv publish --publish-url … dist/*.whl
+  dist/*.tar.gz` exits 0 and sends **36 POSTs**, one per file. That exercises the
+  command, the file list, the multipart upload and the credential plumbing end to
+  end.
+- **An install from a local PEP 503 index** of the umbrella and of each of the 16
+  tools in its own environment (`scripts/check_publish.py`), which is the same index
+  layout PyPI serves.
+
+What is *not* verified, and cannot be from here: that PyPI accepts the token, and
+that the names are still free at upload time (all 18 were free on 2026-10-15). If a
+name has been taken by then, the upload for that package fails and nothing else is
+affected; publish dependency-first so a failure leaves the rest untouched.
+
 ## Build and check
 
 ```sh
