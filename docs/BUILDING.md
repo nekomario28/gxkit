@@ -140,6 +140,16 @@ test assertion fails, not when collection or imports break. It runs in the
 local gate and Ubuntu CI. Keep that bounded catalogue with each regression;
 it is not an exhaustive proof against arbitrary edits.
 
+A skill's text has no gate: a wrong sentence in `SKILL.md` breaks nothing and no
+test notices, while the text is what an agent actually uses. `scripts/skill_eval.py`
+runs the loop the way an agent meets it — one artifact and one `SKILL.md` in a fresh
+directory, an independent agent (`codex exec`), then a mechanical grade: exit 0, the
+property re-derived from the artifact, the artifact still declaring what it did, and
+a digest of the tool sources unchanged. It is **not** in the gate (it needs a model,
+costs tokens, and is not deterministic); what is in the gate is the grader, in
+`packages/gxkit/tests/test_skill_eval.py`. Run it after touching a skill and record
+the outcome in [`SKILL-EVAL.md`](SKILL-EVAL.md).
+
 The POSIX consumer check in `scripts/check_consumer.py` installs a full Git SHA
 in fresh tool/cache directories, verifies direct-URL provenance, then exercises
 inspection and baseline exit semantics from outside the workspace. The package
