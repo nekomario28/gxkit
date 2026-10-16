@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -84,14 +84,16 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
     return p
 
 
-def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
+def _cmd_inspect(
+    tool: Tool, args: argparse.Namespace, known_tools: Iterable[str] | None = None
+) -> int:
     # The artifact may change the process directory while it loads, so its
     # identity is fixed before it executes; the report still names the file.
     path = Path(args.file).resolve()
     artifact = tool.load(path)
     report = tool.inspect(artifact)
     if not getattr(args, "no_config", False):
-        apply_config(report, load_config(path.parent), tool.name)
+        apply_config(report, load_config(path.parent, known_tools), tool.name)
 
     diff: Diff | None = None
     if args.baseline:
@@ -108,6 +110,16 @@ def _cmd_inspect(tool: Tool, args: argparse.Namespace) -> int:
             sb = storyboard_path(report.name, args.output)
             annotate(tool.to_image(artifact), report.problems, sb, origin=tool.origin)
         except Exception as exc:
+            if args.output:
+                # An explicit `-o` that produces no file is a request this cannot
+                # honour: measured, a declared chart exits 0 with no image and only a
+                # line on stderr, which reads as success until someone looks for the
+                # file. A refusal names the reason instead.
+                print(
+                    f"{tool.name}: cannot write {args.output}: {type(exc).__name__}: {exc}",
+                    file=sys.stderr,
+                )
+                return 2
             print(f"{tool.name}: storyboard skipped ({type(exc).__name__}: {exc})", file=sys.stderr)
             sb = None
 
@@ -131,12 +143,12 @@ def _cmd_render(tool: Tool, args: argparse.Namespace) -> int:
     return 0
 
 
-def run(tool: Tool, argv: list[str] | None = None) -> int:
+def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:
     printable_output()
     args = _build_parser(tool).parse_args(argv)
     try:
         if args.command == "inspect":
-            return _cmd_inspect(tool, args)
+            return _cmd_inspect(tool, args, known_tools)
         return _cmd_render(tool, args)
     except FileNotFoundError as e:
         print(f"{tool.name}: no such file: {e}", file=sys.stderr)

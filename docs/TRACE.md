@@ -9,13 +9,13 @@ declared in `gxkit.registry` and checked against the loader. The invariant
 checks (that every check can fail, that the docs agree) live in
 `packages/gxkit/tests/`.
 
-| tool | inspects | reads | module | codes | examples |
+| tool | inspects | reads | module | codes (#) | examples |
 | --- | --- | --- | --- | --- | --- |
 | `chartgx` | matplotlib charts | `.py`, `.json` | `chartgx.tool` | 25 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
 | `levelgx` | game levels | `.py` | `levelgx.tool` | 8 | `broken_level.py`, `good_level.py`, `softlock_level.py` |
 | `authzgx` | permission models | `.py` | `authzgx.tool` | 13 | `escalate_auth.py`, `good_auth.py` |
 | `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 10 | `broken_modules.py`, `good_modules.py` |
-| `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 8 | `broken_schema.py`, `good_schema.py` |
+| `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 9 | `broken_schema.py`, `good_schema.py` |
 | `docgx` | pages / slides | `.py` | `docgx.tool` | 7 | `crowded_page.py`, `good_page.py` |
 | `shadergx` | fragment shaders | `.py` | `shadergx.tool` | 7 | `broken_shader.py`, `good_shader.py`, `invalid_shader.py` |
 | `framegx` | rendered animations | `.py` | `framegx.tool` | 12 | `frozen_clip.py`, `good_clip.py` |

@@ -113,7 +113,10 @@ def test_a_sql_file_is_inspected_by_the_same_codes(tmp_path):
     result = _inspect(document, tool="schemagx")
     assert result.returncode == 0, result.stdout + result.stderr
     report = json.loads(result.stdout)
-    assert set(_codes(report)) == {"fk-type-mismatch", "fk-to-non-primary-key"}
+    # `not-modelled` joined the report when clauses the model cannot carry stopped
+    # being dropped in silence (`NOT NULL`, `DEFAULT`, `UNIQUE`, …), which this
+    # fixture has; the reference findings are unchanged.
+    assert set(_codes(report)) == {"fk-type-mismatch", "fk-to-non-primary-key", "not-modelled"}
 
 
 @pytest.mark.parametrize(

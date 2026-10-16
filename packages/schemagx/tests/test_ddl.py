@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from gxcore import INFO
 from gxcore.loading import InvalidArtifact
 from schemagx import (
     Schema,
@@ -300,3 +301,27 @@ def test_a_python_declaration_is_still_the_other_route(tmp_path):
     schema, _module = load_schema(artifact)
     assert isinstance(schema, Schema)
     assert schema.table_names() == ["a"]
+
+
+def test_a_clause_the_model_cannot_carry_is_reported_not_dropped():
+    """`NOT NULL`, `DEFAULT`, `UNIQUE`, `CHECK`: read, named, and not modelled.
+
+    Measured before this guard: they were dropped in silence, so a schema with a
+    `UNIQUE` constraint was reported on as if it had none — the contract's "refused
+    or reported, never ignored".
+    """
+    schema = schema_from_ddl(
+        "CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, "
+        "age INTEGER DEFAULT 0 CHECK (age >= 0));"
+    )
+    report = inspect_schema(schema)
+    noted = [problem for problem in report.problems if problem.code == "not-modelled"]
+    assert len(noted) == 1, [(p.code, p.message) for p in report.problems]
+    assert noted[0].severity == INFO
+    assert noted[0].target == "users"
+    for kind in ("NOT NULL", "UNIQUE", "DEFAULT", "CHECK"):
+        assert kind in noted[0].message, (kind, noted[0].message)
+
+    # A schema without such clauses says nothing about them.
+    plain = inspect_schema(schema_from_ddl("CREATE TABLE t (id INTEGER PRIMARY KEY);"))
+    assert "not-modelled" not in {problem.code for problem in plain.problems}

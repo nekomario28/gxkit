@@ -8,8 +8,9 @@ everything listed as unstable is explicitly not promised.
 
 These will not change without a major version bump.
 
-**Problem codes.** Every problem carries a `code` from a fixed, documented set
-(`gxkit codes`, or `docs/TRACE.md` for the generated table). Codes are the
+**Problem codes.** Every problem carries a `code` from a fixed, documented set.
+`gxkit codes` prints that set with each code's severity; `docs/TRACE.md` is the
+generated tool→module→codes table, whose column is a *count* per tool. Codes are the
 branch point; message prose is not. A code's severity is stable within a major
 version, and severities only ever move from `info` to `warn` to `error` — never
 the other way, because that would silently weaken an existing gate.
@@ -49,13 +50,14 @@ anyway is the silent-narrowing failure this contract forbids.
 
 **Supported Python.** 3.10 through 3.13, on Linux, macOS and Windows.
 
-**Inputs.** Every tool takes a Python file, and three also take a document:
+**Inputs.** Every tool takes a Python file, and four also take a document:
 
 | tool | also takes | and what it does with it |
 | --- | --- | --- |
 | `apigx` | `.json` | an OpenAPI 3 document, converted to the same model |
 | `schemagx` | `.sql` | SQL DDL, converted to the same model |
 | `flowgx` | `.mmd`, `.mermaid`, `.md`, `.markdown` | a Mermaid state diagram, or the one `stateDiagram` block a document holds |
+| `chartgx` | `.json` | a chart declared as data (a figspec model): inspected without matplotlib and without running anything. It has no storyboard here — the renderer that owns the model draws one (`figspec storyboard`), and `-o` on such a declaration is refused rather than silently skipped |
 
 `chartgx` runs any Python script that builds a matplotlib figure, and `framegx`
 probes the video a Python declaration points at; both still take a Python file.
@@ -98,9 +100,14 @@ Do not build on these; they may change in a minor version.
 
 A tool reports a finding or refuses the input. It never narrows what it read and
 then reports success about the part it skipped, and importers enforce this the
-same way: an unrecognised key, a statement outside the translated set, a
-construct the model cannot hold, or a reference that would have to be followed
-are all refused with their location rather than ignored. A document that reads as
+same way: an unrecognised key, a statement outside the translated set, or a
+reference that would have to be followed are all refused with their location
+rather than ignored.
+
+Where a construct is recognised but the model has no place for it, it is
+**reported as not carried** (`schemagx`'s `not-modelled`: `NOT NULL`, `DEFAULT`,
+`UNIQUE`, `CHECK` and the rest are named per table while reference integrity is
+still checked) — refused or reported, never ignored. A document that reads as
 clean has been fully read.
 
 Where an importer can express more than the model, the refusal names the limit

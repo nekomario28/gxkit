@@ -340,3 +340,41 @@ def test_a_missing_capability_is_refused_not_ignored():
     assert "ffprobe" in (result.stdout + result.stderr).lower(), (
         "the refusal must name the program that is missing"
     )
+
+
+def test_a_requested_storyboard_that_cannot_be_drawn_is_refused(tmp_path):
+    """`-o` names an output; an output that is not written must not read as success.
+
+    Measured before this guard: `chartgx inspect <declaration> -o sb.png` wrote no
+    file, printed a line on stderr, and exited with the *inspection* code — so a CI
+    step that published the image would publish nothing and pass.
+    """
+    declaration = tmp_path / "chart.json"
+    declaration.write_text(
+        json.dumps(
+            {
+                "title": "t",
+                "x_label": "x",
+                "y_label": "y",
+                "marks": [{"kind": "bar", "categories": ["a", "b"], "values": [1.0, 2.0]}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    target = tmp_path / "storyboard.png"
+    result = tool_run("chartgx", str(declaration), "-o", str(target))
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "cannot write" in (result.stdout + result.stderr)
+    assert not target.exists()
+
+    # Without `-o` the storyboard is optional: the report still prints.
+    without = tool_run("chartgx", str(declaration), "--no-storyboard")
+    assert without.returncode == 0, without.stdout + without.stderr
+
+
+def test_the_trace_table_labels_its_codes_column_as_a_count():
+    """The contract sends a reader to `gxkit codes` for the set, and TRACE counts."""
+    text = (ROOT / "docs" / "TRACE.md").read_text(encoding="utf-8")
+    assert "| codes (#) |" in text
+    contract = (ROOT / "docs" / "CONTRACT.md").read_text(encoding="utf-8")
+    assert "whose column is a *count* per tool" in contract

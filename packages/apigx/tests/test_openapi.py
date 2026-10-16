@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import copy
 import json
+import pathlib
 
 import pytest
 from apigx import API, Endpoint, api_from_document, api_from_file, inspect_api, load_api
 from gxcore.loading import InvalidArtifact
+
+EXAMPLES = pathlib.Path(__file__).resolve().parents[1] / "examples"
 
 BASE = {
     "openapi": "3.0.3",
@@ -340,3 +344,38 @@ def test_a_python_declaration_is_still_the_other_route(tmp_path):
     api, _module = load_api(artifact)
     assert isinstance(api, API)
     assert api.endpoints[0].verb == "GET"
+
+
+def test_a_key_nothing_reads_is_refused_wherever_it_sits():
+    """The contract's "a document that reads as clean has been fully read".
+
+    Measured before this guard: an unknown root key and a misspelled `info` key both
+    produced `no problems` — a document with a typo in it was reported as fully read.
+    """
+    good = json.loads((EXAMPLES / "good_openapi.json").read_text(encoding="utf-8"))
+
+    unknown_root = copy.deepcopy(good)
+    unknown_root["unknownRootKey"] = 1
+    with pytest.raises(InvalidArtifact, match=r"unrecognised root key\(s\) \['unknownRootKey'\]"):
+        api_from_document(unknown_root)
+
+    typo = copy.deepcopy(good)
+    typo["info"]["titl"] = "typo"
+    with pytest.raises(InvalidArtifact, match=r"info has unrecognised key"):
+        api_from_document(typo)
+
+    missing_slash = copy.deepcopy(good)
+    missing_slash["paths"]["orders"] = missing_slash["paths"]["/orders"]
+    with pytest.raises(InvalidArtifact, match="not a path"):
+        api_from_document(missing_slash)
+
+    not_object = copy.deepcopy(good)
+    not_object["components"] = []
+    with pytest.raises(InvalidArtifact, match="components is not an object"):
+        api_from_document(not_object)
+
+    # An extension key is accounted for, not refused.
+    extended = copy.deepcopy(good)
+    extended["x-internal"] = {"anything": True}
+    extended["info"]["x-owner"] = "platform"
+    assert api_from_document(extended).endpoints, "x- keys must not be refused"

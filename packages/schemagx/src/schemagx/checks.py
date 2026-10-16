@@ -37,6 +37,18 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
         )
     out: list[Problem] = []
 
+    for table, kinds in schema.not_modelled:
+        # Not a fault: a limitation of what the model carries, said out loud.
+        out.append(
+            Problem(
+                INFO,
+                "not-modelled",
+                f"{table}: the model does not carry the {kinds} clause(s) — found, not "
+                "read into the model; reference integrity was still checked",
+                target=table,
+            )
+        )
+
     # A declared name this tool consumes must resolve: a typo'd root would change
     # what the schema's roots are without saying so.
     for table in schema.roots:

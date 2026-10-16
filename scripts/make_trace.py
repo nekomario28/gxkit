@@ -38,7 +38,7 @@ def build() -> str:
         "checks (that every check can fail, that the docs agree) live in",
         "`packages/gxkit/tests/`.",
         "",
-        "| tool | inspects | reads | module | codes | examples |",
+        "| tool | inspects | reads | module | codes (#) | examples |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
     for spec in TOOLS:

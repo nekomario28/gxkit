@@ -28,6 +28,51 @@ METHODS = ("get", "put", "post", "delete", "patch", "head", "options", "trace")
 # security and hide a public mutation, and a mistyped method would drop a route
 # without a word. Vendor extensions (`x-…`) are the spec's own escape hatch.
 PATH_ITEM_KEYS = frozenset(METHODS) | {"$ref", "summary", "description", "servers", "parameters"}
+#: What the reader accounts for at each level. A key it does not read is refused
+#: wherever it appears — `info` and `components` were read with `.get()` and never
+#: checked, so a document with a misspelled `titl` or an unknown root key reported
+#: clean, which is the silence this family refuses. Keys it *knows but does not
+#: need* (tags, externalDocs, schemas) are listed: accounting for something is not
+#: the same as reading it.
+ROOT_KEYS = frozenset(
+    {
+        "openapi",
+        "info",
+        "jsonSchemaDialect",
+        "servers",
+        "paths",
+        "webhooks",
+        "components",
+        "security",
+        "tags",
+        "externalDocs",
+    }
+)
+INFO_KEYS = frozenset(
+    {
+        "title",
+        "summary",
+        "description",
+        "termsOfService",
+        "contact",
+        "license",
+        "version",
+    }
+)
+COMPONENTS_KEYS = frozenset(
+    {
+        "schemas",
+        "responses",
+        "parameters",
+        "examples",
+        "requestBodies",
+        "headers",
+        "securitySchemes",
+        "links",
+        "callbacks",
+        "pathItems",
+    }
+)
 OPERATION_KEYS = frozenset(
     {
         # `$ref` is legitimate and has its own refusal, below — refusing it as an
@@ -130,9 +175,31 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     version = document.get("openapi")
     if not isinstance(version, str) or not version.startswith("3."):
         raise InvalidArtifact(f"{source}: unsupported OpenAPI version {version!r} (3.x only)")
+    unknown = _unrecognised(document, ROOT_KEYS)
+    if unknown:
+        raise InvalidArtifact(
+            f"{source}: unrecognised root key(s) {unknown}; refusing rather than "
+            "ignoring them, because a key nothing reads is a document that is not "
+            "fully read"
+        )
+    for section, known in (("info", INFO_KEYS), ("components", COMPONENTS_KEYS)):
+        value = document.get(section)
+        if value is None:
+            continue
+        if not isinstance(value, dict):
+            raise InvalidArtifact(f"{source}: {section} is not an object")
+        unknown = _unrecognised(value, known)
+        if unknown:
+            raise InvalidArtifact(f"{source}: {section} has unrecognised key(s) {unknown}")
     paths = document.get("paths")
     if not isinstance(paths, dict):
         raise InvalidArtifact(f"{source}: no 'paths' object")
+    for path in paths:
+        if not str(path).startswith("/") and not str(path).lower().startswith("x-"):
+            raise InvalidArtifact(
+                f"{source}: paths has key {path!r}, which is not a path (it must begin "
+                "with '/'); a mistyped path would otherwise be read as one"
+            )
     if document.get("webhooks"):
         raise InvalidArtifact(
             f"{source}: 'webhooks' declares operations this importer does not read; "

@@ -38,6 +38,7 @@ with an `INTEGER` reference is not a mismatch.
 
 error: `dangling-foreign-key`, `dangling-reference` (a root that names no table).
 warn: `fk-type-mismatch`, `fk-to-non-primary-key`, `cyclic-foreign-key`.
-info: `missing-primary-key`, `orphan-table`, `no-tables`.
+info: `missing-primary-key`, `orphan-table`, `no-tables`, `not-modelled` (a clause
+the model does not carry, named per table).
 
 Full documentation is in `README.md`.

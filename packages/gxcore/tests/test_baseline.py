@@ -7,6 +7,7 @@ new, fixed, or unchanged, and CI fails only on the new errors.
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -159,3 +160,76 @@ def test_save_and_load_roundtrip_non_ascii(tmp_path):
     loaded = Baseline.load(path)
     assert loaded.problems[0]["message"] == "エラー — 日本語"
     assert loaded.problems[0]["target"] == "セルr2c3"
+
+
+def test_a_record_shape_that_would_match_wrongly_is_refused_with_field_and_index(tmp_path):
+    """The contract's sentence, on the fields that decide *which* finding matches.
+
+    Measured before this guard existed: an `identity` written as a string was
+    iterated into characters, never matched, and reported the same finding as both
+    `new` and `fixed` (and failed the run) although nothing had changed; an
+    `identity` written as an int raised a bare `TypeError` naming neither the field
+    nor the index.
+    """
+    report = Report(
+        name="x",
+        problems=[
+            Problem(ERROR, "a", "first", target="r1", label="one", identity=("a", "b")),
+            Problem(ERROR, "b", "second"),
+        ],
+    )
+    path = tmp_path / "base.json"
+    Baseline.of(report).save(path)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    # The records are sorted by (severity, target), so the one with the identity is
+    # not first — find them by code rather than by position.
+    records = data["problems"]
+    located = next(index for index, record in enumerate(records) if record["code"] == "a")
+    bare = next(index for index, record in enumerate(records) if record["code"] == "b")
+    assert records[located]["identity"] == ["a", "b"], "a well-shaped baseline"
+
+    cases = [
+        (located, "identity", "a string, not a list"),
+        (located, "identity", 5),
+        (located, "target", 7),
+        (bare, "target", ["a"]),
+        (located, "label", 3),
+    ]
+    for index, field, value in cases:
+        broken = copy.deepcopy(data)
+        broken["problems"][index][field] = value
+        path.write_text(json.dumps(broken), encoding="utf-8")
+        with pytest.raises(ValueError, match=rf"problems\[{index}\]\.{field}") as caught:
+            Baseline.load(path)
+        message = str(caught.value)
+        assert f"problems[{index}].{field}" in message, (field, value, message)
+
+
+def test_an_output_that_cannot_be_drawn_is_a_refusal_here(tmp_path, capsys):
+    """`-o` names a file; a file that is not written must not read as success.
+
+    In process, because the coverage floor counts what runs *here* — the same
+    behaviour reached through a console script is covered by the contract
+    conformance suite, but that runs in a subprocess and is invisible to it.
+    """
+    tool = Tool(
+        name="t",
+        description="d",
+        load=lambda path: object(),
+        inspect=lambda artifact: _report(),
+        render=lambda artifact, out, dpi: Path("x"),
+    )
+
+    def cannot_draw(artifact):
+        raise ValueError("no renderer here")
+
+    tool.to_image = cannot_draw
+
+    assert run(tool, ["inspect", "a.py", "-o", str(tmp_path / "sb.png"), "--json"]) == 2
+    captured = capsys.readouterr()
+    assert "cannot write" in captured.err
+    assert not (tmp_path / "sb.png").exists()
+
+    # Without `-o` the storyboard is optional: the report still prints.
+    assert run(tool, ["inspect", "a.py", "--no-storyboard", "--json"]) == 0
+    assert "problems" in capsys.readouterr().out

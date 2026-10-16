@@ -80,6 +80,7 @@ inspect: 10 problems (4 errors)
 | `cyclic-foreign-key` | warn | a foreign-key cycle — inserts need deferred constraints; one finding per cyclic component |
 | `missing-primary-key` | info | a table has no primary key |
 | `orphan-table` | info | nothing references the table and it references nothing |
+| `not-modelled` | info | a clause the model does not carry (`NOT NULL`, `DEFAULT`, `UNIQUE`, `CHECK`, …), named per table — found and not read into the model, while reference integrity is still checked |
 | `no-tables` | info | the schema declares no tables |
 
 ## Why it can be trusted
