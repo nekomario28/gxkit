@@ -160,7 +160,10 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
                     )
                 )
         for module in graph.modules:
-            if module not in graph.roots and not reverse_edges.get(module):
+            # A self-edge is not a user: "nothing depends on it" is about other
+            # modules, and a module that only loops on itself is still an orphan.
+            users = [src for src in reverse_edges.get(module, []) if src != module]
+            if module not in graph.roots and not users:
                 out.append(
                     Problem(
                         INFO,

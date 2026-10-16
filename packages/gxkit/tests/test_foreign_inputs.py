@@ -59,7 +59,7 @@ def test_a_published_spec_is_inspected_by_the_same_codes(tmp_path):
     report = json.loads(result.stdout)
     assert report["name"] == "Payments"
     # An imported spec carries its base in `servers`, so every endpoint is under
-    # it and `unversioned-path` cannot fire; the other three codes still do.
+    # it and `path-outside-base` cannot fire; the other three codes still do.
     assert set(_codes(report)) == {
         "unauthenticated-mutation",
         "no-error-status",
@@ -291,7 +291,7 @@ def test_a_document_without_servers_reports_no_base_rather_than_inventing_one(tm
     result = _inspect(path, "--json", tool="apigx")
     assert result.returncode in {0, 1}, result.stderr
     assert "base: /" in result.stdout or "base" not in result.stdout
-    assert "unversioned-path" not in _codes(json.loads(result.stdout))
+    assert "path-outside-base" not in _codes(json.loads(result.stdout))
 
 
 @pytest.mark.parametrize(

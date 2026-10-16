@@ -18,7 +18,9 @@ from .render import block_boxes
 def inspect_page(page: Page, name: str | None = None) -> Report:
     name = name or page.name
     items = block_boxes(page)
-    words = sum(len(b.text.split()) for b in page.blocks)
+    # "N words on the page": the title is on the page. Measured: a 100-word title
+    # against a 10-word budget passed, because only the blocks were counted.
+    words = len(page.title.split()) + sum(len(b.text.split()) for b in page.blocks)
 
     report = Report(
         name=name,

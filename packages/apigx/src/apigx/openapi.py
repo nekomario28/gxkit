@@ -155,7 +155,7 @@ def _base(document: dict[str, Any]) -> str:
 
     A prefix inferred from the paths would look like a check had been applied
     while being unable to fail: every path shares a prefix by construction, so
-    `unversioned-path` can only fire on a declaration. Reporting no base when the
+    `path-outside-base` can only fire on a declaration. Reporting no base when the
     document declares none is the honest reading.
     """
     return _server_path(document)

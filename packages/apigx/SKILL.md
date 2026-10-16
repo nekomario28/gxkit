@@ -40,7 +40,7 @@ An endpoint is `(method, path)` or a mapping with `auth`, `statuses`,
 | --- | --- | --- |
 | `duplicate-route` | error | the same method and path declared twice |
 | `unauthenticated-mutation` | error | a POST/PUT/PATCH/DELETE with `auth=False` |
-| `unversioned-path` | warn | a path not under the base |
+| `path-outside-base` | warn | a path not under the base |
 | `no-error-status` | info | an endpoint documents no 4xx/5xx |
 | `deprecated-endpoint` | info | an endpoint is marked deprecated |
 | `no-endpoints` | info | the API declares no endpoints |

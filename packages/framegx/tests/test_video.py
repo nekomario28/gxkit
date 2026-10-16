@@ -129,3 +129,40 @@ def test_a_missing_program_refuses_instead_of_reporting_a_finding(monkeypatch, t
     monkeypatch.setattr(checks, "sample_frames", refuse)
     with pytest.raises(MissingCapability):
         checks.inspect_video(real)
+
+
+def test_a_visible_mark_on_black_is_not_a_black_frame(tmp_path):
+    """`all-black` = "nothing was drawn", which a 1.8%-area white mark contradicts.
+
+    Adversarial case from an independent semantics audit: a 16x16 white square on a
+    160x90 black clip was reported as an empty picture, because the check used the
+    frame's *mean*.
+    """
+    clip = make(
+        tmp_path,
+        "color=c=black:size=160x90:rate=10:duration=2,drawbox=x=72:y=37:w=16:h=16:color=white:t=fill",
+    )
+    report = inspect_video(clip)
+    codes = {problem.code for problem in report.problems}
+    assert "all-black" not in codes, [(p.code, p.message) for p in report.problems]
+
+    truly_black = make(tmp_path, "color=c=black:size=160x90:rate=10:duration=2", name="black.mp4")
+    assert_fires(inspect_video(truly_black), "all-black", ERROR)
+
+
+def test_the_frozen_message_says_what_was_compared(tmp_path):
+    """ "The picture is unchanged" is false for one changed frame; the samples are not.
+
+    Adversarial case from an independent semantics audit, which also found the claim
+    in `docs/SEMANTICS.md` (that a one-frame change is not `frozen`) to be unsound:
+    at 2 samples/s a single changed frame leaves a long run of identical samples.
+    """
+    clip = make(
+        tmp_path,
+        "color=c=gray:size=160x90:rate=10:duration=2,drawbox=enable='eq(n\\,10)':x=0:y=0:w=40:h=40:color=red:t=fill",
+        name="one.mp4",
+    )
+    report = inspect_video(clip)
+    frozen = next(problem for problem in report.problems if problem.code == "frozen")
+    assert "sampled moment" in frozen.message, frozen.message
+    assert "the animation looks stopped" in frozen.message

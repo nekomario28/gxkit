@@ -51,7 +51,7 @@ The base is what the document declares in `servers`, and every operation path is
 built in that coordinate space. A path-item or operation `servers` that changes
 the path is refused, because the model carries one base for the whole API.
 
-`unversioned-path` is a check on a *declaration*: an imported spec declares its
+`path-outside-base` is a check on a *declaration*: an imported spec declares its
 own base, so every path is under it by construction and the check cannot fire.
 
 Nothing is ignored: a key the importer does not recognise in a path item or an
@@ -76,7 +76,7 @@ storyboard: Broken_API.storyboard.png
 inspect: 5 problems (2 errors)
   [1] error ep[1]      duplicate-route: GET /v1/users is declared twice
   [2] error ep[2]      unauthenticated-mutation: POST /users changes state but requires no authentication
-  [3] warn  ep[2]      unversioned-path: /users is not under the base '/v1'
+  [3] warn  ep[2]      path-outside-base: /users is not under the base '/v1'
   [4] info  ep[3]      no-error-status: PATCH /v1/users/{id} documents no error status (4xx/5xx)
   [5] info  ep[4]      deprecated-endpoint: GET /v1/legacy is deprecated
 ```
@@ -91,7 +91,7 @@ inspect: 5 problems (2 errors)
 | --- | --- | --- |
 | `duplicate-route` | error | the same method and path declared twice |
 | `unauthenticated-mutation` | error | a POST/PUT/PATCH/DELETE with `auth=False` |
-| `unversioned-path` | warn | a path not under the base |
+| `path-outside-base` | warn | a path not under the base |
 | `no-error-status` | info | an endpoint documents no 4xx/5xx |
 | `deprecated-endpoint` | info | an endpoint is marked deprecated |
 | `no-endpoints` | info | the API declares no endpoints |

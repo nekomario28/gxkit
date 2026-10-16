@@ -128,11 +128,25 @@ def test_examples_load_and_are_diagnosed():
     for code in (
         "unhandled-message",
         "deadlock",
-        "no-exit",
         "unreachable-state",
         "nondeterministic",
     ):
         assert_fires(r, code, ERROR)
+    # `no-exit` is for a state that *has* a way out and still cannot finish; the
+    # example's stuck state has no exit at all, which is `deadlock`. (An audit of the
+    # code names found the documents implied otherwise.)
+    assert "no-exit" not in {problem.code for problem in r.problems}
+    stuck_but_open = inspect_protocol(
+        Protocol(
+            states=["a", "b", "c"],
+            start="a",
+            terminal=["b"],
+            messages=["go"],
+            transitions=[("a", "b", "go"), ("a", "c", "go"), ("c", "c", "go")],
+        )
+    )
+    assert_fires(stuck_but_open, "no-exit", ERROR)
+    assert_fires(stuck_but_open, "nondeterministic", ERROR)
     assert_fires(r, "missing-response", WARN)
 
 
@@ -162,3 +176,30 @@ def test_a_statement_about_a_state_or_message_that_does_not_exist_is_reported():
     assert "request names undeclared message 'ghost'" in next(
         p.message for p in report.problems if p.code == "unknown-message"
     )
+
+
+def test_the_same_transition_twice_is_not_nondeterminism():
+    """Deterministic means one target per (state, message), not one declaration.
+
+    Adversarial case from an independent semantics audit (`broken_protocol.py`
+    listed the same ACK transition twice and was called non-deterministic).
+    """
+    identical = Protocol(
+        states=["a", "b"],
+        messages=["m"],
+        transitions=[("a", "b", "m"), ("a", "b", "m")],
+        start="a",
+        terminal=["b"],
+    )
+    assert "nondeterministic" not in {
+        problem.code for problem in inspect_protocol(identical).problems
+    }
+
+    different = Protocol(
+        states=["a", "b", "c"],
+        messages=["m"],
+        transitions=[("a", "b", "m"), ("a", "c", "m")],
+        start="a",
+        terminal=["b"],
+    )
+    assert_fires(inspect_protocol(different), "nondeterministic", ERROR)

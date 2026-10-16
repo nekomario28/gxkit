@@ -8,7 +8,7 @@ cycles all come from `gxcore.graph`.
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import defaultdict
 
 from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.graph import can_reach, cycle_witnesses, reachable
@@ -125,16 +125,20 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
             )
 
     # two transitions from one state on the same message
-    seen: dict[tuple[str, str], int] = Counter(
-        (t[0], m) for t in proto.transitions if (m := proto.message_of(t))
-    )
-    for (state, message), count in seen.items():
-        if count > 1:
+    # Distinct targets, not declarations: listing the same transition twice leaves
+    # the protocol deterministic, and calling it non-deterministic was measured as a
+    # wrong verdict.
+    seen: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for t in proto.transitions:
+        if message := proto.message_of(t):
+            seen[(t[0], message)].add(t[1])
+    for (state, message), destinations in seen.items():
+        if len(destinations) > 1:
             out.append(
                 Problem(
                     ERROR,
                     "nondeterministic",
-                    f"state {state!r} handles {message!r} {count} ways — "
+                    f"state {state!r} handles {message!r} {len(destinations)} ways — "
                     "the protocol is non-deterministic",
                     target=state,
                 )

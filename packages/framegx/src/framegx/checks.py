@@ -131,10 +131,13 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
 
     n = frames.shape[0]
     report.details.append(f"{n} sampled moments at {video.sample_fps:g}/s")
-    means = frames.reshape(n, -1).mean(axis=1)
-    per_frame_ptp = frames.reshape(n, -1).max(axis=1) - frames.reshape(n, -1).min(axis=1)
+    peaks = frames.reshape(n, -1).max(axis=1)
+    per_frame_ptp = peaks - frames.reshape(n, -1).min(axis=1)
 
-    if float(np.max(means)) < _BLACK_LEVEL:
+    # A *mean* below the black level is not "nothing was drawn": measured, a white
+    # 16x16 mark on a 160x90 black frame is 1.8% of the area and was reported as an
+    # empty picture. The brightest pixel is what answers this question.
+    if float(np.max(peaks)) < _BLACK_LEVEL:
         out.append(Problem(ERROR, "all-black", "every sampled frame is black — nothing was drawn"))
     elif np.all(per_frame_ptp < _IDENTICAL):
         out.append(
@@ -152,8 +155,9 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
                 Problem(
                     ERROR,
                     "frozen",
-                    f"the picture is unchanged for {length / video.sample_fps:.1f}s "
-                    "(between two sampled moments) — the animation stopped",
+                    f"the picture is identical at every sampled moment across "
+                    f"{length / video.sample_fps:.1f}s ({n} samples at "
+                    f"{video.sample_fps:g}/s) — the animation looks stopped",
                     label=f"frames {start}-{start + length}",
                     bbox=bbox,
                 )
@@ -163,7 +167,7 @@ def inspect_video(video: Video, name: str | None = None) -> Report:
     if (
         motion < _MOTION
         and float(np.max(per_frame_ptp)) > _IDENTICAL
-        and float(np.max(means)) >= _BLACK_LEVEL
+        and float(np.max(peaks)) >= _BLACK_LEVEL
     ):
         out.append(
             Problem(

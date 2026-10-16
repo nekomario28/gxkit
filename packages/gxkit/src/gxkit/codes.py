@@ -152,7 +152,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
     "apigx": {
         "duplicate-route": "error",
         "unauthenticated-mutation": "error",
-        "unversioned-path": "warn",
+        "path-outside-base": "warn",
         "no-error-status": "info",
         "deprecated-endpoint": "info",
         "no-endpoints": "info",

@@ -18,6 +18,6 @@ TRANSITIONS = [
     ("draft", "review", "submit"),
     ("review", "published", "approve"),
     ("review", "changes", "act"),
-    ("review", "changes", "act"),
+    ("review", "published", "act"),
     ("changes", "limbo", "park"),
 ]

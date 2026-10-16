@@ -129,6 +129,18 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
                     target=pt,
                 )
             )
+        elif pk is None:
+            # The table declares no primary key at all, so the reference cannot be
+            # to one. Measured: this was silent, and the artifact exited 0 with only
+            # `missing-primary-key` on the *other* table.
+            out.append(
+                Problem(
+                    WARN,
+                    "fk-to-non-primary-key",
+                    f"{child} references {parent}, but {pt} declares no primary key",
+                    target=pt,
+                )
+            )
 
     for witness, component in cycle_witnesses(schema.edges()):
         out.append(

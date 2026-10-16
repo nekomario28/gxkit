@@ -61,7 +61,7 @@ inspect: 4 problems (4 errors)
   [1] error changes    no-exit: state 'changes' cannot reach any accepting state — the flow can never complete from here
   [2] error limbo      dead-end: state 'limbo' has no outgoing transition and is not accepting — the flow gets stuck
   [3] error rejected   unreachable-state: state 'rejected' cannot be reached from 'draft'
-  [4] error review     ambiguous-transition: state 'review' has more than one 'act' transition — the flow is non-deterministic
+  [4] error review     ambiguous-transition: state 'review' has 2 'act' transitions to different states — the flow is non-deterministic
 ```
 
 - **Exit code 1** when any `error`-severity problem is found.
@@ -77,7 +77,7 @@ inspect: 4 problems (4 errors)
 | `unknown-state` | error | a transition names a state that was not declared |
 | `unreachable-state` | error | a state cannot be reached from the start |
 | `dead-end` | error | a reachable state has no way out and is not accepting |
-| `no-exit` | error | a reachable state can never reach an accepting state |
+| `no-exit` | error | a reachable state **with a way out** can never reach an accepting state — a dead end is `dead-end`, and a consumer that wants "can never complete from here" reads both |
 | `ambiguous-transition` | error | two transitions from one state share an event |
 | `cycle` | info | a loop exists (often intentional); one finding per cyclic component |
 | `clipped-text` | error | a state label is cut off by the canvas |

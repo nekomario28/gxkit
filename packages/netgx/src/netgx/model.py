@@ -41,9 +41,21 @@ class Network:
     def public(self) -> list[str]:
         return [name for name, kind in self.nodes.items() if kind == "public"]
 
-    def sensitive_nodes(self) -> list[str]:
+    def sensitive_nodes(self) -> tuple[list[str], bool]:
+        """`(names, by_kind)`: what the exposure question is about, and why.
+
+        A *declared* list is authoritative. When it names no node at all, that is a
+        typo `dangling-reference` already reports, and standing in the `data` nodes
+        would answer a question nobody asked — measured: `sensitive=["ghost"]`
+        reported an exposure of a node the artifact never called sensitive. An
+        *empty* list is different: nothing was declared, `data` nodes stand in, and
+        `by_kind` is what lets the finding say so instead of asserting a fact the
+        model never stated.
+        """
         explicit = [name for name in self.sensitive if name in self.nodes]
-        return explicit or [name for name, kind in self.nodes.items() if kind == "data"]
+        if self.sensitive:
+            return explicit, False
+        return [name for name, kind in self.nodes.items() if kind == "data"], True
 
 
 def _as_network(value: object) -> Network | None:

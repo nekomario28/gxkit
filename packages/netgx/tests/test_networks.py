@@ -224,3 +224,41 @@ def test_a_sensitive_name_that_is_not_a_node_is_reported():
     net = Network(nodes={"a": "public", "b": "data"}, edges=[("a", "b")], sensitive=["b", "ghost"])
     codes = [p.code for p in inspect_network(net).problems]
     assert "dangling-reference" in codes and "public-reaches-sensitive" in codes
+
+
+def test_a_declared_sensitive_list_is_never_replaced_by_the_data_kind_fallback():
+    """A list that resolves to nothing must not become "every `data` node".
+
+    Adversarial cases from an independent semantics audit: `sensitive=["ghost"]`
+    reported an exposure of a node the artifact never called sensitive (on top of
+    the `dangling-reference` that already fails it), and an empty list reported
+    `db` as "sensitive" without saying that the reading was by kind.
+    """
+    ghost = inspect_network(
+        Network(
+            nodes={"internet": "public", "db": "data"},
+            edges=[("internet", "db")],
+            sensitive=["ghost"],
+        )
+    )
+    codes = {problem.code for problem in ghost.problems}
+    assert "dangling-reference" in codes
+    assert "public-reaches-sensitive" not in codes, "a declared list is authoritative"
+
+    empty = inspect_network(
+        Network(
+            nodes={"internet": "public", "db": "data"}, edges=[("internet", "db")], sensitive=[]
+        )
+    )
+    fired = [problem for problem in empty.problems if problem.code == "public-reaches-sensitive"]
+    assert len(fired) == 1
+    assert "no `sensitive` list is declared" in fired[0].message, "the reading says it is by kind"
+
+
+def test_sensitive_nodes_reports_why_it_chose_them():
+    explicit = Network(nodes={"a": "data"}, sensitive=["a"])
+    assert explicit.sensitive_nodes() == (["a"], False)
+    by_kind = Network(nodes={"a": "data", "b": "service"})
+    assert by_kind.sensitive_nodes() == (["a"], True)
+    typo = Network(nodes={"a": "data"}, sensitive=["ghost"])
+    assert typo.sensitive_nodes() == ([], False), "a typo does not fall back"
