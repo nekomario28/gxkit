@@ -793,6 +793,54 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/chartgx/tests/test_model_route.py::test_a_truncated_baseline_is_the_same_code_the_figure_route_uses",
             ),
             Mutation(
+                "readme-transcript-drift",
+                "packages/apigx/src/apigx/checks.py",
+                '                    WARN,\n                    "unversioned-path",',
+                '                    INFO,\n                    "unversioned-path",',
+                "packages/gxkit/tests/test_docs.py::test_a_tool_readme_shows_a_transcript_it_can_still_produce",
+            ),
+            Mutation(
+                "hero-domains-hardcoded",
+                "docs/hero/hero_domains.py",
+                """    return sorted(
+        path.name
+        for path in (ROOT / "packages").iterdir()
+        if (path / "pyproject.toml").exists() and path.name not in {"gxcore", "gxkit"}
+    )""",
+                """    return [
+        "apigx",
+        "authzgx",
+        "chartgx",
+        "crongx",
+        "depsgx",
+        "docgx",
+        "envgx",
+        "flowgx",
+        "framegx",
+        "levelgx",
+        "netgx",
+        "pipegx",
+        "protogx",
+        "schemagx",
+        "seedgx",
+    ]""",
+                "packages/gxkit/tests/test_docs.py::test_the_hero_draws_one_cube_per_tool",
+            ),
+            Mutation(
+                "hero-manifest-stale",
+                "docs/assets/hero.json",
+                '"domains": 16,',
+                '"domains": 10,',
+                "packages/gxkit/tests/test_docs.py::test_the_committed_hero_matches_what_was_rendered",
+            ),
+            Mutation(
+                "hero-green-in-palette",
+                "docs/hero/hero_domains.py",
+                '    "#2563eb",',
+                '    "#22c55e",',
+                "packages/gxkit/tests/test_docs.py::test_the_hero_draws_one_cube_per_tool",
+            ),
+            Mutation(
                 "authzgx-dangling-low-skipped",
                 "packages/authzgx/src/authzgx/checks.py",
                 "            if name not in known:",
@@ -1064,9 +1112,12 @@ def main() -> int:
                 path.write_text(original.replace(case.before, case.after), encoding="utf-8")
                 result = _pytest(copy, env, [case.test])
                 output = result.stdout + result.stderr
-                # `pytest.raises` reports an intended rejection that stopped
-                # happening as "DID NOT RAISE", not as an AssertionError.
-                asserted = "AssertionError" in output or "DID NOT RAISE" in output
+                # A test can fail three ways and all three count: an assertion,
+                # a `pytest.raises` that stopped raising ("DID NOT RAISE"), and a
+                # `pytest.fail` with a message ("Failed: ...").
+                asserted = any(
+                    marker in output for marker in ("AssertionError", "DID NOT RAISE", "Failed:")
+                )
                 killed = (
                     result.returncode == 1
                     and asserted

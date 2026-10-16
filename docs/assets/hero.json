@@ -1,0 +1,13 @@
+{
+  "scene": "docs/hero/gxkit_hero.py",
+  "scene_sha256": "42dcba6d504a0fd35081170e39b1dfb5631b497dd80352419f7cecd490e7494d",
+  "domains_source": "docs/hero/hero_domains.py",
+  "domains_sha256": "96e529ef1d0524bfe7a6c7912a471f16d2bb5ccaa7ff4c3ebb34d50c361a1b48",
+  "domains": 16,
+  "gif": "docs/assets/hero.gif",
+  "gif_sha256": "fb80d7b6fab936ca0847228f6f050dbc3fabcb3659831c778ce9f89542c1f362",
+  "width": 560,
+  "height": 560,
+  "frames": 114,
+  "duration_seconds": 9.5
+}

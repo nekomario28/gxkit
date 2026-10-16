@@ -226,8 +226,11 @@ uv run chartgx inspect packages/chartgx/examples/bad_chart.py   # exit 1
 uv run framegx  inspect packages/framegx/examples/frozen_clip.py   # exit 1
 python scripts/prepublish_check.py      # no credentials or machine paths
 python scripts/make_readme_figure.py    # regenerate the architecture figure
-# the 3D hero is made with ManimGX (scene in docs/hero/):
+# the 3D hero is made with ManimGX (scene in docs/hero/), then converted:
 uvx --python 3.14 manimgx render docs/hero/gxkit_hero.py -r 720x720 --fps 24
+ffmpeg -i docs/hero/GxkitHero.mp4 -vf "fps=12,scale=560:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse" -loop 0 docs/assets/hero.gif
+# then update docs/assets/hero.json; a test refuses a scene that was edited
+# without being drawn again, and the cube count comes from packages/
 ```
 
 ## Documentation
