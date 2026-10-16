@@ -66,7 +66,7 @@ inspect: 2 problems (1 error)
 | `compile-error` | error | the shader failed to compile or link |
 | `bad-size` | error | the canvas is out of range (over 16M pixels) |
 | `nan-output` | error | some pixels are NaN or Inf |
-| `black-output` | error | a single fully-transparent/black frame — nothing drawn |
+| `black-output` | error | one frame below the black level (mean RGB or alpha < 0.02) — nothing visible is drawn |
 | `constant-output` | warn | one constant colour — the shader ignores uv and inputs |
 | `uniform-unused` | warn | a uniform is set but does not affect the output |
 | `nondeterministic` | info | two identical-input renders differ |

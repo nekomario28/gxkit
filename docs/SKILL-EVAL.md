@@ -54,6 +54,23 @@ Two real gaps, both in the documentation rather than the code:
    passed, which is exactly why the gap would have gone unnoticed: the task was
    solved by the wrong route. The loop now names the declaration first.
 
+## Re-running it
+
+`scripts/skill_eval.py` runs the same two tasks: it writes each fixture and the
+tool's `SKILL.md` into a fresh temporary directory, runs an independent agent
+(`codex exec --sandbox workspace-write` by default, `--agent-command` to change
+it), and grades the result — exit 0, the property re-derived from the artifact,
+the artifact still declaring what it did, and a digest of every tool source
+unchanged. `--keep` leaves the directories behind, `--grade-only` re-grades one,
+and `--task` runs a task on its own.
+
+It is deliberately **not** in `scripts/check.sh`: it needs a model, it costs tokens,
+and it is not deterministic. What is in the gate is the *grader*:
+`packages/gxkit/tests/test_skill_eval.py` feeds it a correct fix, an untouched
+artifact, a deletion, a chart whose values were zeroed, and a digest that says the
+tool was patched — so the thing that decides pass from fail is itself held to a
+verdict.
+
 ## Not covered
 
 - One model of one family, two tasks, one artifact per task. This is a probe, not a
@@ -61,6 +78,9 @@ Two real gaps, both in the documentation rather than the code:
 - The tasks were graded on the *outcome*, not on the reading of a finding. Whether
   an agent can act on `hazard-cuts-off` or `no-exit` the way it acted on
   `soft-lock` is untested.
-- The evaluation is manual: `codex exec` was run by hand, and the transcripts are
-  not in this repository. Nothing in the gate re-runs it, so it cannot catch a
-  regression on its own. It is evidence about the skill, not a guard on it.
+- The run is not in the gate (a model is needed), so it cannot catch a skill
+  regression by itself. `scripts/skill_eval.py` makes it repeatable on demand and
+  the grader is test-guarded, but nothing runs it for you: it is evidence about the
+  skill, not a guard on it.
+- The transcripts live in the temporary directory of the run (`--keep` to look at
+  them) and are not committed.

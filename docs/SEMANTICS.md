@@ -61,14 +61,14 @@ implementation rather than with itself.
 - **`apigx.auth_schemes` is descriptive.** Endpoints carry `auth: bool`, not a
   scheme name, so there is no declared set for a scheme to resolve against; an
   unknown name there is documentation, not a broken reference.
-- **`shadergx` was not probed by hand.** Its evidence is a *corpus* driven by
-  pixels: every valid shader in `tests/test_shader_corpus.py` must link — including
-  the constructs an agent reaches for (loops, `mat2` uniforms, array constructors)
-  — because a false `compile-error` would mean the tool lies about the language it
-  supports; every invalid one must surface a `compile-error`; and
-  `black-output`, `constant-output` and `nan-output` are unit-tested through the
-  real GL path. That attacks the direction that matters (false positives on valid
-  input) rather than the hand-built one, but it is not a hand-built probe.
+- **`shadergx`'s `black-output` has a threshold, and the finding is about
+  visibility.** Probed through the real GL path: mean output 0.0 and 0.005 are
+  `black-output`, 0.02 and above are `constant-output` instead, and a genuinely
+  dark *gradient* (0 → 0.05) is clean — so the claim holds in the direction that
+  matters (nothing that varies is called black). The README said "fully
+  transparent/black" while the check is `mean < 0.02`; it now says what the check
+  does. NaN in any channel, including alpha alone, is `nan-output`, and an infinity
+  is too — the message already said "NaN or Inf".
 - **`levelgx`'s one-way tiles cannot express a directed cycle.** Each one-way
   accepts entry only along its own arrow, so a ring of them is a set of dead ends.
   That is a fact about the legend, recorded because it bounds what `soft-lock` can
