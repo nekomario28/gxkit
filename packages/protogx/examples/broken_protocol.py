@@ -21,7 +21,7 @@ protocol = p.Protocol(
         ("closed", "listen", None),
         ("listen", "established", "SYN"),
         ("established", "stuck", "ACK"),
-        ("established", "stuck", "ACK"),
+        ("established", "closed", "ACK"),
     ],
     requests=["SYN"],
     responses={"SYN": "SYN+ACK"},

@@ -46,13 +46,27 @@ def test_nonfinite_time_cannot_be_certified_or_used_for_overlap(start, duration)
 
 @pytest.mark.parametrize("seed", ["-0.5", "0.5", "True", '"42"', 'float("nan")', 'float("inf")'])
 @pytest.mark.parametrize("shape", ["tuple", "mapping", "dataclass"])
-def test_seed_declarations_reject_noninteger_values_without_truncation(tmp_path, seed, shape):
+def test_seed_declarations_report_noninteger_values_without_truncation(tmp_path, seed, shape):
+    """A readable-but-invalid seed is a *finding*, not an input failure.
+
+    Measured while auditing the check names: refusing it at load made
+    `invalid-seed` unreachable from any artifact, so a catalogued check had no
+    trigger. Nothing is coerced — the value is carried and reported.
+    """
     member = f'("bad", {seed})' if shape == "tuple" else f'{{"name":"bad","seed":{seed}}}'
     source = f"STREAMS = [{member}]\n"
     if shape == "dataclass":
         source = f'from seedgx import SeedSpec, Stream\nspec = SeedSpec([Stream("bad", {seed})])\n'
     path = tmp_path / "artifact.py"
     path.write_text(source, encoding="utf-8")
+    assert main(["inspect", "seedgx", str(path), "--no-storyboard", "--no-config"]) == 1
+
+
+@pytest.mark.parametrize("seed", ["[1, 2]", '{"a": 1}'])
+def test_a_seed_that_is_not_a_scalar_at_all_is_an_input_failure(tmp_path, seed):
+    """Only a value the model cannot hold is refused at load."""
+    path = tmp_path / "artifact.py"
+    path.write_text(f"STREAMS = [('bad', {seed})]\n", encoding="utf-8")
     assert main(["inspect", "seedgx", str(path), "--no-storyboard", "--no-config"]) == 2
 
 
@@ -203,4 +217,4 @@ def test_every_independent_cycle_is_a_finding_not_only_the_first(tool, report_fa
 )
 def test_api_version_prefix_matches_a_path_boundary(base, path, warn):
     report = inspect_api(API([Endpoint("GET", path, statuses=[200, 404])], base=base))
-    assert ("unversioned-path" in {p.code for p in report.problems}) is warn
+    assert ("path-outside-base" in {p.code for p in report.problems}) is warn

@@ -219,6 +219,14 @@ Repository hygiene, from a sweep of the repository itself rather than the code:
   remote-tracking ref were removed; the primary checkout was fast-forwarded from
   the `v0.9.1` commit it had been left on.
 
+### Changed
+
+- **`apigx`'s `unversioned-path` is now `path-outside-base`**, because that is what
+  it tests: `/v2/items` under a base of `/v1` is versioned and outside the base. An
+  independent review pointed out that the old name asserted the opposite of the
+  truth for a versioned sibling route; the message was always precise. Pre-release,
+  so no consumer's baseline or branch breaks.
+
 ### Fixed
 
 - **A declared name that resolves to nothing is now reported, instead of being

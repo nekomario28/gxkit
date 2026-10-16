@@ -126,3 +126,21 @@ def test_a_root_that_is_not_a_table_is_reported():
     report = inspect_schema(schema)
     assert_fires(report, "dangling-reference", ERROR)
     assert "not a declared table" in report.problems[0].message
+
+
+def test_a_reference_to_a_table_with_no_primary_key_cannot_be_to_one():
+    """`fk-to-non-primary-key` = the reference is not to a primary key.
+
+    Adversarial case from an independent semantics audit: the artifact exited 0 with
+    only `missing-primary-key` on the *other* table.
+    """
+    schema = Schema(
+        tables={"posts": {"id": "int", "tag_name": "text"}, "tags": {"name": "text"}},
+        primary_keys={"posts": "id"},
+        foreign_keys=[("posts.tag_name", "tags.name")],
+        roots=["posts"],
+    )
+    report = inspect_schema(schema)
+    fired = [problem for problem in report.problems if problem.code == "fk-to-non-primary-key"]
+    assert len(fired) == 1
+    assert "declares no primary key" in fired[0].message

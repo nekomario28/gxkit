@@ -279,11 +279,17 @@ def _check_clipped_data(ax: Any, i: int, out: list[Problem]) -> None:
     ylo, yhi = ax.get_ylim()
     for j, ln in enumerate(ax.lines):
         try:
-            xs = [float(v) for v in ln.get_xdata()]
+            # A categorical x axis returns its labels, not numbers: the x comparison
+            # does not apply there, and the y one still does. Measured: an entire
+            # class of clipped charts (categorical x, the common idiom) was silent.
+            try:
+                xs = [float(v) for v in ln.get_xdata()]
+            except (TypeError, ValueError):
+                xs = []
             ys = [float(v) for v in ln.get_ydata()]
-            if not xs:
+            if not xs and not ys:
                 continue
-            if min(xs) < xlo - 1e-9 or max(xs) > xhi + 1e-9:
+            if xs and (min(xs) < xlo - 1e-9 or max(xs) > xhi + 1e-9):
                 out.append(
                     Problem(
                         WARN,

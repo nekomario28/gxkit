@@ -143,3 +143,17 @@ def test_a_declared_rule_that_names_nothing_is_reported():
         )
         assert_fires(report, "dangling-reference", ERROR), field
         assert field in report.problems[0].message
+
+
+def test_a_self_edge_is_not_a_user_of_the_module():
+    """`orphan-module` = "nothing depends on it", and a module is not something else.
+
+    Adversarial case from an independent semantics audit: a module whose only in-edge
+    was its own self-loop was reported as depended-upon.
+    """
+    graph = ModuleGraph(modules=["a", "b", "c"], depends=[("a", "b"), ("c", "c")], roots=["a"])
+    report = inspect_graph(graph)
+    assert_fires(report, "orphan-module", INFO)
+    assert {problem.target for problem in report.problems if problem.code == "orphan-module"} == {
+        "c"
+    }

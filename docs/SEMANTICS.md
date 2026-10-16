@@ -37,7 +37,7 @@ implementation rather than with itself.
 | `docgx` | `clipped-text` is measured, not estimated | a long unbroken word; CJK; a block past the right edge; a 1×1 page; many lines | correct — the boxes come from PIL's font metrics, and the renderer draws from those same boxes |
 | `pipegx` | `needs` are step names, `produces` are artifacts, order does not matter | a goal produced by a *later* step; a step needing a step declared later; a goal no step produces; a duplicated artifact; a cycle | correct |
 | `seedgx` | `missing-seed` is about *absence*, not falsiness | `seed=0`; `seed=None`; a negative seed; `2**64`; two streams sharing a seed; `deterministic=False` | correct — `0` is a seed, `None` is missing, and the range/duplicate/non-determinism claims fire on their own cases |
-| `framegx` | `frozen` means the picture does not change; `all-black` means nothing was drawn | a real moving clip; a still clip encoded as video; an all-black clip; a clip changed for one frame | correct, and the discriminating case holds: **one changed frame is not `frozen`** (the claim needs ~1.5 s of sameness), and real motion is clean |
+| `framegx` | `frozen` means the picture does not change; `all-black` means nothing was drawn | a real moving clip; a still clip encoded as video; an all-black clip; a clip changed for one frame | **corrected**: at the default 2 samples/s a single changed frame *does* read as `frozen` (a >1.5 s run of identical samples), which the second audit called an overstated message and this line had called clean. The message now says what was compared ("identical at every sampled moment …"), and `all-black` is decided by the brightest pixel — a white 16x16 mark on a black frame was reported as "nothing was drawn" because the check averaged |
 | `authzgx` | `escalation` is transitive through inheritance | one hop, three hops, two sensitive permissions | correct, with the path in the message |
 | `flowgx`, `protogx` | `unknown-state` for a state nobody declared | a transition to/from an undeclared state | correct |
 
@@ -98,3 +98,35 @@ cannot occur, no JSON key missing sometimes (82 runs across 16 tools), no flag t
 does nothing, no documented input refused, and no case where `inspect` and the
 storyboard disagree about which problem is which. That list is the useful half of a
 review: it says where *not* to look next.
+
+## Second review: the *semantics* of the checks, attacked
+
+The same instrument (`opencode` with `deepseek-v4.1-flash-free`), a different prompt:
+falsify each check's **name** on adversarial artifacts, in both directions — fires when
+the claim is false, silent when it is true. It attacked every code in sixteen tools and
+found **twelve**; every one was reproduced here, and eleven changed behaviour or wording.
+Ten now have a test and a mutation (138 in the catalogue).
+
+| # | code | direction | what the artifact showed | now |
+| --- | --- | --- | --- | --- |
+| 1 | `netgx` `public-reaches-sensitive` | false positive | `sensitive=["ghost"]` produced an exposure of a node the artifact never called sensitive (on top of `dangling-reference`), and an empty list reported `db` as "sensitive" without saying the reading was by kind | a declared list is authoritative (no fallback); the by-kind reading says so in the message |
+| 2 | `framegx` `all-black` | false positive | a white 16×16 mark on a 160×90 black frame (1.8% of the area) was "nothing was drawn" — the check averaged the frame | the brightest pixel decides |
+| 3 | `schemagx` `fk-to-non-primary-key` | false negative | a reference to a table that declares **no** primary key produced only `missing-primary-key` on that table, exit 0 | the reference is reported |
+| 4 | `pipegx` `cycle` | false negative | `Step("build", needs=["build"])` — a one-node cycle — reported a clean pipeline that can never run | reported |
+| 5 | `chartgx` `clipped-data` | false negative | with **categorical x** (the common idiom) out-of-range y data was never reported; converting the labels raised and the line was skipped | the y comparison runs whatever x is |
+| 6 | `flowgx` `ambiguous-transition`, `protogx` `nondeterministic` | false positive | the same transition listed twice was "non-deterministic"; the genuinely ambiguous case (two targets) looked identical to it | only different targets are ambiguity |
+| 7 | `flowgx`/`protogx` `no-exit` | false negative (by name) | a dead end that also cannot finish gets `dead-end`/`deadlock` only, while the documents defined `no-exit` without that exception | the two codes are exact in the documents: `no-exit` is a state that *has* a way out and still cannot finish |
+| 8 | `depsgx` `orphan-module` | false negative | a module whose only in-edge was its own self-loop counted as depended upon | a self-edge is not a user |
+| 9 | `framegx` `frozen` | overstated | a one-frame change reads as frozen at 2 samples/s, and the message said "the picture is unchanged" | the message says what was compared; this file's earlier claim is corrected above |
+| 10 | `docgx` `too-much-text` | false negative | a 100-word *title* against a 10-word budget passed: the title was not counted | the budget counts the page |
+| 11 | `apigx` `unversioned-path` | overstated name | `/v2/items` under base `/v1` is versioned; the code said otherwise (the message was accurate) | renamed `path-outside-base`, with the rename recorded in the CHANGELOG |
+| 12 | `seedgx` `invalid-seed` | unreachable | a boolean, float or string seed was refused at *load*, so the catalogued check could never appear in a report | the value is carried and the check reports it; only a non-scalar is an input failure |
+
+The sound list matters as much: `levelgx` (`soft-lock` on one-way traps, a trap beside
+the goal, an item inside a trap, `hazard-cuts-off` in three configurations),
+`crongx` (half-open intervals, contained runs, non-finite times), `schemagx` (dangling
+keys, 2- and 3-table cycles, type families), `depsgx` (layers, forbidden edges),
+`authzgx` (transitive escalation, cyclic inheritance), `docgx` (measured text, real
+overlaps), and the rest were attacked on boundary artifacts and behaved as their names
+claim. Two of the twelve were found *because* the first audit's record was wrong — a
+review of the record, not only of the code.

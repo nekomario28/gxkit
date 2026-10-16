@@ -48,7 +48,7 @@ protocol: 5 states, 4 transitions
 storyboard: Broken_handshake.storyboard.png
   5 states, 4 transitions
   5 messages, 1 requests
-inspect: 9 problems (8 errors)
+inspect: 8 problems (6 errors)
   [1] error -          unhandled-message: message 'FIN' is declared but no transition handles it
   [2] error -          unhandled-message: message 'RST' is declared but no transition handles it
   [3] error -          unhandled-message: message 'SYN+ACK' is declared but no transition handles it
@@ -70,7 +70,7 @@ inspect: 9 problems (8 errors)
 | `unhandled-message` | error | a declared message no transition handles; one finding per message |
 | `nondeterministic` | error | one state handles the same message two ways |
 | `deadlock` | error | a reachable non-terminal state has no way out |
-| `no-exit` | error | a reachable state can never reach a terminal state |
+| `no-exit` | error | a reachable state **with a way out** can never reach a terminal state — a stuck state is `deadlock`, and "can never finish from here" is the pair |
 | `unreachable-state` | error | a state cannot be reached from the start |
 | `no-terminal` | error | no terminal state, so the protocol can never end |
 | `missing-response` | warn | a request's expected reply is never handled |

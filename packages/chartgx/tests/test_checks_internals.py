@@ -215,3 +215,30 @@ def test_log_x_check_skips_a_line_that_cannot_be_read(monkeypatch):
     checks._check_log(ax, 0, out)
     plt.close(fig)
     assert out == []
+
+
+def test_a_malformed_line_does_not_crash_the_clipped_data_check():
+    """The per-line guard: a bad axes reports, it does not traceback.
+
+    The inner conversion has its own `except` for categorical labels, so this is the
+    outer one — a line object that cannot be read at all. Coverage counts only what
+    runs here, and the categorical case no longer reaches it.
+    """
+
+    class Line:
+        def get_xdata(self):
+            raise AttributeError("not a line")
+
+    class Axes:
+        def __init__(self) -> None:
+            self.lines = [Line()]
+
+        def get_xlim(self):
+            return (0.0, 1.0)
+
+        def get_ylim(self):
+            return (0.0, 1.0)
+
+    out: list[object] = []
+    checks._check_clipped_data(Axes(), 0, out)
+    assert out == []

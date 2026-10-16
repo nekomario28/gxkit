@@ -31,12 +31,12 @@ uv tool install ./packages/apigx    # puts `apigx` on PATH
 
 - `error` — `duplicate-route` (the same method and path twice),
   `unauthenticated-mutation` (a POST/PUT/PATCH/DELETE with `auth=False`).
-- `warn` — `unversioned-path` (a path not under the base).
+- `warn` — `path-outside-base` (a path not under the base).
 - `info` — `no-error-status`, `deprecated-endpoint`, `no-endpoints`.
 
 Common fixes: `duplicate-route` → drop one; `unauthenticated-mutation` → set
 `auth=True` (in an OpenAPI document, `security: []` on the operation means
-exactly this) or make it read-only; `unversioned-path` → move it under the base;
+exactly this) or make it read-only; `path-outside-base` → move it under the base;
 `no-error-status` → document the 4xx/5xx it can return. Use `--json` to branch on
 the result.
 

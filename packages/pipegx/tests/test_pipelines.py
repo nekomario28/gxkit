@@ -120,3 +120,16 @@ def test_examples_load_and_are_diagnosed():
         "goal-not-produced",
     ):
         assert_fires(report, code, ERROR)
+
+
+def test_a_step_that_needs_itself_is_a_cycle_not_a_clean_pipeline():
+    """`cycle_witnesses` looks at components larger than one, and this is size one.
+
+    Adversarial case from an independent semantics audit: `needs=["build"]` on step
+    `build` reported `no problems` for a pipeline that can never run.
+    """
+    report = inspect_pipeline(
+        Pipeline(steps=[Step("build", needs=["build"], produces=["app"])], goals=["app"])
+    )
+    assert_fires(report, "cycle", ERROR)
+    assert "needs itself" in report.problems[0].message

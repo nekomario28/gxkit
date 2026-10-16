@@ -78,6 +78,21 @@ def inspect_pipeline(pipeline: Pipeline, name: str | None = None) -> Report:
                 )
             )
 
+    # A step that needs itself is a one-node cycle, and `cycle_witnesses` only looks
+    # at components larger than one. Measured: `Step("build", needs=["build"])`
+    # reported a clean pipeline that can never run.
+    for step in pipeline.steps:
+        if step.name in step.needs:
+            out.append(
+                Problem(
+                    ERROR,
+                    "cycle",
+                    f"step {step.name!r} needs itself, so the pipeline can never run",
+                    target=step.name,
+                    identity=(step.name,),
+                )
+            )
+
     for witness, component in cycle_witnesses(edges):
         out.append(
             Problem(

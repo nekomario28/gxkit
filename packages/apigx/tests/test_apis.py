@@ -39,7 +39,7 @@ def test_a_read_without_auth_is_fine():
 
 def test_unversioned_path():
     api = API(base="/v1", endpoints=[Endpoint("GET", "/users", statuses=[200])])
-    assert_fires(inspect_api(api), "unversioned-path", WARN)
+    assert_fires(inspect_api(api), "path-outside-base", WARN)
 
 
 def test_no_error_status():
@@ -90,7 +90,7 @@ def test_examples_load_and_are_diagnosed():
     for code, severity in (
         ("duplicate-route", ERROR),
         ("unauthenticated-mutation", ERROR),
-        ("unversioned-path", WARN),
+        ("path-outside-base", WARN),
         ("no-error-status", INFO),
         ("deprecated-endpoint", INFO),
     ):

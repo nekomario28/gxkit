@@ -241,3 +241,37 @@ def test_a_normal_axis_is_quiet():
     ax.set_xlabel("x")
     ax.set_ylabel("y (m)")
     assert_quiet(report(fig), "inverted-axis")
+
+
+def test_clipped_data_is_reported_whatever_the_x_axis_is():
+    """`clipped-data` = the data runs past the limits, not "…and x is numeric".
+
+    Adversarial case from an independent semantics audit: with categorical x — the
+    standard matplotlib idiom, and what chartgx's own examples use — out-of-range y
+    data was never reported, because converting the labels to floats raised and the
+    whole line was skipped.
+    """
+    for x in (["Q1", "Q2", "Q3", "Q4"], [1, 2, 3, 4]):
+        fresh()
+        fig, ax = plt.subplots()
+        ax.plot(x, [42, 51, 47, 80], marker="o")
+        ax.set_ylim(0, 65)
+        ax.set_title("Revenue")
+        ax.set_xlabel("Quarter")
+        ax.set_ylabel("Revenue")
+        fig.tight_layout()
+        assert_fires(inspect_figure(fig), "clipped-data", WARN)
+
+
+def test_an_empty_line_is_skipped_rather_than_crashing_the_comparison():
+    """A legend-only line has no data to compare, and must not be a crash."""
+    fresh()
+    fig, ax = plt.subplots()
+    # The real line comes first: an axes whose only content is an empty line is
+    # classified `empty-chart`, and the loop this test is about never runs.
+    ax.plot([0, 1], [0, 1], label="real")
+    ax.plot([], [], label="legend only")
+    ax.set_title("t")
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    assert_quiet(inspect_figure(fig), "clipped-data")

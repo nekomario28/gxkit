@@ -34,7 +34,7 @@ BROKEN = Machine(
         ("draft", "review", "submit"),
         ("review", "published", "approve"),
         ("review", "changes", "act"),
-        ("review", "changes", "act"),
+        ("review", "published", "act"),
         ("changes", "limbo", "park"),
     ],
     name="broken",
@@ -119,3 +119,30 @@ def test_an_accepting_state_that_is_not_a_state_is_reported():
     assert "accepting state 'ghost'" in next(
         p.message for p in report.problems if p.code == "unknown-state"
     )
+
+
+def test_identical_duplicate_transitions_are_not_ambiguity():
+    """Two identical declarations leave the machine deterministic.
+
+    Adversarial case from an independent semantics audit: the same (source, event,
+    target) listed twice produced `ambiguous-transition` claiming non-determinism,
+    while the genuinely ambiguous case (two *different* targets) fired identically —
+    so the tool could not tell them apart.
+    """
+    identical = Machine(
+        states=["a", "b"],
+        start="a",
+        accept=["b"],
+        transitions=[("a", "b", "go"), ("a", "b", "go")],
+    )
+    assert "ambiguous-transition" not in {
+        problem.code for problem in inspect_machine(identical).problems
+    }
+
+    different = Machine(
+        states=["a", "b", "c"],
+        start="a",
+        accept=["b"],
+        transitions=[("a", "b", "go"), ("a", "c", "go")],
+    )
+    assert_fires(inspect_machine(different), "ambiguous-transition", ERROR)

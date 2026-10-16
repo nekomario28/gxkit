@@ -95,15 +95,22 @@ def inspect_network(net: Network, name: str | None = None) -> Report:
     # stopping at the first one hid the second, and the finding was identified by
     # the sensitive node alone, so a baseline read a *changed* route as unchanged
     # debt. Both were measured before this was fixed.
-    for sensitive in net.sensitive_nodes():
+    sensitive_nodes, by_kind = net.sensitive_nodes()
+    for sensitive in sensitive_nodes:
         for entry in publics:
             path = shortest_path(graph, entry, sensitive)
             if path:
+                because = (
+                    " (no `sensitive` list is declared, so a `data` node stands in)"
+                    if by_kind
+                    else ""
+                )
                 out.append(
                     Problem(
                         ERROR,
                         "public-reaches-sensitive",
-                        f"public {entry!r} can reach sensitive {sensitive!r}: " + " → ".join(path),
+                        f"public {entry!r} can reach sensitive {sensitive!r}"
+                        f"{because}: " + " → ".join(path),
                         target=sensitive,
                         label=sensitive,
                         identity=(entry, sensitive),

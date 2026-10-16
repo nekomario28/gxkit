@@ -58,8 +58,8 @@ def inspect_api(api: API, name: str | None = None) -> Report:
             out.append(
                 Problem(
                     WARN,
-                    "unversioned-path",
-                    f"{endpoint.path} is not under the base {api.base!r}",
+                    "path-outside-base",
+                    f"{endpoint.path} is not under the base {api.base!r} (an unversioned path is one common case)",
                     target=target,
                     label=label,
                 )

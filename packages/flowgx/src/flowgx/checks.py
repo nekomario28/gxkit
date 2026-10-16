@@ -111,18 +111,25 @@ def inspect_machine(machine: Machine, name: str | None = None) -> Report:
                 )
 
     # Two transitions from one state on the same event = non-determinism.
-    events: dict[str, list[str]] = defaultdict(list)
-    for src, ev in machine.events():
-        if ev is not None:
-            events[src].append(ev)
-    for src, evs in events.items():
-        for ev in sorted({e for e in evs if evs.count(e) > 1}):
+    # Only *different targets* on one event are ambiguity: two identical
+    # declarations (same source, event and target) leave the machine perfectly
+    # deterministic, and saying otherwise was measured as a wrong verdict.
+    targets: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    for src, dst, event in (
+        (t[0], t[1], t[2] if len(t) == 3 else None) for t in machine.transitions
+    ):
+        if event is not None:
+            targets[src][event].add(dst)
+    for src, by_event in targets.items():
+        for ev, destinations in sorted(by_event.items()):
+            if len(destinations) < 2:
+                continue
             out.append(
                 Problem(
                     ERROR,
                     "ambiguous-transition",
-                    f"state {src!r} has more than one {ev!r} transition — the flow "
-                    "is non-deterministic",
+                    f"state {src!r} has {len(destinations)} {ev!r} transitions to "
+                    "different states — the flow is non-deterministic",
                     target=src,
                 )
             )

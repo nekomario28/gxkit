@@ -2,7 +2,7 @@
 
 * `GET /v1/users` is declared twice                  -> duplicate-route
 * `POST /users` changes state with no auth            -> unauthenticated-mutation
-* `POST /users` is outside the /v1 base               -> unversioned-path
+* `POST /users` is outside the /v1 base               -> path-outside-base
 * `PATCH /v1/users/{id}` documents no error status     -> no-error-status
 * `GET /v1/legacy` is deprecated                       -> deprecated-endpoint
 """

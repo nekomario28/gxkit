@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from gxcore.loading import InvalidArtifact, convert_items
 
@@ -37,12 +38,20 @@ class SeedSpec:
         return [stream.name for stream in self.streams]
 
 
-def _seed(value: object) -> int | None:
-    if value is None:
-        return None
-    if not isinstance(value, int) or isinstance(value, bool):
-        raise InvalidArtifact("seed: expected an integer or None (no coercion)")
-    return value
+def _seed(value: object) -> Any:
+    """The declared seed, kept as written when it is a scalar.
+
+    A boolean, float or string seed is *readable* — the model can carry it and
+    `invalid-seed` reports it, which is the documented way to learn about it.
+    Refusing at load instead (measured) made that code unreachable from any
+    artifact, leaving a catalogued check with no trigger. Only a value that is not a
+    scalar at all is unreadable, and that is an input failure.
+    """
+    if value is None or isinstance(value, (int, float, str)):
+        # `Any` on purpose: the model carries what was declared so `invalid-seed` can
+        # judge it, and a value that silently became an int would hide the answer.
+        return value
+    raise InvalidArtifact("seed: expected an integer or None (no coercion)")
 
 
 def _as_stream(value: object) -> Stream | None:

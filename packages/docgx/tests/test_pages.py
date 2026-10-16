@@ -112,3 +112,18 @@ def test_examples_load_and_are_diagnosed():
     assert_fires(r, "no-title", WARN)
     assert_fires(r, "too-much-text", WARN)
     assert_fires(r, "reading-order", INFO)
+
+
+def test_the_word_budget_counts_the_title():
+    """ "N words on the page": the title is on the page.
+
+    Adversarial case from an independent semantics audit: a 100-word title against a
+    10-word budget passed, because only the blocks were counted.
+    """
+    title = " ".join(["word"] * 10)
+    page = Page(width=1280, height=720, title=title, blocks=[Block("one")], max_words=10)
+    report = inspect_page(page)
+    assert_fires(report, "too-much-text", WARN)
+    assert "11 words" in next(
+        problem.message for problem in report.problems if problem.code == "too-much-text"
+    )

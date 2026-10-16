@@ -58,7 +58,11 @@ class Consumer:
         clean = self.artifact("clean.py", 'STREAMS = [("python",0),("numpy",4294967295)]\n')
         assert self.inspect(clean, 0)["errors"] == 0
         self.inspect(self.artifact("bad_member.py", 'RUNS = [("good",0,1),{}]\n'), 2)
-        self.inspect(self.artifact("fractional.py", 'STREAMS = [("bad",-0.5)]\n'), 2)
+        # A readable-but-invalid seed is a *finding* now, not a load failure — the
+        # catalogue's `invalid-seed` had no observable trigger otherwise.
+        fractional = self.artifact("fractional.py", 'STREAMS = [("bad",-0.5)]\n')
+        assert [p["code"] for p in self.inspect(fractional, 1)["problems"]] == ["invalid-seed"]
+        self.inspect(self.artifact("nonscalar.py", 'STREAMS = [("bad",[1,2])]\n'), 2)
         zero = self.artifact(
             "empty_interval.py", 'RUNS = [("active",0,10,"r"),("empty",5,0,"r")]\n'
         )

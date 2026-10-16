@@ -109,7 +109,7 @@ def test_an_operation_path_is_relative_to_the_server_path():
     """OpenAPI defines the endpoint as the server's path followed by the path."""
     api = api_from_document(_doc(paths={"/items": {"post": {"responses": {}}}}))
     assert [endpoint.path for endpoint in api.endpoints] == ["/v1/items"]
-    assert "unversioned-path" not in {problem.code for problem in inspect_api(api).problems}
+    assert "path-outside-base" not in {problem.code for problem in inspect_api(api).problems}
 
 
 def test_a_server_without_a_path_does_not_prefix_anything():

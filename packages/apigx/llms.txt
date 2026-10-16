@@ -10,4 +10,4 @@ codes, exit codes, a storyboard) is shared with every other tool.
 - Or point at the OpenAPI 3 JSON document the service publishes: apigx inspect openapi.json (paths/methods become endpoints, security becomes auth, numeric responses become statuses; a malformed document exits 2).
 - A mutating method (POST/PUT/PATCH/DELETE) with auth=False is an error.
 - apigx inspect api.py — exit 1 on any error; --json; --no-storyboard; -o name.png.
-- Codes: duplicate-route (error), unauthenticated-mutation (error), unversioned-path (warn), no-error-status (info), deprecated-endpoint (info), no-endpoints (info).
+- Codes: duplicate-route (error), unauthenticated-mutation (error), path-outside-base (warn), no-error-status (info), deprecated-endpoint (info), no-endpoints (info).
