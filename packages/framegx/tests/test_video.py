@@ -84,3 +84,48 @@ def test_examples_load_and_are_diagnosed():
     assert good.resolved_path and good.resolved_path.exists()
     assert inspect_video(good).errors == 0
     assert_fires(inspect_video(frozen), "frozen", ERROR)
+
+
+def test_a_missing_program_refuses_instead_of_reporting_a_finding(monkeypatch, tmp_path):
+    """`MissingCapability` escapes; a plain `VideoError` is the finding.
+
+    A missing `ffprobe` is not a fault in the artifact, so reporting it as
+    `probe-error` would send the caller to fix a clip that is fine. All three places
+    are exercised *in process*: the coverage floor counts what runs here, and a
+    re-raise that only a subprocess reaches is invisible to it.
+    """
+    import importlib
+
+    from framegx.probe import MissingCapability
+
+    # `framegx` exports a *function* named `checks`, so the submodule is fetched by
+    # name — `from framegx import checks` would give the function.
+    checks = importlib.import_module("framegx.checks")
+    probe_module = importlib.import_module("framegx.probe")
+
+    def refuse(*_args: object, **_kwargs: object):
+        raise MissingCapability("ffprobe is not installed or not on PATH")
+
+    # 1. The program is genuinely absent: an ordinary subprocess with no PATH.
+    media = tmp_path / "present.mp4"
+    media.write_bytes(b"not really a video")
+    monkeypatch.setenv("PATH", "")
+    with pytest.raises(MissingCapability):
+        probe_module.probe(media)
+    monkeypatch.undo()
+
+    # 2. The first call site: reading metadata.
+    # The file has to exist — `inspect_video` reports `missing-file` and returns
+    # before it ever probes, which is how the first version of this test passed for
+    # the wrong reason.
+    monkeypatch.setattr(checks, "probe", refuse)
+    with pytest.raises(MissingCapability):
+        checks.inspect_video(Video(path=str(media)))
+    monkeypatch.undo()
+
+    # 3. The second call site: sampling frames, with a probe that works.
+    examples = Path(__file__).resolve().parents[1] / "examples"
+    real, _module = load_video(examples / "frozen_clip.py")
+    monkeypatch.setattr(checks, "sample_frames", refuse)
+    with pytest.raises(MissingCapability):
+        checks.inspect_video(real)

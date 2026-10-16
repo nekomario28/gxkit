@@ -1,0 +1,5 @@
+stateDiagram-v2
+    [*] --> idle
+    idle --> running : start
+    running --> running : retry
+    limbo --> idle : wake

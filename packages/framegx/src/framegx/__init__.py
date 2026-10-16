@@ -10,7 +10,7 @@ from gxcore import ERROR, INFO, WARN, Problem, Report
 
 from .checks import inspect_video
 from .clip import Video, clip, load_video
-from .probe import VideoError, mean_volume_db, probe, sample_frames
+from .probe import MissingCapability, VideoError, mean_volume_db, probe, sample_frames
 from .render import contact_sheet
 from .tool import TOOL, Scene, main
 
@@ -19,6 +19,7 @@ __all__ = [
     "INFO",
     "TOOL",
     "WARN",
+    "MissingCapability",
     "Problem",
     "Report",
     "Scene",

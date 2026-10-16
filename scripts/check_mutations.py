@@ -800,6 +800,20 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/levelgx/tests/test_levels.py::test_softlock_is_an_error",
             ),
             Mutation(
+                "report-omits-a-documented-key",
+                "packages/gxcore/src/gxcore/model.py",
+                '            "details": list(self.details),\n',
+                "",
+                "packages/gxkit/tests/test_contract_conformance.py::test_the_json_report_carries_the_documented_keys",
+            ),
+            Mutation(
+                "warn-becomes-an-error",
+                "packages/gxcore/src/gxcore/model.py",
+                'WARN = "warn"',
+                'WARN = "error"',
+                "packages/gxkit/tests/test_contract_conformance.py::test_a_warn_or_info_never_fails_a_build",
+            ),
+            Mutation(
                 "readme-link-dangling-unanchored",
                 "README.md",
                 "[`docs/TRACE.md`](docs/TRACE.md)",
