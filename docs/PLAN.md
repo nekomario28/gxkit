@@ -8,6 +8,13 @@ publication gates. What remains is the owner's publish step. See
 [`RELEASING.md`](RELEASING.md). This file is the durable plan; keep it current if
 new tools are added.
 
+The *evidence* for the checks is part of the repository too, and each piece answers
+a question the tests cannot: what a finding is identified by
+([`IDENTITY.md`](IDENTITY.md)), what each claim was measured against
+([`SEMANTICS.md`](SEMANTICS.md)), whether the skill text actually works for an agent
+([`SKILL-EVAL.md`](SKILL-EVAL.md)), and whether the tests would notice a rule being
+removed (the bounded mutation catalogue).
+
 How to add a tool (the checklist, the contract, the extraction rule) is in
 [`BUILDING.md`](BUILDING.md).
 
