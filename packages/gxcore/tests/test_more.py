@@ -126,3 +126,95 @@ def test_a_finding_with_an_unplaceable_box_does_not_lose_the_whole_storyboard():
     # The number keeps the sorted position the printed list shows; only the
     # rectangle is dropped.
     assert [box.numbers for box in boxes] == [(2,)]
+
+
+def test_every_number_the_report_lists_is_drawn_even_when_its_box_is_off_canvas():
+    """`clipped-text` puts a box *at* the edge, often entirely outside the canvas.
+
+    Measured: three such findings drew one number and two nothing — one box right of
+    the canvas, one below it — so the picture and the text report disagreed about what
+    was found. The rectangle is clamped to the canvas and the tag is clamped into it.
+    """
+    from gxcore.model import ERROR, Problem
+    from gxcore.storyboard import _COLORS, annotate, tag_origin, visible_box
+    from PIL import Image
+
+    problems = [
+        Problem(ERROR, "e", "m", bbox=(900.0, 180.0, 980.0, 200.0)),  # right of the canvas
+        Problem(ERROR, "e", "m", bbox=(10.0, -40.0, 60.0, -20.0)),  # below it
+    ]
+    image = Image.new("RGB", (200, 100), (255, 255, 255))
+    path = annotate(image, problems, _tmp_png(), origin="top-left")
+    drawn = Image.open(path).convert("RGB")
+    red = _COLORS["error"]
+    inside = [
+        (x, y)
+        for y in range(drawn.height)
+        for x in range(drawn.width)
+        if drawn.getpixel((x, y)) == red
+    ]
+    assert inside, "no part of either finding was drawn"
+    # Both tags are inside the image. Asserted on the placement itself, because "some
+    # red pixel exists" is satisfied by the *other* finding's tag when one is off-image.
+    assert visible_box(problems[0].bbox, 200, 100) is None
+    assert visible_box(problems[1].bbox, 200, 100) is None
+    for problem in problems:
+        x, y = tag_origin(problem.bbox, 200, 100, 40.0, 13.0)
+        assert 0 <= x <= 200 - 40 and 0 <= y <= 100 - 13, (problem.bbox, x, y)
+
+
+def test_a_shared_box_names_its_numbers_as_ranges():
+    """A shared rectangle can carry a dozen numbers, and `1,2,…,12` ran off the edge.
+
+    Measured: 12 findings on one box drew `1,2,3,4,5,6` and then nothing, while the
+    text listed all twelve.
+    """
+    from gxcore.storyboard import _numbers
+
+    assert _numbers([1, 2, 3]) == "1-3"
+    assert _numbers(list(range(1, 13))) == "1-12"
+    assert _numbers([1, 3, 4, 5, 9]) == "1,3-5,9"
+    assert _numbers([7]) == "7"
+
+
+def test_a_self_loop_stays_inside_the_canvas():
+    """The arc sits above-right of its node, which for a top node left the canvas.
+
+    Measured: the shipped `schemagx` example painted edge pixels on row 0 — the loop
+    clipped by the border — while the property test asserted "nothing spills off the
+    canvas" from the node boxes alone.
+    """
+
+    from gxcore.diagram import EDGE, Edge, Node, render
+
+    nodes = [Node("a", "a"), Node("b", "b"), Node("c", "c")]
+    image = render(nodes, [Edge("a", "a"), Edge("b", "c"), Edge("c", "b")])
+    width, height = image.size
+    edges = [(x, y) for y in range(height) for x in range(width) if image.getpixel((x, y)) == EDGE]
+    assert edges, "the loop was not drawn at all"
+    border = [(x, y) for x, y in edges if x in (0, width - 1) or y in (0, height - 1)]
+    assert border == [], border
+
+
+def test_a_node_whose_name_is_only_spaces_shows_a_marker():
+    """Three spaces is a name in the model and drew a blank disc.
+
+    The picture then showed a node with no label rather than a node whose label is
+    blank — indistinguishable from an empty one.
+    """
+    from gxcore.diagram import INK, Node, render
+
+    for name in ("   ", ""):
+        image = render([Node(name, None)], [])
+        width, height = image.size
+        ink = [(x, y) for y in range(height) for x in range(width) if image.getpixel((x, y)) == INK]
+        assert ink, f"{name!r} drew a blank disc instead of a marker"
+
+
+def _tmp_png() -> str:
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as handle:
+        name = handle.name
+    return str(Path(name))

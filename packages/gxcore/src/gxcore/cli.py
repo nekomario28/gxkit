@@ -133,6 +133,7 @@ def _cmd_inspect(
         diff = compare(report, stored)
 
     sb: Path | None = None
+    failed_output = False
     if not args.no_storyboard and tool.to_image is not None:
         # A storyboard the tool cannot draw (e.g. shadergx with no GL context)
         # must not swallow the report that was already computed.
@@ -145,12 +146,21 @@ def _cmd_inspect(
                 # honour: measured, a declared chart exits 0 with no image and only a
                 # line on stderr, which reads as success until someone looks for the
                 # file. A refusal names the reason instead.
+                # The report is the verdict, and the picture is not. Measured: an
+                # unwritable `-o` printed no report at all and exited 2 even for a
+                # clean artifact, so the exit code was decided by a path rather than
+                # by the findings. The failure is still a failure (exit 2), but the
+                # report is printed first.
                 print(
                     f"{tool.name}: cannot write {args.output}: {type(exc).__name__}: {exc}",
                     file=sys.stderr,
                 )
-                return 2
-            print(f"{tool.name}: storyboard skipped ({type(exc).__name__}: {exc})", file=sys.stderr)
+                failed_output = True
+            else:
+                print(
+                    f"{tool.name}: storyboard skipped ({type(exc).__name__}: {exc})",
+                    file=sys.stderr,
+                )
             sb = None
 
     if args.json:
@@ -160,7 +170,11 @@ def _cmd_inspect(
         if diff is not None:
             text = f"{text}\n{summary(diff)}"
         print(text)
-    # With a baseline, only *new* errors fail — pre-existing debt does not.
+    # With a baseline, only *new* errors fail — pre-existing debt does not. An `-o`
+    # that could not be written is this run's failure, and takes precedence over a
+    # clean verdict (the request could not be honoured), but not over the report.
+    if failed_output:
+        return 2
     failing = diff.new_errors if diff is not None else report.errors
     return 1 if failing else 0
 

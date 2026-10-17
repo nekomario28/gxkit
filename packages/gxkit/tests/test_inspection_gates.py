@@ -360,3 +360,86 @@ def test_a_baseline_for_another_tool_is_refused_rather_than_compared(tmp_path):
     compared = _inspect(level, "--baseline", str(own), "--json")
     assert compared.returncode == 0, compared.stdout
     assert json.loads(compared.stdout)["baseline"]["new_errors"] == 0
+
+
+def test_an_unwritable_output_still_prints_the_report(tmp_path):
+    """The report is the verdict; the picture's path is not.
+
+    Measured: `-o <no extension>` printed no report at all and exited 2 even for a
+    clean artifact, so the exit code and the report were decided by where the image was
+    to be written. The request still fails (exit 2), but the verdict is printed.
+    """
+    artifact = tmp_path / "page.py"
+    artifact.write_text(
+        "from docgx import Page, Block\npage = Page(title='T', blocks=[Block('a', 0.1, 0.1)])\n",
+        encoding="utf-8",
+    )
+    # A directory is a path no image can be written to, and the failure must not take
+    # the report with it. (Not `_inspect`: it passes `--no-storyboard`.)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from gxkit.cli import main; raise SystemExit(main())",
+            "inspect",
+            str(artifact),
+            "--no-config",
+            "-o",
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    assert result.returncode == 2, (result.stdout, result.stderr)
+    assert "cannot write" in result.stderr
+    assert "inspect:" in result.stdout, "the report was lost to the storyboard failure"
+
+
+def test_a_whitespace_only_block_is_not_a_silent_pass(tmp_path):
+    """A guard for the class: the picture must show what the text says.
+
+    The storyboard claims "problem [3] in the text is box 3 in the image"; a box the
+    renderer cannot draw is a contradiction, not a cosmetic difference.
+    """
+    artifact = tmp_path / "page.py"
+    artifact.write_text(
+        "from docgx import Page, Block\n"
+        "page = Page(title='T', width=200, height=120, "
+        "blocks=[Block('escapee', 1.5, 0.1)])\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "sb.png"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from gxkit.cli import main; raise SystemExit(main())",
+            "inspect",
+            str(artifact),
+            "--no-config",
+            "-o",
+            str(out),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    assert out.exists(), (result.stdout, result.stderr)
+    from PIL import Image
+
+    image = Image.open(out).convert("RGB")
+    from gxcore.storyboard import _COLORS
+
+    red = [
+        (x, y)
+        for y in range(image.height)
+        for x in range(image.width)
+        if image.getpixel((x, y)) == _COLORS["error"]
+    ]
+    assert red, "an error finding drew nothing at all"
+    assert [p for p in red if p[0] in (0, image.width - 1) or p[1] in (0, image.height - 1)], (
+        "the clamped box and its number should be visible at the edge"
+    )
