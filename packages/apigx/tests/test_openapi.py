@@ -75,9 +75,17 @@ def test_statuses_come_from_the_numeric_and_ranged_response_keys():
 
 
 @pytest.mark.parametrize("responses", [None, 42, [], "x"])
-def test_responses_that_are_not_an_object_document_no_status(responses):
-    api = api_from_document(_doc(paths={"/a": {"get": {"responses": responses}}}))
-    assert api.endpoints[0].statuses == []
+def test_responses_that_are_not_an_object_are_refused_with_the_field(responses):
+    # `responses` is required and must be an object; reading `null` as "documents
+    # no status" made a malformed document look like a complete one. The sibling
+    # case — the key absent altogether — has its own refusal.
+    with pytest.raises(InvalidArtifact, match=r"responses is \w+, not an object"):
+        api_from_document(_doc(paths={"/a": {"get": {"responses": responses}}}))
+
+
+def test_a_response_entry_that_is_not_an_object_is_refused_with_its_status():
+    with pytest.raises(InvalidArtifact, match=r"responses\['200'\] is str"):
+        api_from_document(_doc(paths={"/a": {"get": {"responses": {"200": "not an object"}}}}))
 
 
 def test_a_status_key_that_looks_numeric_but_is_not_is_rejected():
@@ -154,18 +162,6 @@ def test_an_anonymous_alternative_inherited_from_the_document_is_public_too():
     document = _doc(paths={"/a": {"post": {"responses": {}}}})
     document["security"] = [{}, {"bearer": []}]
     assert [endpoint.auth for endpoint in api_from_document(document).endpoints] == [False]
-
-
-@pytest.mark.parametrize(
-    "path_item",
-    [
-        {"$ref": "#/components/pathItems/Invoices"},
-        {"post": {"$ref": "#/components/operations/charge"}},
-    ],
-)
-def test_a_reference_is_refused_rather_than_dropped(path_item):
-    with pytest.raises(InvalidArtifact, match="reference"):
-        api_from_document(_doc(paths={"/items": path_item}))
 
 
 @pytest.mark.parametrize(
@@ -447,3 +443,39 @@ def test_a_security_requirement_that_is_not_an_object_is_refused():
         api_from_document(
             _doc(paths={"/a": {"post": {"security": [42], "responses": {"201": {}}}}})
         )
+
+
+@pytest.mark.parametrize(
+    "path_item",
+    [
+        {"$ref": "#/components/pathItems/Items"},
+        {"get": {"$ref": "#/components/pathItems/ItemsGet"}},
+    ],
+)
+def test_a_path_item_or_operation_reference_is_refused(path_item):
+    with pytest.raises(InvalidArtifact, match="reference"):
+        api_from_document(_doc(paths={"/items": path_item}))
+
+
+def test_a_reference_anywhere_is_refused_with_its_location():
+    """No reference is resolved, so a document with one is not fully read.
+
+    Only the path-item and operation cases were checked, so `$ref` inside
+    `parameters`, `requestBody` or a response schema was accepted and the document
+    read as complete.
+    """
+    document = _doc(
+        paths={
+            "/a": {
+                "get": {
+                    "parameters": [{"$ref": "#/components/parameters/Limit"}],
+                    "responses": {"200": {"description": "d"}},
+                }
+            }
+        }
+    )
+    with pytest.raises(InvalidArtifact, match=r"parameters\[0\]\.\$ref is a reference"):
+        api_from_document(document)
+    # The sibling case: a reference to a whole response.
+    with pytest.raises(InvalidArtifact, match=r"responses\.200\.\$ref"):
+        api_from_document(_doc(paths={"/a": {"get": {"responses": {"200": {"$ref": "#/x"}}}}}))

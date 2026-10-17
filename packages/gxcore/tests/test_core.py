@@ -301,3 +301,39 @@ def test_cli_storyboard_failure_does_not_hide_the_report(tmp_path, capsys):
     assert rc == 1  # still gated on the report's error
     assert "boom" in captured.out  # the report survived
     assert "storyboard skipped" in captured.err
+
+
+def test_an_interrupt_in_an_artifact_is_the_shells_code(tmp_path, capsys):
+    """In-process so both entry points' handler lines are covered.
+
+    `KeyboardInterrupt` from an artifact (and Ctrl-C) are the same event: 130, with a
+    line rather than a traceback. Measured before: a traceback escaped from the entry
+    point and the exit code was outside the contract's table.
+    """
+    from gxcore.cli import run
+
+    artifact = tmp_path / "interrupt.py"
+    artifact.write_text("raise KeyboardInterrupt\n", encoding="utf-8")
+
+    class _Tool:
+        name = "probe"
+        description = "probe"
+        version = "0.0.0"
+        to_image = None
+
+        @staticmethod
+        def load(path):
+            from gxcore.loading import load_module
+
+            return load_module(path)
+
+        @staticmethod
+        def inspect(artifact):
+            raise AssertionError("never inspected")
+
+        @staticmethod
+        def render(artifact, out, dpi):
+            raise AssertionError("never rendered")
+
+    assert run(_Tool(), ["inspect", str(artifact), "--no-storyboard"]) == 130
+    assert "probe: interrupted" in capsys.readouterr().err

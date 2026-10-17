@@ -3,6 +3,39 @@
 Package versions are per-package (see each `pyproject.toml`); the repository tag
 is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+
+- **`130` is an exit code**: an interrupt (Ctrl-C, or an artifact raising
+  `KeyboardInterrupt`) ends with a line and that code, from both the umbrella and a
+  single tool. Everything else in the table still holds, and an artifact that ends
+  the process itself (`os._exit`) is refused rather than obeyed — `os._exit(0)` used
+  to print nothing and exit 0, which read as "inspected, no error".
+
+### Fixed
+
+Found by a review of the command-line and configuration surface (fifteen findings,
+recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
+
+- A **misspelled code name** in `.gxkit.toml` (`ignore = ["soft-lok"]`, or a
+  `[severity]` name) is refused through the umbrella, which knows the codebook: it
+  was accepted and did nothing, in the file written to make a gate stricter.
+- A **baseline for another tool** is refused: comparing it reported every finding as
+  new or fixed, the failure the shape guard exists to prevent. Writing a baseline
+  from one revision and comparing another is still the normal workflow.
+- `--write-baseline` is honoured before a missing `--baseline` file is compared, so
+  the write the user asked for happens.
+- A file that **declares two artifacts** is no longer routed to the first tool in
+  registry order (which reported its second artifact as clean); the ambiguity is
+  refused with the tool to name.
+- An **OpenAPI `$ref` anywhere** is refused with its location (only path items and
+  operations were checked, so a reference in `parameters`, `requestBody` or a
+  response schema was read as a complete document), as is a response entry — or a
+  whole `responses` — that is not an object.
+- A **non-file** artifact (a FIFO, a directory named `*.py`) is refused instead of
+  blocking forever.
+
 ## [1.0.0] — first release
 
 See the [v1.0.0 release](https://github.com/nekomario28/gxkit/releases/tag/v1.0.0).

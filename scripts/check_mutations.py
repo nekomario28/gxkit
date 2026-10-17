@@ -249,8 +249,8 @@ def mutations(root: Path) -> list[Mutation]:
         Mutation(
             "report-output-not-tolerated",
             "packages/gxcore/src/gxcore/cli.py",
-            "def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:\n    printable_output()\n",
-            "def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:\n",
+            "def run(\n    tool: Tool,\n    argv: list[str] | None = None,\n    known_tools: Iterable[str] | None = None,\n    known_codes: Mapping[str, Iterable[str]] | None = None,\n) -> int:\n    printable_output()\n",
+            "def run(\n    tool: Tool,\n    argv: list[str] | None = None,\n    known_tools: Iterable[str] | None = None,\n    known_codes: Mapping[str, Iterable[str]] | None = None,\n) -> int:\n",
             gates + "test_a_report_survives_a_console_that_cannot_encode_it",
         )
     )
@@ -279,8 +279,8 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "direct-tool-config-looked-up-after-load",
                 "packages/gxcore/src/gxcore/cli.py",
-                "apply_config(report, load_config(path.parent, known_tools), tool.name)",
-                "apply_config(report, load_config(Path(args.file).resolve().parent, known_tools), tool.name)",
+                "apply_config(report, load_config(path.parent, known_tools, known_codes), tool.name)",
+                "apply_config(report, load_config(Path(args.file).resolve().parent, known_tools, known_codes), tool.name)",
                 gates + "test_a_direct_tool_reads_its_own_config_directory",
             ),
         ]
@@ -462,9 +462,9 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "openapi-reference-dropped",
                 "packages/apigx/src/apigx/openapi.py",
-                '        if "$ref" in operations:',
-                "        if False:",
-                "packages/apigx/tests/test_openapi.py::test_a_reference_is_refused_rather_than_dropped",
+                "    if reference is not None:",
+                "    if False:",
+                "packages/apigx/tests/test_openapi.py::test_a_reference_anywhere_is_refused_with_its_location",
             ),
             Mutation(
                 "ddl-next-statement-searched-past",
@@ -784,6 +784,62 @@ def mutations(root: Path) -> list[Mutation]:
                 '    if unknown:\n        raise InvalidModel(f"{path}: unrecognised key(s) {unknown}")',
                 "    if False:\n        pass",
                 "packages/chartgx/tests/test_model_route.py::test_a_declaration_that_cannot_be_read_is_refused_where_it_is_wrong",
+            ),
+            Mutation(
+                # Removing the trap itself cannot be caught by an in-process test —
+                # the mutant kills the runner, which is the point of the rule. The
+                # refusal's *report* is what the test can hold it to, and the trap's
+                # behaviour is proven by the test passing at all.
+                "artifact-exit-refusal-unreported",
+                "packages/gxcore/src/gxcore/loading.py",
+                '        raise InvalidArtifact(f"the artifact called os._exit({code!r}) while loading")',
+                '        raise InvalidArtifact(f"exit {code!r}")',
+                "packages/gxkit/tests/test_inspection_gates.py::test_an_artifact_that_ends_the_process_is_a_refusal_not_a_verdict",
+            ),
+            Mutation(
+                "non-file-artifact-read-anyway",
+                "packages/gxcore/src/gxcore/loading.py",
+                '    if not path.is_file():\n        raise InvalidArtifact(f"{path}: not a regular file, so there is nothing to read")',
+                "    if False:\n        pass",
+                "packages/gxcore/tests/test_loading.py::test_a_fifo_is_refused_rather_than_waited_on",
+            ),
+            Mutation(
+                "config-code-name-unchecked",
+                "packages/gxcore/src/gxcore/config.py",
+                "    if known is not None:\n        unknown = sorted(names - set(known))",
+                "    if False:\n        unknown = []",
+                "packages/gxcore/tests/test_config.py::test_a_code_name_that_names_no_code_is_refused",
+            ),
+            Mutation(
+                "baseline-provenance-unchecked",
+                "packages/gxcore/src/gxcore/cli.py",
+                "            if known and codes and not (codes & known):",
+                "            if False:",
+                "packages/gxkit/tests/test_inspection_gates.py::test_a_baseline_for_another_tool_is_refused_rather_than_compared",
+            ),
+            Mutation(
+                "multi-artifact-routed-to-first",
+                "packages/gxkit/src/gxkit/cli.py",
+                "    if len(found) > 1:",
+                "    if False:",
+                "packages/gxkit/tests/test_inspection_gates.py::test_a_file_declaring_two_artifacts_is_not_routed_to_one_of_them",
+            ),
+            Mutation(
+                # Swapping the clause cannot mutate anything: an earlier
+                # `except SystemExit` already exists, so the copy would be dead. The
+                # *code* the interrupt reports is what the test can hold.
+                "interrupt-reported-as-a-plain-refusal",
+                "packages/gxcore/src/gxcore/cli.py",
+                '        print(f"{tool.name}: interrupted", file=sys.stderr)\n        return 130',
+                '        print(f"{tool.name}: {tool.name} failed", file=sys.stderr)\n        return 2',
+                "packages/gxkit/tests/test_inspection_gates.py::test_an_interrupt_is_the_shells_code_without_a_traceback",
+            ),
+            Mutation(
+                "openapi-response-entry-unchecked",
+                "packages/apigx/src/apigx/openapi.py",
+                "                if not isinstance(value, dict):",
+                "                if False:",
+                "packages/apigx/tests/test_openapi.py::test_a_response_entry_that_is_not_an_object_is_refused_with_its_status",
             ),
             Mutation(
                 "declared-model-non-finite-error-accepted",
@@ -1286,15 +1342,32 @@ def mutations(root: Path) -> list[Mutation]:
 
 
 def _pytest(root: Path, env: dict[str, str], tests: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "pytest", "-o", "addopts=", "-q", *tests],
-        cwd=root,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=45,
-        check=False,
-    )
+    """Run a selector, tolerating a mutation whose defect *is* that it never returns.
+
+    A restored fault can hang (measured: a loader that reads a FIFO blocks forever).
+    That is the mutation being caught — the test that guards the rule can no longer
+    finish — so it is reported with its own marker rather than aborting the
+    catalogue.
+    """
+    try:
+        return subprocess.run(
+            [sys.executable, "-m", "pytest", "-o", "addopts=", "-q", *tests],
+            cwd=root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=45,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as expired:
+        return subprocess.CompletedProcess(
+            args=expired.cmd,
+            returncode=-1,
+            stdout=(expired.stdout or b"").decode("utf-8", "replace")
+            if isinstance(expired.stdout, bytes)
+            else (expired.stdout or ""),
+            stderr="hung: the mutation never returned, which is the fault it restores",
+        )
 
 
 def main() -> int:
@@ -1372,6 +1445,13 @@ def main() -> int:
                 # machine with every capability) names it in its own failure text
                 # instead, so the test's own name plus a failure marker also counts.
                 named = f"FAILED {case.test}" in output or case.test.split("::")[-1] in output
+                # A mutation whose fault is non-termination is caught by the guard
+                # test never finishing, so the marker `_pytest` writes is a kill on
+                # its own. The controls ran first on the unmutated copy, so this
+                # cannot be a slow tree.
+                if "the mutation never returned" in output:
+                    print(f"killed (hung): {case.name}", flush=True)
+                    continue
                 killed = (
                     result.returncode == 1
                     and asserted

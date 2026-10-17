@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -85,7 +85,10 @@ def _build_parser(tool: Tool) -> argparse.ArgumentParser:
 
 
 def _cmd_inspect(
-    tool: Tool, args: argparse.Namespace, known_tools: Iterable[str] | None = None
+    tool: Tool,
+    args: argparse.Namespace,
+    known_tools: Iterable[str] | None = None,
+    known_codes: Mapping[str, Iterable[str]] | None = None,
 ) -> int:
     # The artifact may change the process directory while it loads, so its
     # identity is fixed before it executes; the report still names the file.
@@ -93,14 +96,41 @@ def _cmd_inspect(
     artifact = tool.load(path)
     report = tool.inspect(artifact)
     if not getattr(args, "no_config", False):
-        apply_config(report, load_config(path.parent, known_tools), tool.name)
+        apply_config(report, load_config(path.parent, known_tools, known_codes), tool.name)
 
-    diff: Diff | None = None
-    if args.baseline:
-        diff = compare(report, Baseline.load(args.baseline))
+    # The write comes first: `--write-baseline a --baseline b` asks for both, and
+    # with the comparison first a *missing* `b` refused the run and left the
+    # baseline the user asked for unwritten.
     if args.write_baseline:
         Baseline.of(report).save(args.write_baseline)
         print(f"{tool.name}: baseline written to {args.write_baseline}", file=sys.stderr)
+
+    diff: Diff | None = None
+    if args.baseline:
+        stored = Baseline.load(args.baseline)
+        # A baseline is about one tool's findings. Comparing another tool's is the
+        # exact failure the shape guard exists to prevent — its own words: "a record
+        # that never matches would report every finding as fixed or new" (measured: a
+        # chartgx baseline compared against a levelgx artifact reported 1 new and 2
+        # fixed, and every problem as debt that had been paid). The *name* is not the
+        # test: writing a baseline from one revision of an artifact and comparing
+        # another is the normal workflow, and the names differ there.
+        if known_codes is not None:
+            # The tool's *own* codebook: the family-wide union would accept a sibling's
+            # baseline whenever the two share a code name (measured: a chartgx
+            # baseline passed as levelgx's because both use `no-xlabel`). Shared
+            # components' codes count as every tool's, since a storyboard layout can
+            # emit them anywhere.
+            known = set(known_codes.get(tool.name, ())) | set(known_codes.get("gxcore", ()))
+            codes = {str(record.get("code", "")) for record in stored.problems}
+            if known and codes and not (codes & known):
+                raise ValueError(
+                    f"{args.baseline}: none of its codes ({', '.join(sorted(codes))}) belong "
+                    "to this tool, so it is a baseline for another one; comparing them "
+                    "would report every finding as new or fixed. Write this artifact's "
+                    "baseline with --write-baseline"
+                )
+        diff = compare(report, stored)
 
     sb: Path | None = None
     if not args.no_storyboard and tool.to_image is not None:
@@ -143,12 +173,17 @@ def _cmd_render(tool: Tool, args: argparse.Namespace) -> int:
     return 0
 
 
-def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | None = None) -> int:
+def run(
+    tool: Tool,
+    argv: list[str] | None = None,
+    known_tools: Iterable[str] | None = None,
+    known_codes: Mapping[str, Iterable[str]] | None = None,
+) -> int:
     printable_output()
     args = _build_parser(tool).parse_args(argv)
     try:
         if args.command == "inspect":
-            return _cmd_inspect(tool, args, known_tools)
+            return _cmd_inspect(tool, args, known_tools, known_codes)
         return _cmd_render(tool, args)
     except FileNotFoundError as e:
         print(f"{tool.name}: no such file: {e}", file=sys.stderr)
@@ -158,6 +193,13 @@ def run(tool: Tool, argv: list[str] | None = None, known_tools: Iterable[str] | 
             f"{tool.name}: the artifact called sys.exit({e.code!r}) while loading", file=sys.stderr
         )
         return 2
+    except KeyboardInterrupt:
+        # An artifact can raise it, and so can Ctrl-C — they are the same event, so
+        # the honest answer is the shell's: 130, with a line rather than the
+        # traceback that escaped here (measured: `raise KeyboardInterrupt` in an
+        # artifact printed a traceback from `.venv/bin/gxkit`).
+        print(f"{tool.name}: interrupted", file=sys.stderr)
+        return 130
     except Exception as e:  # a broken artifact file must report, not traceback
         print(f"{tool.name}: {type(e).__name__}: {e}", file=sys.stderr)
         return 2

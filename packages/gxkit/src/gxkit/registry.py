@@ -152,6 +152,18 @@ BY_NAME = {spec.name: spec for spec in TOOLS}
 
 def detect(module: object) -> ToolSpec | None:
     """Which tool owns this module, by the artifact object it defines."""
+    return next(iter(detect_all(module)), None)
+
+
+def detect_all(module: object) -> list[ToolSpec]:
+    """Every tool this module's own objects could belong to, in registry order.
+
+    One artifact can declare two: a file with both a `Level` and a `fig` was routed
+    to the first tool in registry order and reported "no problems" while the level's
+    own error was never looked at (measured: `levelgx <file>` found `no-goal`, the
+    umbrella exit 0). Detection returning the first match is what made that silent,
+    so the caller can see the ambiguity and ask for the tool to be named.
+    """
 
     def first_attr(names: tuple[str, ...]) -> object | None:
         for name in names:
@@ -160,11 +172,14 @@ def detect(module: object) -> ToolSpec | None:
                 return value
         return None
 
+    found: list[ToolSpec] = []
     for spec in TOOLS:
         value = first_attr(spec.attrs)
         if value is not None and type(value).__name__ in spec.classes:
-            return spec
+            found.append(spec)
+    if found:
+        return found
     for spec in TOOLS:
         if any(getattr(module, m, None) is not None for m in spec.markers):
-            return spec
-    return None
+            found.append(spec)
+    return found

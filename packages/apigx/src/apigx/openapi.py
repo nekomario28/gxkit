@@ -201,6 +201,29 @@ def _override_path(servers: object) -> str | None:
     return urlparse(str(servers[0].get("url", ""))).path.rstrip("/")
 
 
+def _reference_in(value: object, where: str = "") -> str | None:
+    """The location of the first `$ref` in a parsed document, or None.
+
+        This importer resolves no reference, so a document that has one anywhere is a
+    document it did not read through. Only the path-item and operation cases were
+        checked, so a `$ref` in `parameters`, `requestBody` or a response schema was
+        accepted and the document read as complete (measured).
+    """
+    if isinstance(value, dict):
+        if "$ref" in value:
+            return f"{where}.$ref" if where else "$ref"
+        for key, item in value.items():
+            found = _reference_in(item, f"{where}.{key}" if where else str(key))
+            if found is not None:
+                return found
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found = _reference_in(item, f"{where}[{index}]")
+            if found is not None:
+                return found
+    return None
+
+
 def api_from_document(document: object, *, source: str = "openapi") -> API:
     """An `API` from a parsed OpenAPI 3 document, or a located rejection."""
     if not isinstance(document, dict):
@@ -238,6 +261,12 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
             f"{source}: 'webhooks' declares operations this importer does not read; "
             "refusing rather than reporting a partial API"
         )
+    reference = _reference_in(document, "")
+    if reference is not None:
+        raise InvalidArtifact(
+            f"{source}: {reference} is a reference; this importer does not resolve "
+            "references, and a document with one is not fully read"
+        )
     schemes = document.get("components", {})
     auth_schemes = (
         sorted(str(name) for name in schemes["securitySchemes"])
@@ -273,11 +302,6 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                 f"{source}: paths[{path!r}] has unrecognised key(s) {unknown}; refusing "
                 "rather than ignoring them, because a mistyped key changes the verdict"
             )
-        if "$ref" in operations:
-            raise InvalidArtifact(
-                f"{source}: paths[{path!r}] is a reference; this importer does not resolve "
-                "references, and skipping it would drop the route without saying so"
-            )
         for method in METHODS:
             operation = operations.get(method)
             if operation is None:
@@ -289,11 +313,6 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                 raise InvalidArtifact(
                     f"{source}: paths[{path!r}].{method} has unrecognised key(s) {unknown}; "
                     "refusing rather than ignoring them"
-                )
-            if "$ref" in operation:
-                raise InvalidArtifact(
-                    f"{source}: paths[{path!r}].{method} is a reference; this importer does not "
-                    "resolve references"
                 )
             if "responses" not in operation:
                 # `responses` is REQUIRED by OpenAPI, and an operation without one
@@ -317,12 +336,28 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                     f"({operation_override!r} vs {server_path!r}), which this importer cannot "
                     "represent; declare the API in Python"
                 )
+            statuses = _statuses(operation.get("responses"))
+            responses = operation.get("responses")
+            if not isinstance(responses, dict):
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method}.responses is "
+                    f"{type(responses).__name__}, not an object"
+                )
+            # A response entry is an object (or a reference, already refused). A
+            # string there was accepted and the status read as if the document had
+            # said what that status carries.
+            for key, value in responses.items():
+                if not isinstance(value, dict):
+                    raise InvalidArtifact(
+                        f"{source}: paths[{path!r}].{method}.responses[{key!r}] is "
+                        f"{type(value).__name__}, not an object"
+                    )
             endpoints.append(
                 Endpoint(
                     method.upper(),
                     _endpoint_path(server_path, str(path)),
                     auth=_security_of(operation, document),
-                    statuses=_statuses(operation.get("responses")),
+                    statuses=statuses,
                     deprecated=bool(operation.get("deprecated", False)),
                 )
             )
