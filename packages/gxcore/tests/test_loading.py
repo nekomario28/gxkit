@@ -42,6 +42,7 @@ def test_a_directory_is_refused_as_a_non_file(tmp_path):
         load_module(tmp_path)
 
 
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFOs are POSIX-only")
 def test_a_fifo_is_refused_rather_than_waited_on(tmp_path):
     # Measured: a FIFO named `x.py` blocked the load forever, so a directory run
     # holding one produced no report and no exit code at all.
