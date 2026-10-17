@@ -5,6 +5,29 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+### Fixed
+
+Found by a review of the shared core every tool inherits (six findings, recorded in
+[`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
+
+- **`authzgx` reports a role that inherits itself.** The shared `cycle_witnesses`
+  skipped size-one components, so `editor -> editor` was clean while the same cycle
+  over two roles was an error. Whether a self-edge is a fault is the *domain's*
+  question, so `cycle_witnesses(edges, *, self_loops=True)` states the graph rule and
+  each caller chooses in one visible place: `authzgx` and `pipegx` report it,
+  `schemagx` (a self-referencing foreign key is a tree), `depsgx` (its own
+  `self-dependency` code), `flowgx` and `protogx` (a retry whose real fault is
+  `dead-end`/`no-exit`) do not.
+- `intersecting_pairs` reported the fraction of the *larger* box while documenting
+  "of the smaller", so a small box entirely inside a big one was no collision at all;
+  `layout.check` now shares the one expression.
+- `layout.check` skipped pairs that merely shared their text, wherever they were.
+- `gxcore.toolkit.one_line` flattens control characters in a drawn label: a module
+  named `"a\nb"` lost the whole storyboard to Pillow's multi-line measurement error.
+- A baseline record with `identity: null` is "no identity" rather than a `TypeError`
+  in `compare`, and a finding with an unplaceable (`NaN`) bbox keeps its number but
+  draws no rectangle instead of losing the image.
+
 ### Added
 
 - **`130` is an exit code**: an interrupt (Ctrl-C, or an artifact raising

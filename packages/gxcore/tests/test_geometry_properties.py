@@ -72,11 +72,18 @@ def test_union_matches_shapely(seed):
 
 
 def _pair_fraction(a, b) -> float:
+    """The fraction of the *smaller* box that is covered, which is what the rule says.
+
+    The reference used `min(inter / aa, inter / bb)` — the fraction of the *larger* —
+    so it agreed with an implementation that reported a small box entirely inside a
+    big one as no collision at all. A reference that mirrors the code proves only
+    that the code is self-consistent.
+    """
     aa, bb = box(*a), box(*b)
     if aa.area == 0 or bb.area == 0:
         return 0.0
     inter = aa.intersection(bb).area
-    return min(inter / aa.area, inter / bb.area)
+    return max(inter / aa.area, inter / bb.area)
 
 
 def _covered_ref(a, b) -> float:
@@ -95,7 +102,7 @@ def test_intersecting_pairs_matches_shapely(seed):
             (i, j)
             for i in range(len(boxes))
             for j in range(i + 1, len(boxes))
-            if _pair_fraction(boxes[i], boxes[j]) > frac
+            if _pair_fraction(boxes[i], boxes[j]) >= frac
         }
         assert got == want
 

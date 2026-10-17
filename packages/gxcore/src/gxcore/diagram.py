@@ -15,6 +15,8 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
+from .toolkit import one_line
+
 DEFAULT = "default"
 START = "start"
 ACCEPT = "accept"
@@ -144,7 +146,9 @@ def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
         draw.ellipse(box, fill=fill, outline=(150, 156, 168), width=2)
         if node.kind in RING:
             draw.ellipse(node_box(pos, r - 3), outline=RING[node.kind], width=2)
-        font, shown = _fit(draw, node.text, r * 1.7, r * 0.55)
+        # `one_line`: Pillow cannot measure a string with a newline in it, and a
+        # module name is arbitrary text. Measured: `"a\nb"` lost the whole storyboard.
+        font, shown = _fit(draw, one_line(node.text), r * 1.7, r * 0.55)
         tb = draw.textbbox((0, 0), shown, font=font)
         draw.text(
             (pos[0] - (tb[2] - tb[0]) / 2, pos[1] - (tb[3] - tb[1]) / 2 - tb[1]),

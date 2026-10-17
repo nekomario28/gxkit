@@ -8,6 +8,7 @@ in the image.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -69,6 +70,13 @@ def labelled_boxes(
     representative: dict[tuple[float, float, float, float], Problem] = {}
     for number, problem in enumerate(sorted(problems, key=sort_key), start=1):
         if problem.bbox is None:
+            continue
+        # A tool that computes a non-finite box has a bug, but the storyboard is a
+        # view of the report, not a second verdict: rounding `NaN`/`inf` raised
+        # `ValueError`/`OverflowError` and the whole image was lost, while the finding
+        # itself is already in the report. The number keeps its sorted position (it
+        # is what the printed list shows), and no rectangle is drawn for it.
+        if any(not math.isfinite(value) for value in problem.bbox):
             continue
         key: tuple[float, float, float, float] = (
             float(round(problem.bbox[0])),

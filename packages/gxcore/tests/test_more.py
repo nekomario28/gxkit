@@ -96,3 +96,33 @@ def test_scene_tool_render_honours_dpi(tmp_path):
     assert main(["render", str(tmp_path / "a.py"), "-o", str(out), "--dpi", "72"]) == 0
     assert out.exists()
     assert Image.open(out).size == (8, 8)
+
+
+def test_a_label_with_a_newline_is_flattened_rather_than_losing_the_image():
+    """Pillow cannot measure multi-line text, and a name is arbitrary text.
+
+    Measured: a dependency graph with a module named `"a\\nb"` lost its whole
+    storyboard to `ValueError: can't measure length of multiline text`.
+    """
+    from gxcore.diagram import Node as DiagramNode
+    from gxcore.diagram import render
+    from gxcore.toolkit import one_line
+
+    assert one_line("line1\nline2") == "line1 line2"
+    assert one_line("a\tb\rc") == "a b c"
+    assert one_line("plain") == "plain"
+    assert render([DiagramNode("n", "line1\nline2")], []).size[0] > 0
+
+
+def test_a_finding_with_an_unplaceable_box_does_not_lose_the_whole_storyboard():
+    from gxcore.model import ERROR, Problem
+    from gxcore.storyboard import labelled_boxes
+
+    problems = [
+        Problem(ERROR, "e", "m", bbox=(float("nan"), 10.0, 20.0, 30.0)),
+        Problem(ERROR, "f", "m", bbox=(1.0, 2.0, 3.0, 4.0)),
+    ]
+    boxes = labelled_boxes(problems, height=100)
+    # The number keeps the sorted position the printed list shows; only the
+    # rectangle is dropped.
+    assert [box.numbers for box in boxes] == [(2,)]

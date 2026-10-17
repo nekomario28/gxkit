@@ -337,3 +337,51 @@ def test_an_interrupt_in_an_artifact_is_the_shells_code(tmp_path, capsys):
 
     assert run(_Tool(), ["inspect", str(artifact), "--no-storyboard"]) == 130
     assert "probe: interrupted" in capsys.readouterr().err
+
+
+def test_a_self_loop_is_a_cycle_only_where_the_domain_says_so():
+    """The helper's contract is graph-theoretic; the *callers* choose.
+
+    Measured before: `cycle_witnesses({"a": ["a"]})` returned nothing, so a role that
+    inherits itself was reported clean while the same cycle spread over two roles was
+    an error. The other side of the same rule is real too: a table whose foreign key
+    points at itself (schemagx), a module that imports itself (depsgx's own
+    `self-dependency`), and a retry loop in a state machine are not this fault.
+    """
+    from gxcore.graph import cycle_witnesses
+
+    assert cycle_witnesses({"a": ["a"]}) == [(["a", "a"], ["a"])]
+    assert cycle_witnesses({"a": ["a"]}, self_loops=False) == []
+    # Two cycles, one of them a self-loop: both are witnesses, deterministically.
+    assert cycle_witnesses({"a": ["a"], "b": ["c"], "c": ["b"]}) == [
+        (["b", "c", "b"], ["b", "c"]),
+        (["a", "a"], ["a"]),
+    ]
+    # A node with no edge at all is not a cycle either way.
+    assert cycle_witnesses({"a": ["b"]}, self_loops=False) == []
+    assert cycle_witnesses({"a": ["b"]}) == []
+
+
+def test_the_geometry_pair_rule_is_the_fraction_of_the_smaller_box():
+    from gxcore.geometry import intersecting_pairs
+
+    big, small = (0.0, 0.0, 100.0, 100.0), (10.0, 10.0, 20.0, 20.0)
+    # The small box is entirely inside: the fraction of the *smaller* is 1.0. Using
+    # the smaller *fraction* (of the larger) scored 0.01 and reported no collision.
+    assert intersecting_pairs([big, small]) == [(0, 1, 1.0)]
+    # The boundary is "at least": a pair overlapping exactly by the threshold counts.
+    left, right = (0.0, 0.0, 100.0, 100.0), (65.0, 0.0, 165.0, 100.0)
+    assert [pair[:2] for pair in intersecting_pairs([left, right], min_fraction=0.35)] == [(0, 1)]
+
+
+def test_two_identically_labelled_boxes_that_do_not_share_a_place_still_collide():
+    from gxcore.layout import TextBox, check
+
+    a = TextBox("a", "same", (0.0, 0.0, 100.0, 100.0), 12.0)
+    b = TextBox("b", "same", (10.0, 10.0, 90.0, 90.0), 12.0)
+    # Keying the skip on the text alone dropped this: two different boxes, one well
+    # inside the other, were accepted.
+    assert [p.code for p in check([a, b], (0.0, 0.0, 100.0, 100.0))] == ["text-overlap"]
+    # The same text in the same place is one label read twice, not a collision.
+    same = TextBox("c", "same", (0.0, 0.0, 100.0, 100.0), 12.0)
+    assert check([a, same], (0.0, 0.0, 100.0, 100.0)) == []

@@ -134,7 +134,7 @@ def inspect_machine(machine: Machine, name: str | None = None) -> Report:
                 )
             )
 
-    for witness, component in cycle_witnesses(edges):
+    for witness, component in cycle_witnesses(edges, self_loops=False):
         path = " → ".join(witness)
         report.details.append(f"cycle: {path}")
         out.append(

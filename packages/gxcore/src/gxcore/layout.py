@@ -69,14 +69,16 @@ def check(
     for a in range(len(items)):
         for b in range(a + 1, len(items)):
             x, y = items[a], items[b]
-            if x.text.strip() == y.text.strip():
+            # The *same* text in the *same* place is one label read twice, not a
+            # collision. Keying on the text alone silently dropped a real one:
+            # measured, two boxes both called "same" at different positions (0.72 of
+            # one inside the other) were accepted.
+            if x.text.strip() == y.text.strip() and x.bbox == y.bbox:
                 continue
-            # Either box substantially inside the other is a collision — a small
-            # label on top of a big block counts.
-            if (
-                covered(x.bbox, y.bbox) > overlap_fraction
-                or covered(y.bbox, x.bbox) > overlap_fraction
-            ):
+            # One owner for the rule: either box substantially inside the other is a
+            # collision — a small label on top of a big block counts (the fraction is
+            # of the smaller box, which `intersecting_pairs` documents).
+            if max(covered(x.bbox, y.bbox), covered(y.bbox, x.bbox)) >= overlap_fraction:
                 out.append(
                     Problem(
                         ERROR,

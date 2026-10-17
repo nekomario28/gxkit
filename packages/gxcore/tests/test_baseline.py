@@ -289,3 +289,26 @@ def test_the_cli_refuses_a_baseline_written_for_another_tool(tmp_path, capsys):
     )
     assert code == 2
     assert "baseline for another one" in capsys.readouterr().err
+
+
+def test_a_null_identity_is_no_identity_rather_than_a_crash(tmp_path):
+    """`identity: null` is legal for every optional field; the loader accepted it.
+
+    `tuple(None)` then crashed `compare` with a bare `TypeError` naming neither the
+    field nor the index, which is what the loader's own guard exists to prevent.
+    """
+    path = tmp_path / "base.json"
+    path.write_text(
+        json.dumps(
+            {
+                "version": 2,
+                "name": "r",
+                "problems": [{"code": "a", "severity": "error", "identity": None}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    stored = Baseline.load(path)
+    report = Report("r", problems=[Problem(ERROR, "a", "m")])
+    diff = compare(report, stored)
+    assert len(diff.persisted) == 1 and diff.new == []

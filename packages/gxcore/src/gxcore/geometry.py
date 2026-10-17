@@ -69,11 +69,18 @@ def canvas_box(width: int, height: int) -> BBox:
 def intersecting_pairs(
     boxes: Sequence[BBox], min_fraction: float = 0.35
 ) -> list[tuple[int, int, float]]:
-    """Index pairs whose boxes collide by at least ``min_fraction`` of the smaller."""
+    """Index pairs whose boxes collide by at least ``min_fraction`` of the smaller.
+
+    ``covered(a, b)`` is the fraction of *a* inside *b*, so the fraction of whichever
+    box is smaller is the larger of the two directions. Using ``both_covered`` (the
+    smaller fraction, i.e. of the *larger* box) inverted the documented rule:
+    measured, a small box entirely inside a big one scored 0.01 and was reported as no
+    collision at all. The comparison is ``>=`` because the docstring says "at least".
+    """
     out: list[tuple[int, int, float]] = []
     for i in range(len(boxes)):
         for j in range(i + 1, len(boxes)):
-            frac = both_covered(boxes[i], boxes[j])
-            if frac > min_fraction:
+            frac = max(covered(boxes[i], boxes[j]), covered(boxes[j], boxes[i]))
+            if frac >= min_fraction:
                 out.append((i, j, frac))
     return out
