@@ -22,6 +22,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import convert_items, convert_number
+
 
 @dataclass
 class Block:
@@ -74,18 +76,25 @@ def load_page(path: str | Path) -> tuple[Page, object]:
             or getattr(module, "TITLE", getattr(module, "title", None)) is not None
         ):
             page = Page(
-                width=int(getattr(module, "WIDTH", getattr(module, "width", 1280))),
-                height=int(getattr(module, "HEIGHT", getattr(module, "height", 720))),
+                width=_int(getattr(module, "WIDTH", getattr(module, "width", 1280)), "WIDTH"),
+                height=_int(getattr(module, "HEIGHT", getattr(module, "height", 720)), "HEIGHT"),
                 title=str(getattr(module, "TITLE", getattr(module, "title", ""))),
-                blocks=[_block(b) for b in (blocks or [])],
-                title_size=int(getattr(module, "TITLE_SIZE", 44)),
-                max_words=int(getattr(module, "MAX_WORDS", 0)),
+                # `BLOCKS = "hi"` used to become one block per character, and a block
+                # with a mistyped key raised a `TypeError` naming no field or index.
+                blocks=convert_items(blocks or [], _block, field="BLOCKS"),
+                title_size=_int(getattr(module, "TITLE_SIZE", 44), "TITLE_SIZE"),
+                max_words=_int(getattr(module, "MAX_WORDS", 0), "MAX_WORDS"),
             )
     if page is None:
         raise ValueError(f"{path}: no page found — define `page` (a Page) or TITLE/BLOCKS")
     if page.name == "page":
         page.name = getattr(module, "NAME", path.stem)
     return page, module
+
+
+def _int(value: object, field: str) -> int:
+    """A declared whole number, or a located refusal (`WIDTH = "wide"` used to raise)."""
+    return int(convert_number(value, field=field, integer=True))
 
 
 def page_from_parts(

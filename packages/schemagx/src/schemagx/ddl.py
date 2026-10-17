@@ -365,7 +365,15 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         tables=tables,
         primary_keys=primary_keys,
         foreign_keys=foreign_keys,
-        not_modelled=not_modelled,
+        # DDL declares no entry points. Recording it is what tells the checks that
+        # the rules *roots* decides — `orphan-table` among them — have nothing to
+        # apply: measured, the same schema gained `orphan-table: nothing references
+        # 'users'` on this route and was clean on the Python one.
+        not_modelled=[
+            *not_modelled,
+            ("", "the model does not carry `roots`: DDL declares no entry points"),
+        ],
+        roots_modelled=False,
         name=Path(source).stem or "schema",
     )
 

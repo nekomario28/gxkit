@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from gxcore.loading import InvalidArtifact, convert_items
+from gxcore.loading import InvalidArtifact, convert_bool, convert_items
 
 SEED_MAX = 2**32 - 1
 
@@ -105,7 +105,9 @@ def load_spec(path: str | Path) -> tuple[SeedSpec, object]:
         if streams is not None:
             spec = SeedSpec(
                 streams=convert_items(streams, _as_stream, field="STREAMS"),
-                deterministic=bool(getattr(module, "DETERMINISTIC", True)),
+                deterministic=convert_bool(
+                    getattr(module, "DETERMINISTIC", True), field="DETERMINISTIC"
+                ),
             )
     if spec is None:
         raise ValueError(f"{path}: no seed manifest found — define `spec` (a SeedSpec) or STREAMS")

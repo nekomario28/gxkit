@@ -7,6 +7,31 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+Found by a review of the **declaration route** — the module constants, dict shapes and
+Python models an agent writes, for the twelve tools the document review did not cover
+(seven findings, recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
+
+- A **string where a list belongs** is refused by field and index instead of becoming
+  one name per character: `STATES = "ab"` was a two-state machine, `MODULES = "abc"` a
+  three-module graph with a build order, `GRANTS = ["rp"]` an invented role→permission
+  grant, and a `TRANSITIONS` tuple with a fourth element dropped it in silence.
+- A **flag that is not a flag** is refused instead of coerced: `secret = "no"`,
+  `DETERMINISTIC = "no"` and `EXPECT_AUDIO = "no"` are all `True` to Python, so those
+  declarations produced an error, a verdict and a warning that said the opposite.
+- A **recognised `network` dict with a wrong-typed member** is refused where it is
+  recognised, instead of falling through to another attribute in the same file (and
+  reporting about that one).
+- `docgx` refuses `BLOCKS` that is not a list (it used to become one block per
+  character, and the report described the characters) and names the block index when a
+  key is wrong.
+- An endpoint declaration states its **method**: `{"endpoints": [{}]}` used to inspect
+  as a clean API with a `GET /` endpoint the file never named.
+- `chartgx`'s figure route checks bars (`ax.patches`) on a log axis, so it agrees with
+  its own declared-model route about `log-nonpositive`.
+- `schemagx` does not report `orphan-table` for a schema whose entry points could not
+  be expressed (the SQL importer): `Schema.roots_modelled` records that, and the gap is
+  reported as `not-modelled` rather than applied as a rule.
+
 Found by a review of the shared core every tool inherits (six findings, recorded in
 [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
 

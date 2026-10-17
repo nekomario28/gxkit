@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items, convert_names
+from gxcore.loading import convert_bool, convert_items, convert_mapping, convert_names
 
 TYPES = ("str", "int", "float", "bool")
 
@@ -56,8 +56,11 @@ def _as_variable(value: object) -> Variable | None:
         return Variable(
             str(name),
             type=str(value.get("type", "str")),
-            required=bool(value.get("required", False)),
-            secret=bool(value.get("secret", False)),
+            required=convert_bool(value.get("required", False), field="required"),
+            # `bool("no")` is True: a string where a flag belongs made the tool report
+            # the opposite of the declaration (`secret = "no"` produced a
+            # `secret-with-default` error).
+            secret=convert_bool(value.get("secret", False), field="secret"),
             default=str(default) if default is not None else None,
         )
     return None
@@ -101,7 +104,7 @@ def load_environment(path: str | Path) -> tuple[Environment, object]:
         declaration = getattr(module, "VARIABLES", None)
         if declaration is not None:
             variables = convert_items(
-                list(dict(declaration).items()),
+                list(convert_mapping(declaration, field="VARIABLES").items()),
                 lambda item: _from_declaration(item[0], item[1]),
                 field="VARIABLES",
             )

@@ -43,9 +43,9 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
             Problem(
                 INFO,
                 "not-modelled",
-                f"{table}: the model does not carry the {kinds} clause(s) — found, not "
-                "read into the model; reference integrity was still checked",
-                target=table,
+                f"{table or 'the schema'}: {kinds} — found, not read into the model; "
+                "reference integrity was still checked",
+                target=table or None,
             )
         )
 
@@ -162,8 +162,12 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
             )
 
     reverse_edges: dict[str, list[str]] = reverse(edges)
+    # `roots` decides this rule, and a reader that cannot express it (the SQL
+    # importer leaves them empty and records that) must not report the consequence:
+    # measured, an SQL schema gained `orphan-table: nothing references 'users'` where
+    # the same schema declared in Python was clean.
     for table in schema.table_names():
-        if table in schema.roots:
+        if table in schema.roots or not schema.roots_modelled:
             continue
         # A leaf that references a parent is not an orphan; a table nothing
         # points at and that points at nothing is dead weight.

@@ -226,7 +226,14 @@ def test_the_defects_a_dump_really_has_are_reported():
     report = inspect_schema(schema)
     codes = {problem.code for problem in report.problems}
     # `posts` really has no primary key of its own, so that finding is true too.
-    assert codes == {"fk-type-mismatch", "fk-to-non-primary-key", "missing-primary-key"}
+    # `orphan-table` is deliberately *not* among them: DDL declares no entry points,
+    # and the rule that decides it is `roots` (recorded as not modelled instead).
+    assert codes == {
+        "fk-type-mismatch",
+        "fk-to-non-primary-key",
+        "missing-primary-key",
+        "not-modelled",
+    }
 
 
 def test_a_file_is_read_as_ddl(tmp_path):
@@ -315,16 +322,34 @@ def test_a_clause_the_model_cannot_carry_is_reported_not_dropped():
         "age INTEGER DEFAULT 0 CHECK (age >= 0));"
     )
     report = inspect_schema(schema)
-    noted = [problem for problem in report.problems if problem.code == "not-modelled"]
+    noted = [
+        problem
+        for problem in report.problems
+        if problem.code == "not-modelled" and problem.target == "users"
+    ]
     assert len(noted) == 1, [(p.code, p.message) for p in report.problems]
     assert noted[0].severity == INFO
-    assert noted[0].target == "users"
+    # ...and one schema-wide note: DDL declares no `roots`, so the rules that need
+    # them (`orphan-table`) have nothing to apply.
+    schema_wide = [
+        problem
+        for problem in report.problems
+        if problem.code == "not-modelled" and problem.target is None
+    ]
+    assert len(schema_wide) == 1, [(p.code, p.target, p.message) for p in report.problems]
+    assert "roots" in schema_wide[0].message
     for kind in ("NOT NULL", "UNIQUE", "DEFAULT", "CHECK"):
         assert kind in noted[0].message, (kind, noted[0].message)
 
-    # A schema without such clauses says nothing about them.
+    # A schema without such clauses says nothing about *them*; the schema-wide note
+    # about `roots` stays, because that gap is still true of this file.
     plain = inspect_schema(schema_from_ddl("CREATE TABLE t (id INTEGER PRIMARY KEY);"))
-    assert "not-modelled" not in {problem.code for problem in plain.problems}
+    clause_notes = [
+        problem
+        for problem in plain.problems
+        if problem.code == "not-modelled" and problem.target is not None
+    ]
+    assert clause_notes == [], [(p.code, p.target, p.message) for p in plain.problems]
 
 
 def test_a_table_option_is_read_and_recorded_rather_than_refused():

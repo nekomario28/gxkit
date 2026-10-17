@@ -348,3 +348,77 @@ claimed. NaN coordinates in `geometry` score 0.0 for `area`/`overlap` (Python's
 `max(0.0, nan)` is `0.0`); a box with inverted coordinates has `area == 0` and is not
 `clipped`. The `clipped-text` tolerance is 2 px, which is why a 1 px overflow is not
 reported.
+
+## Seventh review: the declaration route
+
+The same instrument, a seventh prompt: the *declarations* an agent writes — every
+tool's module constants, dict shapes and Python-constructed models — for the twelve
+tools the document review did not cover. Seven findings, each reproduced first; the
+catalogue is at 171.
+
+**A recognised declaration was silently re-shaped, and the tool then reported a
+verdict about something the file did not declare.** This is the whole class:
+
+- `STATES = "ab"` became the states `a` and `b`; `MODULES = "abc"` a three-module
+  graph with a build order; `GRANTS = ["rp"]` an invented role→permission grant; and
+  `TRANSITIONS = [("a", "b", "e", "extra")]` dropped `extra` without a word. Each tool
+  now converts its constants with `convert_names`/`convert_pairs` and refuses a string
+  (or a wrong-arity tuple) by field and index.
+- `BLOCKS = "hi"` became one block per character — and the report then said the blocks
+  `h` and `i` overlapped. A block with a mistyped key (`{"colour": ...}`) raised a
+  `TypeError` naming no field or index.
+- `network = {"nodes": "ab"}` raised a bare `ValueError` inside `netgx`'s converter,
+  which `resolve` **swallows** (it re-raises only `InvalidArtifact`) — so a second,
+  clean `NETWORK` in the same module was inspected instead, and with only the
+  malformed declaration the tool said "no network found". The converter validates its
+  own members now.
+- `secret = "no"`, `DETERMINISTIC = "no"` and `EXPECT_AUDIO = "no"` were all `True`
+  (`bool("no")`), so the tools asserted the *opposite* of the declaration: a
+  `secret-with-default` error, a `deterministic` verdict, an expected audio track.
+  `convert_bool` refuses a non-bool. The OpenAPI importer had guarded this for
+  `deprecated` since its own review; the declaration route had not.
+- `{"endpoints": [{}]}` inspected as a clean API with one `GET /` endpoint the file
+  never named; an endpoint declaration now states its method.
+
+**Two routes to one concept disagreed.** `chartgx`'s figure route checked
+`ax.lines` only, so a bar of 0 on a log axis — `log-nonpositive` as a declared model —
+was clean as a figure; bars are `ax.patches` and are checked now. And `schemagx`'s SQL
+route cannot express `roots`, so the same schema gained `orphan-table: nothing
+references 'users'` where the Python route was clean: `Schema.roots_modelled` records
+that the reader could not express them, the rule that needs them does not apply, and
+the gap is said out loud as `not-modelled`.
+
+### Recorded limits (measured, not defects)
+
+**Inspection is super-linear in a few tools, and a very large declaration never
+finishes**: `crongx` compares every pair of runs (5 000 runs 8.3 s, 10 000 runs 33.8 s,
+100 000 runs no report after 60 s), `protogx` 40 000 transitions 35 s, `flowgx` 8 000
+transitions 20 s, `authzgx` 5 000 findings 25 s. `depsgx` (20 000 modules) and `seedgx`
+(20 000 streams) answer in under 0.2 s, so this is per-tool arithmetic rather than a
+shared one. These are human-scale diagnostics; the numbers are here so the next
+review can decide whether to flatten them.
+
+**Field validation stops at the loader.** A *wrong-typed field* inside an
+already-constructed model (`Run("a", start="oops")`, `Shader(size=("a","b"))`,
+`Video(expected_duration="2.0")`) is not checked where the model is built, so the
+inspector raises and the CLI reports exit 2 with the Python exception rather than a
+located refusal. The converters refuse a wrong-typed member; the dataclasses do not
+validate their fields.
+
+**`apigx`'s two routes treat the base differently, deliberately**: the Python model
+keeps `base` separate and checks each path against it (`path-outside-base`), while the
+OpenAPI reader builds the path *in* the server's coordinate space, so a path outside
+the base cannot arise. Both readings are documented; they are not the same statement.
+
+### Attacked and found sound
+
+Every tool's empty declaration (`[]`, `{}`, `""`, and a valid object with every
+collection empty) produces a code — all fifteen — and never a silent clean;
+`convert_items`/`convert_names` refusals carry field and index exactly (`runs[0]`,
+`STEPS[0]`, `REFERENCES`, `endpoints[0]`); subclass members load through `isinstance`;
+extreme values (`10**30`, `1e308`, `-0.0`, `NaN`, `inf`), a 10 000-character name,
+`\x00`, combining, RTL and emoji names do not crash and are reported where they mean
+something (`non-finite-time`, `zero-duration`); the process-exit trapping holds on this
+route too; `chartgx`'s declared JSON refuses unknown keys, wrong scales, a mapping
+`marks`, a string `y_min` and an unknown ramp with a location, and turns `NaN`
+coordinates into `non-finite-value`; `depsgx`/`seedgx` stay linear at 20 000 members.

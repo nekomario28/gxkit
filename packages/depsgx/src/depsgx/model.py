@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import reachable
+from gxcore.loading import convert_items, convert_names, convert_pairs
 
 
 @dataclass
@@ -72,14 +73,28 @@ def load_graph(path: str | Path) -> tuple[ModuleGraph, object]:
         depends = getattr(module, "DEPENDS", getattr(module, "depends", None))
         if depends is not None:
             graph = ModuleGraph(
-                modules=list(getattr(module, "MODULES", getattr(module, "modules", []))),
-                depends=[(d[0], d[1]) for d in depends],
-                roots=list(getattr(module, "ROOTS", getattr(module, "roots", []))),
-                forbidden=[
-                    (f[0], f[1])
-                    for f in getattr(module, "FORBIDDEN", getattr(module, "forbidden", []))
+                modules=convert_names(
+                    getattr(module, "MODULES", getattr(module, "modules", [])), field="MODULES"
+                ),
+                depends=convert_pairs(depends, field="DEPENDS", arity=2),
+                roots=convert_names(
+                    getattr(module, "ROOTS", getattr(module, "roots", [])), field="ROOTS"
+                ),
+                forbidden=convert_pairs(
+                    getattr(module, "FORBIDDEN", getattr(module, "forbidden", [])),
+                    field="FORBIDDEN",
+                    arity=2,
+                ),
+                layers=[
+                    convert_names(layer, field=f"LAYERS[{index}]")
+                    for index, layer in enumerate(
+                        convert_items(
+                            getattr(module, "LAYERS", getattr(module, "layers", [])),
+                            lambda value: value,
+                            field="LAYERS",
+                        )
+                    )
                 ],
-                layers=[list(g) for g in getattr(module, "LAYERS", getattr(module, "layers", []))],
             )
     if graph is None:
         raise ValueError(
