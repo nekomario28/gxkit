@@ -241,3 +241,122 @@ def test_replacing_an_unknown_edge_endpoint_is_a_new_error(tmp_path):
         "persisted": 1,
         "new_errors": 1,
     }
+
+
+def test_a_file_declaring_two_artifacts_is_not_routed_to_one_of_them(tmp_path):
+    """Routing by registry order hid the other artifact's error.
+
+    Measured: a file with both a `Level` and a matplotlib figure was routed to
+    chartgx and reported "no problems", while `levelgx <file>` found `no-goal`. The
+    ambiguity is now refused with the tool to name.
+    """
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    artifact = tmp_path / "both.py"
+    artifact.write_text(
+        "import matplotlib\nmatplotlib.use('Agg')\n"
+        "import matplotlib.pyplot as plt\n"
+        "from levelgx import Level\n"
+        "level = Level(rows=['....', '.S.G'])\n"
+        "fig, ax = plt.subplots()\nax.plot([1, 2], [3, 4])\n",
+        encoding="utf-8",
+    )
+    result = _inspect(artifact)
+    assert result.returncode == 2, result.stdout
+    assert "declares more than one artifact" in result.stderr
+    assert "levelgx" in result.stderr and "chartgx" in result.stderr
+
+
+def test_an_artifact_that_ends_the_process_is_a_refusal_not_a_verdict(tmp_path):
+    """`os._exit` is not an exception, so the exit code became the verdict.
+
+    Measured: `os._exit(0)` printed nothing and exited 0 — "inspected, no error" —
+    and `os._exit(42)` exited 42, outside the contract's table.
+    """
+    for status in (0, 1, 42):
+        artifact = tmp_path / f"exit{status}.py"
+        artifact.write_text(f"import os\nos._exit({status})\n", encoding="utf-8")
+        result = _inspect(artifact)
+        assert result.returncode == 2, (status, result.stdout, result.stderr)
+        assert f"os._exit({status})" in result.stderr
+        assert "no problems" not in result.stdout
+
+
+def test_an_interrupt_is_the_shells_code_without_a_traceback(tmp_path):
+    """An artifact can raise `KeyboardInterrupt`; Ctrl-C is the same event.
+
+    Measured: it escaped as a traceback from the entry point and exit 130, which is
+    not in the exit table, while the contract promises a refusal for a broken
+    artifact.
+    """
+    artifact = tmp_path / "interrupt.py"
+    artifact.write_text("raise KeyboardInterrupt\n", encoding="utf-8")
+    result = _inspect(artifact)
+    assert result.returncode == 130, (result.stdout, result.stderr)
+    assert "interrupted" in result.stderr
+    assert "Traceback" not in result.stderr
+    # The umbrella and a single tool are two entry points into the same handler, and
+    # both must answer the same way.
+    direct = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from levelgx import TOOL\n"
+            "from gxcore.cli import run\n"
+            f"raise SystemExit(run(TOOL, ['inspect', {str(artifact)!r}, '--no-storyboard']))",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    assert direct.returncode == 130, (direct.stdout, direct.stderr)
+    assert "interrupted" in direct.stderr
+    assert "Traceback" not in direct.stderr
+
+
+def test_a_baseline_for_another_tool_is_refused_rather_than_compared(tmp_path):
+    """A baseline whose records can never match reports every finding as new.
+
+    Measured: a chartgx baseline compared against a levelgx artifact reported
+    "1 new, 2 fixed" — the level's error became debt that had apparently been paid.
+    """
+    other = tmp_path / "chart.json"
+    other.write_text(
+        '{"marks": [{"kind": "bar", "categories": ["a"], "values": [1.0]}], "title": "t"}',
+        encoding="utf-8",
+    )
+    baseline = tmp_path / "chart_base.json"
+    written = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from gxkit.cli import main; raise SystemExit(main())",
+            "inspect",
+            "chartgx",
+            str(other),
+            "--no-storyboard",
+            "--write-baseline",
+            str(baseline),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    assert written.returncode in (0, 1), written.stderr
+    level = tmp_path / "level.py"
+    level.write_text(
+        "from levelgx import Level\nlevel = Level(rows=['....', '.S..'])\n", encoding="utf-8"
+    )
+    result = _inspect(level, "--baseline", str(baseline))
+    assert result.returncode == 2, result.stdout
+    assert "baseline for another one" in result.stderr
+    # Writing a baseline from one revision and comparing another *is* the workflow:
+    # the same artifact's own baseline must still compare (and its own finding, still
+    # present, must not read as new).
+    own = tmp_path / "level_base.json"
+    assert _inspect(level, "--write-baseline", str(own)).returncode == 1
+    compared = _inspect(level, "--baseline", str(own), "--json")
+    assert compared.returncode == 0, compared.stdout
+    assert json.loads(compared.stdout)["baseline"]["new_errors"] == 0

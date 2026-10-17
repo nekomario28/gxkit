@@ -22,7 +22,7 @@ from gxcore.loading import loading_session
 from gxcore.toolkit import distribution_version
 
 from .codes import CODEBOOK
-from .registry import BY_NAME, TOOLS, ToolSpec, detect
+from .registry import BY_NAME, TOOLS, ToolSpec, detect_all
 
 
 def _tools_table(as_json: bool) -> int:
@@ -83,10 +83,27 @@ def _tool_for(path: Path, explicit: str | None) -> ToolSpec | None:
 
     try:
         module = load_module(path)
-        spec = detect(module)
+        found = detect_all(module)
+    except KeyboardInterrupt:
+        # An artifact can raise it, and so can Ctrl-C; both are the shell's 130 rather
+        # than the traceback that escaped here (measured).
+        raise
     except (Exception, SystemExit) as exc:  # an artifact exit is not inspection success
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
+    if len(found) > 1:
+        # One file can declare two artifacts. Routing it to the first tool in
+        # registry order reported "no problems" while the other artifact's error was
+        # never looked at, so the ambiguity is refused instead of resolved silently.
+        names = ", ".join(spec.name for spec in found)
+        print(
+            f"gxkit: {path.name} declares more than one artifact ({names}); "
+            "name the one to inspect:\n"
+            f"  gxkit inspect {found[0].name} {path}",
+            file=sys.stderr,
+        )
+        return None
+    spec = found[0] if found else None
     if spec is None:
         names = ", ".join(t.name for t in TOOLS)
         print(
@@ -141,9 +158,17 @@ def _run_tool(spec: ToolSpec, file: Path, args: argparse.Namespace) -> int:
     if args.write_baseline:
         forwarded += ["--write-baseline", args.write_baseline]
     print(f"gxkit: {spec.name} — {spec.inspects}", file=sys.stderr)
-    # The umbrella knows every tool, so a config table for a name that is not one
-    # is a typo rather than a sibling's settings.
-    return run(tool, forwarded, known_tools={spec.name for spec in TOOLS})
+    # The umbrella knows every tool, so a config table for a name that is not one is
+    # a typo rather than a sibling's settings — and it knows every code, so a
+    # misspelled code name is a typo too rather than an inert table.
+    scope = {name: set(codes) for name, codes in CODEBOOK.items()}
+    scope[""] = {code for codes in CODEBOOK.values() for code in codes}
+    return run(
+        tool,
+        forwarded,
+        known_tools={spec.name for spec in TOOLS},
+        known_codes=scope,
+    )
 
 
 def _cmd_inspect(args: argparse.Namespace) -> int:
@@ -230,6 +255,9 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return int(args.func(args))
+    except KeyboardInterrupt:
+        print("gxkit: interrupted", file=sys.stderr)
+        return 130
     except Exception as exc:
         print(f"gxkit: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

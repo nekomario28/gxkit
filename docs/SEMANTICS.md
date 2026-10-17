@@ -201,3 +201,74 @@ of its findings are about *this* project's declared route, and one is fixed here
   consumers, and folding one into the other would break them.
 - `width: 0` and column-axis label ambiguity are refused by figspec's reader; this
   route refused the first already (exit 2) and gained the second in review three.
+
+## Fifth review: the command-line and configuration surface
+
+The same instrument, a fifth prompt: the *surface* rather than the semantics — routing,
+the exit-code table, `.gxkit.toml`, the baseline, and `-o`. Thirteen findings; every one
+reproduced before it was fixed, and the guards carry mutations (157 in the catalogue).
+
+**The exit-code table was the weakest part, because it promised more than the process
+could enforce.**
+
+- `os._exit(0)` printed nothing and exited 0 — read as "inspected, no error" — and
+  `os._exit(42)` exited 42, a code not in the table. `sys.exit` was caught; the
+  *other* way to end a process was not. The loader traps it while the artifact runs,
+  and refuses with `the artifact called os._exit(0)`.
+- A FIFO named `*.py` blocked forever (`Path.exists()` is true for one, and
+  `read_bytes` waits), so a directory run holding one produced no report and no exit
+  code at all. Only a regular file is read.
+- `KeyboardInterrupt` escaped as a traceback from the entry point with exit 130.
+  Ctrl-C and an artifact raising it are the same event, so 130 is now a documented row
+  (with a line, not a traceback) — and both entry points answer it the same way.
+
+**A configuration that names nothing looked active.** A misspelled code in `ignore`
+(`soft-lok`) ignored nothing; a misspelled `[severity]` name (`no-ylabels = "error"`)
+left every gate green — in the file the user wrote to make the gate stricter. The
+umbrella now validates code names against the codebook (it knows every code); a single
+tool still cannot judge a sibling's table, which is documented rather than papered over.
+
+**The baseline's guard did not cover provenance.** The shape guard exists, in its own
+words, because "a record that never matches would report every finding as fixed or
+new" — and a *chartgx* baseline compared against a *levelgx* artifact reported exactly
+that ("1 new, 2 fixed", the level's error apparently paid). The baseline file has no
+tool field, so the test is the codebook: a baseline whose codes are all unknown to the
+tool being run is refused. The **name** is deliberately not the test — writing a
+baseline from one revision and comparing another is the normal workflow. Also
+`--write-baseline` combined with a missing `--baseline` ran the comparison first and
+left the requested baseline unwritten; the write comes first now.
+
+**Routing hid a second artifact.** A file declaring both a `Level` and a matplotlib
+figure was routed to chartgx by registry order and reported "no problems", while
+`levelgx <file>` found `no-goal` — the umbrella exit 0. Detection collects *every*
+match and the ambiguity is refused with the tool to name. The contract also said
+detection was automatic without saying what it reads: a builder-only artifact
+(`build()`) and a file with no `.py` suffix need the tool named, which the contract now
+says.
+
+**An OpenAPI document with a reference was read as complete.** Only the path-item and
+operation cases were refused, so `$ref` in `parameters`, `requestBody` or a response
+schema was accepted (exit 0); no reference is resolved anywhere, so the document was
+not fully read. A document-wide walk refuses the first one with its location, and the
+two per-place checks it makes unreachable were **deleted** rather than kept for
+appearance. A response entry that is not an object, and a `responses` that is not an
+object (`null` was read as "documents no status"), are refused with their field.
+
+### Attacked and found sound
+
+Directory runs (`max(rc)`, empty → exit 2, good+bad mix → exit 1, a directory named
+`d.py` treated as a directory); `--json` against the human report on every tool example
+(same exit code, same error count, same sorted list, `storyboard`/`baseline` keys
+exactly when printed); document routing by suffix, including the umbrella refusing to
+auto-route a non-Python file and naming every reader; config precedence (nearest
+ancestor wins, a cwd-only config is ignored for an artifact elsewhere, `--no-config`
+bypasses even a malformed file) and every refusal shape (unknown top-level key,
+`ignore` as a string, an invalid severity, a mistyped key in a tool table); baseline
+write failures (a directory, a read-only dir) and shape refusals (version, record field
+types, `identity` as an int); `-o` on every path — written, bad suffix, a directory, an
+unwritable path, a declaration with no storyboard (refused), a directory run with `-o`
+(refused) — with **no path where `-o` was silently skipped**.
+
+Also: a symlink loop, a file deleted between listing and reading, unicode names and
+messages on an ASCII console, and extreme numeric values (`NaN`, `∞`, `10¹⁰⁰`, 2³²
+bounds) across seven tools were handled, not crashed.

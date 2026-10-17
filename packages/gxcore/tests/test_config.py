@@ -135,3 +135,32 @@ def test_a_table_that_names_no_tool_is_refused_when_the_caller_knows_the_family(
     # Without the family list the name cannot be judged, so it is kept.
     config = load(tmp_path)
     assert "chartgxx" in config.per_tool, config.per_tool
+
+
+def test_a_code_name_that_names_no_code_is_refused(tmp_path):
+    """A misspelled code is a config that does nothing, and must not look active.
+
+    Measured before this guard: `[severity] no-ylabels = "error"` was accepted, the
+    intended gate stayed green, and `ignore = ["soft-lok"]` ignored nothing — in the
+    file the user wrote to make the gate stricter, which is the silent-narrowing
+    failure this module refuses everywhere else.
+    """
+    scope = {"": {"no-ylabel", "soft-lock"}, "chartgx": {"no-ylabel"}}
+    for text, expected in (
+        ('[severity]\nno-ylabels = "error"\n', "no-ylabels"),
+        ('ignore = ["soft-lok"]\n', "soft-lok"),
+        ('[chartgx]\nignore = ["soft-lock"]\n', "soft-lock"),
+    ):
+        (tmp_path / ".gxkit.toml").write_text(text, encoding="utf-8")
+        with pytest.raises(ValueError, match=expected):
+            load(tmp_path, known_tools={"chartgx"}, known_codes=scope)
+
+    # The correctly spelled ones load, and without a codebook nothing is judged.
+    (tmp_path / ".gxkit.toml").write_text(
+        '[severity]\nno-ylabel = "error"\n[chartgx]\nignore = ["no-ylabel"]\n', encoding="utf-8"
+    )
+    config = load(tmp_path, known_tools={"chartgx"}, known_codes=scope)
+    assert config.severity == {"no-ylabel": "error"}
+    assert config.per_tool["chartgx"]["ignore"] == ["no-ylabel"]
+    (tmp_path / ".gxkit.toml").write_text('ignore = ["soft-lok"]\n', encoding="utf-8")
+    assert load(tmp_path).ignore == {"soft-lok"}

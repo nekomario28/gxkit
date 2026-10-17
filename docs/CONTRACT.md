@@ -21,9 +21,12 @@ the other way, because that would silently weaken an existing gate.
 | --- | --- |
 | 0 | inspected, no `error` |
 | 1 | inspected, at least one `error` (or, with `--baseline`, at least one *new* error) |
-| 2 | the input could not be inspected: missing, unreadable, malformed, it called `sys.exit`, or the tool needs a capability this machine does not have (a missing `ffprobe`) — the refusal names what is missing |
+| 2 | the input could not be inspected: missing, unreadable, not a regular file, malformed, it called `sys.exit` or `os._exit`, or the tool needs a capability this machine does not have (a missing `ffprobe`) — the refusal names what is missing |
+| 130 | interrupted: Ctrl-C, or the artifact raised `KeyboardInterrupt` while loading (the two are the same event) — with a line, never a traceback |
 
-A `warn` or `info` never fails a build.
+A `warn` or `info` never fails a build. An artifact that ends the process itself is
+interrupted rather than obeyed: `os._exit(0)` printed nothing and exited 0 — read as
+"inspected, no error" — so the loader traps it while the artifact runs.
 
 **The JSON report.** `--json` prints `name`, `subject`, `details`, `errors`,
 `problems` (each with `severity`, `code`, `message`, and `target`/`label`/
@@ -35,14 +38,23 @@ state and report `new`, `fixed`, `persisted`, `new_errors`. Format 2 is current
 and preserves repeated findings and explicit relationship identities; an older
 format is rejected rather than guessed at. A baseline whose shape cannot be read
 is refused with the offending field and index, because a record that never
-matches would report every finding as fixed or new.
+matches would report every finding as fixed or new — and so is one whose records
+share no code with the tool being run, which is by definition another tool's.
+Comparing a baseline written from one *revision* of an artifact against another is
+the normal workflow and is not refused, so the test is the codebook, not the name.
+`--write-baseline` is honoured even when the `--baseline` file it is combined with
+turns out to be missing.
 
 **The config.** `.gxkit.toml` accepts `ignore`, `severity`, and per-tool tables
 of the same two keys. Anything else is refused with its field — including
 `ignore = "code"` (a string, which would otherwise mean the characters it
-contains), a severity that is not `error`/`warn`/`info`, and a mistyped key in a
-tool table. Reading a configuration that cannot be understood and then inspecting
-anyway is the silent-narrowing failure this contract forbids.
+contains), a severity that is not `error`/`warn`/`info`, a mistyped key in a tool
+table, and — through the umbrella, which knows every code — a **code name that
+names no code** (`no-ylabels`, `soft-lok`), which would otherwise sit in the file
+looking active while changing nothing. Reading a configuration that cannot be
+understood and then inspecting anyway is the silent-narrowing failure this contract
+forbids. A single tool validates the shape of those tables but not the names: it
+cannot tell a sibling's code from a typo.
 
 **The CLI shape.** `<tool> inspect <path>` and `<tool> render <path>`, with
 `--json`, `--no-storyboard`, `-o/--output`, `--baseline`, `--write-baseline` and
@@ -65,11 +77,17 @@ The suffixes each tool accepts are declared in `gxkit.registry`, printed by
 `gxkit tools --json`, listed in `docs/TRACE.md`, and used to name the tool when a
 document that is not Python is passed.
 
-A Python artifact is detected automatically; a document that is not Python needs
-its tool named, because detection reads a Python module. Reading a document adds
+A Python artifact is a `*.py` file, and is detected automatically from the
+module-level object it defines; a *builder-only* artifact (`build()`, `make()`)
+needs its tool named, and so does a file that declares two artifacts — routing such
+a file to the first tool in registry order reported its second artifact as clean.
+A document that is not Python needs its tool named, because detection reads a
+Python module. Reading a document adds
 no runtime dependency and no code path that executes it — a foreign document is
 parsed as data. A construct the importer cannot represent is refused with its
-location rather than guessed at: OpenAPI 2, a `$ref`, an unrecognised key, a
+location rather than guessed at: OpenAPI 2, a `$ref` *anywhere* (no reference is
+resolved, so a document holding one is not fully read), a response that is not an
+object, an unrecognised key, a
 server override that changes the path, a composite key, an unterminated comment
 or literal, a composite or ambiguous diagram.
 

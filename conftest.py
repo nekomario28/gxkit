@@ -2,7 +2,7 @@
 
 The family deliberately skips where a capability is absent: `framegx` needs
 ffmpeg, `shadergx` needs a GL context, `chartgx` needs matplotlib. That is
-documented behaviour, and on Windows CI 97 tests skip for it.
+documented behaviour, and on Windows CI 98 tests skip for it.
 
 What must not happen is a skip on a machine that *has* the capability: that is how
 a check gets disabled without anyone deciding to, and every runner would stay

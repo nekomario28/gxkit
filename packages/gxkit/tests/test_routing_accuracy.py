@@ -46,3 +46,37 @@ def test_class_match_beats_a_marker():
     # a file with both a real Machine and protocol-ish markers must be flowgx
     ns = SimpleNamespace(machine=Machine(), MESSAGES=["SYN"], PROTOCOL=object())
     assert detect(ns).name == "flowgx"
+
+
+def test_the_umbrella_refuses_a_file_that_declares_two_artifacts(tmp_path, capsys):
+    """In-process: routing collects every match, and the ambiguity is the refusal.
+
+    A file with both a `Level` and a matplotlib figure was routed to chartgx by
+    registry order and reported "no problems", while `levelgx <file>` found
+    `no-goal` — the umbrella exit 0.
+    """
+    pytest.importorskip("matplotlib")
+    from gxkit.cli import main
+
+    artifact = tmp_path / "both.py"
+    artifact.write_text(
+        "import matplotlib\nmatplotlib.use('Agg')\n"
+        "import matplotlib.pyplot as plt\n"
+        "from levelgx import Level\n"
+        "level = Level(rows=['....', '.S..'])\n"
+        "fig, ax = plt.subplots()\nax.plot([1, 2], [3, 4])\n",
+        encoding="utf-8",
+    )
+    assert main(["inspect", str(artifact), "--no-storyboard"]) == 2
+    err = capsys.readouterr().err
+    assert "declares more than one artifact" in err
+    assert "chartgx" in err and "levelgx" in err
+
+
+def test_the_umbrella_reports_an_interrupt_as_the_shells_code(tmp_path, capsys):
+    from gxkit.cli import main
+
+    artifact = tmp_path / "interrupt.py"
+    artifact.write_text("raise KeyboardInterrupt\n", encoding="utf-8")
+    assert main(["inspect", str(artifact), "--no-storyboard"]) == 130
+    assert "gxkit: interrupted" in capsys.readouterr().err

@@ -233,3 +233,59 @@ def test_an_output_that_cannot_be_drawn_is_a_refusal_here(tmp_path, capsys):
     # Without `-o` the storyboard is optional: the report still prints.
     assert run(tool, ["inspect", "a.py", "--no-storyboard", "--json"]) == 0
     assert "problems" in capsys.readouterr().out
+
+
+def test_the_cli_refuses_a_baseline_written_for_another_tool(tmp_path, capsys):
+    """Provenance, at the layer that owns it: a sibling's baseline cannot apply.
+
+    A chartgx baseline compared against a levelgx artifact reported "1 new, 2 fixed",
+    which is the failure the shape guard documents — a record that never matches
+    reports every finding as new or fixed. In-process so the refusal's own lines are
+    covered, which a subprocess test cannot do.
+    """
+    import subprocess
+    import sys
+
+    from gxcore.cli import run
+
+    other = tmp_path / "chart.json"
+    other.write_text(
+        '{"marks": [{"kind": "bar", "categories": ["a"], "values": [1.0]}], "title": "t"}',
+        encoding="utf-8",
+    )
+    baseline = tmp_path / "chart_base.json"
+    written = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from gxkit.cli import main; raise SystemExit(main())",
+            "inspect",
+            "chartgx",
+            str(other),
+            "--no-storyboard",
+            "--write-baseline",
+            str(baseline),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert written.returncode in (0, 1), written.stderr
+
+    level = tmp_path / "level.py"
+    level.write_text(
+        "from levelgx import Level\nlevel = Level(rows=['....', '.S..'])\n", encoding="utf-8"
+    )
+    from gxkit.codes import CODEBOOK
+    from levelgx import TOOL
+
+    scope = {name: set(codes) for name, codes in CODEBOOK.items()}
+    scope[""] = {code for codes in CODEBOOK.values() for code in codes}
+    code = run(
+        TOOL,
+        ["inspect", str(level), "--no-storyboard", "--no-config", "--baseline", str(baseline)],
+        known_tools={"chartgx", "levelgx"},
+        known_codes=scope,
+    )
+    assert code == 2
+    assert "baseline for another one" in capsys.readouterr().err

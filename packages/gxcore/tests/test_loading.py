@@ -7,11 +7,12 @@ discovery rules promise (attribute before builder, first accepted match wins).
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from gxcore.loading import load_from_file, load_module, resolve
+from gxcore.loading import InvalidArtifact, load_from_file, load_module, resolve
 
 
 def _write(tmp_path: Path, name: str, text: str) -> Path:
@@ -33,9 +34,39 @@ def test_a_missing_file_is_a_file_not_found(tmp_path):
         load_module(tmp_path / "nope.py")
 
 
-def test_a_directory_is_an_import_error(tmp_path):
-    with pytest.raises(ImportError):
+def test_a_directory_is_refused_as_a_non_file(tmp_path):
+    # A directory named `*.py` used to fall through to an import error. It is not a
+    # file at all, which is the same reason a FIFO is refused: `is_file()` is false
+    # and reading it either fails or blocks forever.
+    with pytest.raises(InvalidArtifact, match="not a regular file"):
         load_module(tmp_path)
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFOs are POSIX-only")
+def test_a_fifo_is_refused_rather_than_waited_on(tmp_path):
+    # Measured: a FIFO named `x.py` blocked the load forever, so a directory run
+    # holding one produced no report and no exit code at all.
+    fifo = tmp_path / "x.py"
+    os.mkfifo(fifo)
+    with pytest.raises(InvalidArtifact, match="not a regular file"):
+        load_module(fifo)
+
+
+def test_an_artifact_cannot_end_the_process_behind_the_reporters_back(tmp_path):
+    # `os._exit` is not an exception, so `except Exception` never saw it: exit 0 read
+    # as "inspected, no error" and 42 read as a code outside the table. The loader
+    # traps it while the artifact runs.
+    artifact = tmp_path / "x.py"
+    artifact.write_text("import os\nos._exit(0)\n", encoding="utf-8")
+    with pytest.raises(InvalidArtifact, match=r"os\._exit\(0\)"):
+        load_module(artifact)
+    # The real function is put back: the next load still works, and `os._exit` is
+    # still the one from `os`.
+    assert os._exit is not None
+    good = tmp_path / "y.py"
+    good.write_text("value = 1\n", encoding="utf-8")
+    assert load_module(good).value == 1
+    assert os._exit.__module__ == "posix" or os._exit.__module__ == "nt"
 
 
 def test_a_syntax_error_propagates(tmp_path):
@@ -123,3 +154,13 @@ def test_same_size_edits_are_not_hidden_by_cached_bytecode(tmp_path):
     path.write_text("value = 'B'\n", encoding="utf-8")
     os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
     assert load_module(path).value == "B"
+
+
+def test_a_file_with_no_loadable_suffix_is_an_import_error(tmp_path):
+    # `spec_from_file_location` has no loader for a suffix it does not know, which is
+    # the branch the directory case used to reach before directories were refused as
+    # non-files.
+    stray = tmp_path / "x.txt"
+    stray.write_text("value = 1\n", encoding="utf-8")
+    with pytest.raises(ImportError, match="cannot load a Python module"):
+        load_module(stray)

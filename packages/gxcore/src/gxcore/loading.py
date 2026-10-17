@@ -12,6 +12,7 @@ State is kept out of the module cache's way by loading under a unique name.
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import contextmanager
@@ -91,14 +92,33 @@ def load_module(path: str | Path) -> ModuleType:
         return modules[key]
     if not path.exists():
         raise FileNotFoundError(path)
+    # A FIFO named `*.py` exists and reading it blocks forever (measured: a
+    # directory run holding one FIFO never returned, so the tool produced no report
+    # and no exit code at all). Only a regular file is read.
+    if not path.is_file():
+        raise InvalidArtifact(f"{path}: not a regular file, so there is nothing to read")
     name = f"gx_under_test_{abs(hash(str(path)))}"
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
         raise ImportError(f"cannot load a Python module from {path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
-    # Inspect the current source, not a timestamp/size-matched cached .pyc.
-    exec(compile(path.read_bytes(), str(path), "exec", dont_inherit=True), module.__dict__)
+    # An artifact can end the process itself. `os._exit` is not an exception, so it
+    # was not caught: measured, `os._exit(0)` returned exit 0 with no report at all
+    # ("inspected, no error") and `os._exit(42)` returned 42, a code outside the
+    # contract's table. The artifact runs in *this* process, so the exit is trapped
+    # here and reported like any other refusal.
+    original_exit = os._exit
+
+    def _refuse(code: object = None) -> None:
+        raise InvalidArtifact(f"the artifact called os._exit({code!r}) while loading")
+
+    os._exit = _refuse  # type: ignore[assignment]
+    try:
+        # Inspect the current source, not a timestamp/size-matched cached .pyc.
+        exec(compile(path.read_bytes(), str(path), "exec", dont_inherit=True), module.__dict__)
+    finally:
+        os._exit = original_exit
     if modules is not None:
         modules[key] = module
     return module
