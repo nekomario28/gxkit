@@ -16,6 +16,18 @@ and the rest). Values the tool has a *finding* for are deliberately not refused 
 construction — a fractional seed is still `invalid-seed`, a `NaN` time still
 `non-finite-time` — and a mutation proves it stays that way.
 
+**`authzgx`'s traversal cost is paid off** — the limit recorded as *output-bound* was
+half a traversal problem: the graph was rebuilt inside each loop, "what can any principal
+reach" was the union of one traversal per principal, and the escalation question cost two
+traversals per low principal. Each question is now asked once (2 000 principals with one
+finding: 1.8 s → 0.00 s; 2 000 escalating principals: 5.8 s → 0.38 s), `gxcore.graph`
+gains `route_to`/`route_nodes` (one reverse traversal gives every node's next hop on a
+shortest route to a target, checked against NetworkX), and a test **counts** traversals
+rather than timing them. What remains is the report's own size: 20 000 escalating
+principals produce 268 MB of detail lines, and a 4 000-entry `sensitive` list is still one
+traversal per permission — both recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md), not
+claimed fixed.
+
 **Performance**: the measured limits recorded by an earlier review are paid off, with the
 numbers in [`docs/SEMANTICS.md`](docs/SEMANTICS.md). `crongx` compares runs with a sweep
 instead of every pair (10 000 non-overlapping runs: 33.8 s → 0.008 s; 100 000: no report
@@ -25,8 +37,7 @@ behaviour, first occurrence first; and `gxcore.layout.check` enumerates collidin
 boxes with a grid instead of a double loop (4 000 boxes in a ring: 33 s → 0.02 s), with
 the oversized-box case kept outside the grid because leaving it out lost real collisions.
 `authzgx` hoists one reverse BFS for the sensitive-permission question instead of one per
-low principal; its per-finding path work is still super-linear and is recorded, not
-claimed fixed.
+low principal (completed in the entry above).
 
 Found by a review of the **drawn output** — the first to open the pixels (five findings,
 recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):

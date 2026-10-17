@@ -15,6 +15,8 @@ from gxcore.graph import (
     distances,
     find_cycle,
     reachable,
+    route_nodes,
+    route_to,
     shortest_path,
     strongly_connected_components,
     topological_sort,
@@ -152,3 +154,52 @@ def test_strongly_connected_components_match_networkx():
         # every node lands in exactly one component
         flat = [node for component in got for node in component]
         assert sorted(flat) == sorted(edges)
+
+
+def test_route_to_matches_networkx():
+    """Every hop map is a *shortest* route, for every node at once.
+
+    The map is what `authzgx` prints an escalation path from, so the property that
+    matters is per node: walking the hops lands on a target, in exactly as many steps
+    as NetworkX says the shortest path takes.
+    """
+    rng = random.Random(15)
+    for _ in range(300):
+        edges = _random_edges(rng)
+        g = _digraph(edges)
+        targets = set(rng.sample(list(edges), rng.randint(1, len(edges))))
+        hop = route_to(edges, targets)
+        # The key set *is* the reverse-reachability set: a node can reach a target iff
+        # the map has a route for it (the escalation check relies on this).
+        assert set(hop) == can_reach(edges, targets)
+        for node in hop:
+            walk = [node]
+            while hop[walk[-1]] != walk[-1]:
+                walk.append(hop[walk[-1]])
+                assert len(walk) <= len(edges) + 1, f"{node}: the walk does not terminate"
+            assert walk[-1] in targets, f"{node} walked to {walk[-1]}"
+            want = min(
+                nx.shortest_path_length(g, node, t) for t in targets if nx.has_path(g, node, t)
+            )
+            assert len(walk) - 1 == want, f"{node}: {walk} for a distance of {want}"
+        for node in targets:
+            assert hop[node] == node
+
+
+def test_route_nodes_walks_the_map_and_refuses_what_is_not_in_it():
+    hop = route_to({1: [2], 2: [3], 3: []}, [3])
+    assert route_nodes(hop, 1) == [1, 2, 3]
+    assert route_nodes(hop, 3) == [3]
+    assert route_nodes(hop, 4) is None
+
+
+def test_route_to_is_deterministic_and_ignores_duplicate_targets():
+    edges = {1: [2, 3], 2: [4], 3: [4], 4: []}
+    first = route_to(edges, [4, 4])
+    assert first == route_to(edges, [4, 4])
+    assert first == route_to(edges, [4])
+    assert set(first) == {1, 2, 3, 4}
+    # Node 1 steps to 2 because 2 comes first in the adjacency list of 1.
+    assert first[1] == 2
+    assert first[3] == 4
+    assert route_to({1: []}, [2]) == {2: 2}

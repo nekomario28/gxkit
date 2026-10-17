@@ -874,6 +874,61 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/gxkit/tests/test_declaration_inputs.py::test_a_value_the_tool_has_a_finding_for_is_not_refused_at_construction",
             ),
             Mutation(
+                # The one-BFS form of "what can any principal reach" (measured: 2 000
+                # principals spent 1.8 s unioning one traversal each).
+                "reachable-from-principals-per-principal",
+                "packages/authzgx/src/authzgx/authmodel.py",
+                "        return reachable(edges, [self.pid(p) for p in self.principals])",
+                "        out: set[str] = set()\n"
+                "        for p in self.principals:\n"
+                "            out |= reachable(edges, [self.pid(p)])\n"
+                "        return out",
+                "packages/authzgx/tests/test_auth.py::test_the_escalation_check_does_not_traverse_once_per_principal",
+            ),
+            Mutation(
+                # The empty-role question asked per role (one traversal and one graph
+                # per role) instead of once for all of them.
+                "empty-role-asked-per-role",
+                "packages/authzgx/src/authzgx/checks.py",
+                "        if model.rid(role) not in reaches_a_permission:",
+                "        if not any(\n"
+                "            model.xid(x) in can_reach(graph, [model.rid(role)])\n"
+                "            for x in model.permissions\n"
+                "        ):",
+                "packages/authzgx/tests/test_auth.py::test_the_escalation_check_does_not_traverse_once_per_principal",
+            ),
+            Mutation(
+                # The forward form for every principal, where the reverse one answers
+                # all of them at once. Same findings either way — the guard is the
+                # traversal count, which is the thing that was wrong.
+                "effective-set-asked-per-principal",
+                "packages/authzgx/src/authzgx/checks.py",
+                "            if len(escalating) > len(model.permissions)",
+                "            if False",
+                "packages/authzgx/tests/test_auth.py::test_the_escalation_check_does_not_traverse_once_per_principal",
+            ),
+            Mutation(
+                "effective-map-ignores-the-asked-subset",
+                "packages/authzgx/src/authzgx/authmodel.py",
+                "        wanted = list(self.principals if principals is None else principals)",
+                "        wanted = list(self.principals)",
+                "packages/authzgx/tests/test_auth.py::test_effective_map_agrees_with_effective",
+            ),
+            Mutation(
+                "route-map-does-not-seed-its-targets",
+                "packages/gxcore/src/gxcore/graph.py",
+                "    hop: dict[_H, _H] = {t: t for t in ordered}",
+                "    hop: dict[_H, _H] = {}",
+                "packages/gxcore/tests/test_graph_properties.py::test_route_to_matches_networkx",
+            ),
+            Mutation(
+                "the-way-in-is-not-walked",
+                "packages/gxcore/src/gxcore/graph.py",
+                "    if start not in hop:\n        return None",
+                "    if True:\n        return None",
+                "packages/gxcore/tests/test_graph_properties.py::test_route_nodes_walks_the_map_and_refuses_what_is_not_in_it",
+            ),
+            Mutation(
                 "overlap-rule-back-to-every-pair",
                 "packages/gxcore/src/gxcore/layout.py",
                 "        if covering > cell_budget:",
