@@ -7,6 +7,18 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+**Performance**: the measured limits recorded by an earlier review are paid off, with the
+numbers in [`docs/SEMANTICS.md`](docs/SEMANTICS.md). `crongx` compares runs with a sweep
+instead of every pair (10 000 non-overlapping runs: 33.8 s → 0.008 s; 100 000: no report
+in 60 s → 0.078 s); `flowgx`/`protogx` deduplicate states, pairs and references with a set
+instead of a list scan (8 000 states: 20 s → 0.03 s) — including `docs/TRACE`-level
+behaviour, first occurrence first; and `gxcore.layout.check` enumerates colliding text
+boxes with a grid instead of a double loop (4 000 boxes in a ring: 33 s → 0.02 s), with
+the oversized-box case kept outside the grid because leaving it out lost real collisions.
+`authzgx` hoists one reverse BFS for the sensitive-permission question instead of one per
+low principal; its per-finding path work is still super-linear and is recorded, not
+claimed fixed.
+
 Found by a review of the **drawn output** — the first to open the pixels (five findings,
 recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
 

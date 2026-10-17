@@ -833,6 +833,37 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/gxkit/tests/test_inspection_gates.py::test_an_unwritable_output_still_prints_the_report",
             ),
             Mutation(
+                # The set is a pure performance change, so no mutation of *it* is
+                # observable; what is observable is the deduplication it computes, and
+                # that is what this mutant breaks.
+                "state-dedupe-never-remembers",
+                "packages/flowgx/src/flowgx/machine.py",
+                "                known.add(s)\n                seen.append(s)",
+                "                seen.append(s)",
+                "packages/gxcore/tests/test_more.py::test_states_are_deduplicated_in_first_seen_order",
+            ),
+            Mutation(
+                "overlap-rule-back-to-every-pair",
+                "packages/gxcore/src/gxcore/layout.py",
+                "        if covering > cell_budget:",
+                "        if True:",
+                "packages/gxcore/tests/test_core.py::test_the_overlap_rule_does_not_compare_every_pair",
+            ),
+            Mutation(
+                "oversized-box-left-out-of-the-grid",
+                "packages/gxcore/src/gxcore/layout.py",
+                "            candidates = list(range(index))",
+                "            candidates = []",
+                "packages/gxcore/tests/test_geometry_properties.py::test_the_grid_finds_exactly_the_pairs_the_rule_defines",
+            ),
+            Mutation(
+                "crongx-overlap-sweep-back-to-pairs",
+                "packages/crongx/src/crongx/checks.py",
+                "        open_runs = [index for index in open_runs if schedule.runs[index].end > b.start]",
+                "        open_runs = list(open_runs) + [index for index in open_runs]",
+                "packages/crongx/tests/test_schedules.py::test_the_overlap_rule_is_not_quadratic",
+            ),
+            Mutation(
                 "flag-coerced-from-a-string",
                 "packages/gxcore/src/gxcore/loading.py",
                 "    if not isinstance(value, bool):",
@@ -899,7 +930,7 @@ def mutations(root: Path) -> list[Mutation]:
                 "pair-rule-uses-the-larger-box",
                 "packages/gxcore/src/gxcore/geometry.py",
                 "            frac = max(covered(boxes[i], boxes[j]), covered(boxes[j], boxes[i]))",
-                "            frac = both_covered(boxes[i], boxes[j])",
+                "            frac = min(covered(boxes[i], boxes[j]), covered(boxes[j], boxes[i]))",
                 "packages/gxcore/tests/test_core.py::test_the_geometry_pair_rule_is_the_fraction_of_the_smaller_box",
             ),
             Mutation(

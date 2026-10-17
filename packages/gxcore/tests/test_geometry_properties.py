@@ -52,9 +52,6 @@ def test_coverage_matches_shapely(seed):
         inter = aa.intersection(box(*b)).area
         ref = 0.0 if aa.area == 0 else inter / aa.area
         assert geo.covered(a, b) == pytest.approx(ref, abs=1e-9)
-        assert geo.both_covered(a, b) == pytest.approx(
-            min(geo.covered(a, b), geo.covered(b, a)), abs=1e-12
-        )
 
 
 @pytest.mark.parametrize("seed", SEEDS)
@@ -150,3 +147,38 @@ def test_layout_check_matches_shapely(seed):
         # the other (`covered(a,b) > f or covered(b,a) > f`), which is the same
         # condition as a pair fraction `> f`.
         assert codes.count("text-overlap") == want_overlap
+
+
+@pytest.mark.parametrize("seed", SEEDS)
+def test_the_grid_finds_exactly_the_pairs_the_rule_defines(seed):
+    """The overlap check is bucketed now, and bucketing must not change the *answer*.
+
+    Compared against the double-loop rule on the same random boxes, including the shapes
+    the grid has to special-case: boxes far larger than the middle one (which cover more
+    cells than a candidate scan is worth) and boxes outside the canvas. Measured, leaving
+    an oversized box out of the grid entirely lost real collisions.
+    """
+    from gxcore.geometry import covered
+    from gxcore.layout import TextBox, check
+
+    rng = random.Random(seed)
+    for _ in range(6):
+        items = []
+        for i in range(rng.randint(0, 40)):
+            x, y = rng.uniform(-50, 500), rng.uniform(-50, 400)
+            width, height = rng.choice([5, 60, 300]), rng.choice([5, 24, 200])
+            items.append(TextBox(f"b{i}", f"t{i}", (x, y, x + width, y + height), 12.0))
+        want = 0
+        for a in range(len(items)):
+            for b in range(a + 1, len(items)):
+                x, y = items[a], items[b]
+                if x.text.strip() == y.text.strip() and x.bbox == y.bbox:
+                    continue
+                if max(covered(x.bbox, y.bbox), covered(y.bbox, x.bbox)) >= 0.35:
+                    want += 1
+        got = sum(
+            1
+            for problem in check(items, (0.0, 0.0, 500.0, 400.0))
+            if problem.code == "text-overlap"
+        )
+        assert got == want, (len(items), got, want)

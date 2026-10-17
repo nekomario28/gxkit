@@ -487,3 +487,52 @@ contradiction), and a 1×1 canvas, 0/1/500 elements, a whole-canvas box, a 1-px 
 A node or an edge can still *touch* a canvas edge (a 1-px stroke at the border) for an
 extreme layout; the measurement above is that no *self-loop* leaves the canvas, which is
 the case that was reported and fixed.
+
+## Ninth review: the measured limits, paid off
+
+The seventh review *recorded* that inspection is super-linear in four tools rather than
+fixing it; this round paid it off, by measurement before and after (each number is a
+wall-clock run of the same fixture on this machine, and each fix is guarded by a **call
+count** rather than a clock, so a regression is caught deterministically).
+
+| fixture | before | after |
+| --- | --- | --- |
+| `crongx`, 10 000 non-overlapping runs | 33.8 s | **0.008 s** |
+| `crongx`, 100 000 runs | no report in 60 s | **0.078 s** |
+| `flowgx`, 8 000 states | 20 s | **0.03 s** |
+| `flowgx`, 40 000 states | 45 s | **0.19 s** |
+| `flowgx`, 100 000 states | — | **0.59 s** |
+| `protogx`, 40 000 transitions | 35 s | **0.11 s** |
+| `gxcore.layout.check`, 4 000 boxes in a ring | 33 s | **0.02 s** |
+
+Three separate causes, and the profile named them rather than the guess:
+
+- **`Machine.all_states`/`pairs`/`referenced` (and `Protocol`'s copies) tested membership
+  against a `list`.** Three of those methods were 1.6 s of a 2.0 s inspection at 8 000
+  states. A set computes the same *result* — first occurrence first — so the fix is
+  invisible to behaviour, and the guard is on the result (deduplicated, in declaration
+  order), with the mutant breaking that rather than the set.
+- **`crongx` compared every pair of runs.** A sweep by start time plus the open set makes
+  it proportional to the runs that actually overlap, which is what the findings are about.
+- **`gxcore.layout.check` compared every pair of text boxes.** A collision needs a
+  non-empty intersection, so two boxes share an x-range and a y point — and two boxes
+  sharing a point share the grid cell that point lies in, *whatever* the cell size, so
+  bucketing can only narrow the candidates. Boxes covering more cells than a candidate
+  scan is worth (one page-sized block among many small ones) are kept outside the grid and
+  offered to every later box; measured, leaving them out of the grid entirely **lost real
+  collisions** (the docgx README's own example, which its transcript pins). The rule is
+  now verified against the double-loop definition on 30 random seeds, including oversized
+  boxes and boxes off the canvas.
+
+`authzgx` is **half** paid: the "which low principals can reach a sensitive permission"
+question was one reverse BFS per principal, and is now one for the whole check (a model
+with 5 000 low principals spent 25 s there). It is still super-linear when *escalations
+are reported*, because each finding needs its own path and effective set — measured, 2 000
+escalating principals take 14.9 s and 2 000 non-escalating ones now take 6.3 s, with the
+4 000-role `unreachable-role`/role-reachability pass the remaining quadratic. That is
+output-bound work rather than wasted comparison, and it is written down here rather than
+presented as fixed.
+
+Also fixed while measuring: the crongx finding's `target` (the box the storyboard draws)
+now names the *second* run of the pair, as it did before the sweep — the sweep's variables
+are ordered by start, not by index, and the picture would have pointed at the wrong node.

@@ -30,11 +30,6 @@ def covered(a: BBox, b: BBox) -> float:
     return overlap(a, b) / area(a)
 
 
-def both_covered(a: BBox, b: BBox) -> float:
-    """The smaller of the two coverage fractions — 'how much do these collide'."""
-    return min(covered(a, b), covered(b, a))
-
-
 def union(boxes: Iterable[BBox]) -> BBox | None:
     it = iter(boxes)
     try:

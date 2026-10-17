@@ -9,7 +9,7 @@ plain reachability plus `gxcore.graph.shortest_path`.
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import cycle_witnesses, reachable
+from gxcore.graph import can_reach, cycle_witnesses, reachable
 
 from .authmodel import AuthModel
 from .render import compute_layout, node_box
@@ -145,8 +145,15 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
         )
     else:
         graph = model.graph()
+        # One reverse BFS for the whole check, not one per low principal: "which
+        # principals can reach a sensitive permission" is the *same* traversal for all
+        # of them, and the path is only needed where it actually escalates. Measured, a
+        # model with 5 000 low principals spent 25 s here.
+        reaches_sensitive = can_reach(graph, [model.xid(perm) for perm in model.sensitive])
         for principal in model.low:
             if principal not in declared_principals:
+                continue
+            if model.pid(principal) not in reaches_sensitive:
                 continue
             reached = reachable(graph, [model.pid(principal)])
             for perm in model.sensitive:

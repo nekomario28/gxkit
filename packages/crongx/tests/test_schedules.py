@@ -145,3 +145,45 @@ def test_examples_load_and_are_diagnosed():
     report = inspect_schedule(broken)
     for code in ("overlap", "duplicate-run", "negative-start", "negative-duration"):
         assert_fires(report, code, ERROR)
+
+
+def test_the_overlap_rule_is_not_quadratic(tmp_path):
+    """The sweep, guarded by a *count* rather than a clock.
+
+    Measured before this: 10 000 non-overlapping runs took 33.8 s and 100 000 never
+    returned, because every pair was compared to find nothing.
+    """
+    from crongx import Run, Schedule, inspect_schedule
+
+    calls = 0
+    runs = [Run(f"r{i}", i * 10, 5, "cpu") for i in range(6000)]
+    # Two overlapping runs, so the comparison the guard counts really happens (a fixture
+    # with no overlaps at all would leave the counter at zero however it was written).
+    runs.append(Run("late-a", 60_000, 10, "cpu"))
+    runs.append(Run("late-b", 60_005, 10, "cpu"))
+    schedule = Schedule(runs=runs)
+    original = schedule.overlap
+
+    def counting(a, b):
+        nonlocal calls
+        calls += 1
+        return original(a, b)
+
+    schedule.overlap = counting  # type: ignore[method-assign]
+    report = inspect_schedule(schedule)
+    overlaps = [p for p in report.problems if p.code == "overlap"]
+    assert len(overlaps) == 1, [p.code for p in report.problems]
+    # 6002*6001/2 = 18 009 001 pairs; the sweep compares only the runs still open, whose
+    # intervals do not overlap.
+    assert calls <= 6002, calls
+
+
+def test_overlapping_runs_are_still_reported_after_the_sweep():
+    from crongx import Run, Schedule, inspect_schedule
+
+    schedule = Schedule(
+        runs=[Run("a", 0, 10, "cpu"), Run("b", 5, 10, "cpu"), Run("c", 100, 1, "cpu")]
+    )
+    overlaps = [p for p in inspect_schedule(schedule).problems if p.code == "overlap"]
+    assert len(overlaps) == 1
+    assert "a" in overlaps[0].message and "b" in overlaps[0].message
