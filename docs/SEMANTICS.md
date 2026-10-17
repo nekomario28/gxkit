@@ -422,3 +422,68 @@ something (`non-finite-time`, `zero-duration`); the process-exit trapping holds 
 route too; `chartgx`'s declared JSON refuses unknown keys, wrong scales, a mapping
 `marks`, a string `y_min` and an unknown ramp with a location, and turns `NaN`
 coordinates into `non-finite-value`; `depsgx`/`seedgx` stay linear at 20 000 members.
+
+## Eighth review: the drawn output
+
+The same instrument, an eighth prompt — and the first to open the pixels: every verdict
+this family gives comes with a storyboard, so a picture that shows something other than
+what the report says is a wrong deliverable. Five findings, each measured by probing the
+PNG rather than by reading the renderer; the catalogue is at 176.
+
+**The numbers in the picture did not always match the numbers in the text.** A
+`clipped-text` finding puts its box at or past the edge, and the storyboard clamped only
+the tag's left edge: measured, three such findings drew **one** number and two nothing
+(one box entirely right of the canvas, one entirely below it), while the text report
+listed all three — against the claim that "problem [3] in the text is box 3 in the
+image". `visible_box` intersects the rectangle with the canvas and `tag_origin` places
+the tag inside it whatever the box did, so every number is drawn and a box at the edge
+becomes an edge strip — which is what the finding says.
+
+**And a shared box could not draw all of its numbers.** Twelve findings on one rectangle
+produced the tag `1,2,3,4,5,6,7,8,9,10,11,12`, which ran off the right edge with numbers
+7-12 undrawn (`n = 10, 12, 14, 20, 30` all render identically clipped). Consecutive
+numbers are compressed into ranges — `1-12` — so the tag names every finding and fits.
+
+**A self-loop on the top node was clipped by the canvas.** The arc is drawn above-right
+of its node, and for the top node that put it at `y = -10.8`: the *shipped*
+`schemagx` example painted edge pixels on **row 0**, while the property test asserted
+"nothing spills off the canvas" — checking the node boxes, never the arc. The loop is
+translated back inside (only the near edge is reachable: the layout keeps node circles on
+the canvas, so a loop is never off the far edge — the far branch was written, then
+deleted, because no input reaches it and a branch nothing can reach is a line nothing can
+check).
+
+**The picture could decide the verdict.** An unwritable `-o` printed **no report at all**
+and exited 2 even for a clean artifact, so the exit code and the report were decided by a
+path rather than by the findings. The failure is still a failure (exit 2), but the report
+is printed first — the report is the verdict, the picture is not.
+
+**A whitespace-only name drew a blank disc.** A node with the name `"   "` — a name in
+the model — rendered identically to an empty one, so the picture showed a node with no
+label instead of a node whose label is blank; it draws `?` now. An inverted bbox
+(`x0 > x1`, which no tool emits) also stopped raising inside Pillow: the corners are
+sorted.
+
+### Attacked and found sound
+
+**Boxes land on their objects**: for all ten scene tools the drawn centroids match
+`compute_layout` to ≤ 1.6 px and the rectangles equal `node_box(pos, r) ± pad` /
+`cell_box(cell)`; `chartgx`'s `origin="bottom-left"` flip is correct (display-y boxes land
+on the right raster rows); `framegx`'s frozen-run union is correct. **Numbers match the
+printed list**: box numbers track `Report.sorted()` through mixed severities, and a
+finding with no bbox still consumes its number (netgx `dangling-edge` [1] draws no box
+while boxes `(2,) (3,) (4,)` follow). **The picture agrees with the claimed counts**:
+module/table/role counts, levelgx hazard/item/goal/spawn tiles, and docgx's 5-blocks→5-bands
+all measured equal to the model. **Determinism and independence**: `to_image` twice, a
+fresh load, and `annotate` twice are byte-identical for all ten tools; rendering never
+mutates the model; `--no-storyboard` leaves the report and the exit code unchanged. **Text**
+(`<`, `&`, `"`, newline/CR/tab, a 300-character word, emoji) never crashes and is drawn
+literally or truncated with `…` — measured, `😀` draws a tofu glyph (font coverage, not a
+contradiction), and a 1×1 canvas, 0/1/500 elements, a whole-canvas box, a 1-px box and
+`NaN`/`inf` bboxes all render without raising.
+
+### Recorded limit
+
+A node or an edge can still *touch* a canvas edge (a 1-px stroke at the border) for an
+extreme layout; the measurement above is that no *self-loop* leaves the canvas, which is
+the case that was reported and fixed.

@@ -78,12 +78,11 @@ def labelled_boxes(
         # is what the printed list shows), and no rectangle is drawn for it.
         if any(not math.isfinite(value) for value in problem.bbox):
             continue
-        key: tuple[float, float, float, float] = (
-            float(round(problem.bbox[0])),
-            float(round(problem.bbox[1])),
-            float(round(problem.bbox[2])),
-            float(round(problem.bbox[3])),
-        )
+        # A box declared the other way round (`x0 > x1`) raised inside Pillow; the
+        # corners are the same rectangle either way, so they are sorted.
+        x0, x1 = sorted((float(round(problem.bbox[0])), float(round(problem.bbox[2]))))
+        y0, y1 = sorted((float(round(problem.bbox[1])), float(round(problem.bbox[3]))))
+        key: tuple[float, float, float, float] = (x0, y0, x1, y1)
         grouped.setdefault(key, []).append(number)
         representative.setdefault(key, problem)
     boxes: list[Box] = []
@@ -101,6 +100,65 @@ def labelled_boxes(
             )
         )
     return boxes
+
+
+def visible_box(
+    box: tuple[float, float, float, float], width: int, height: int
+) -> tuple[float, float, float, float] | None:
+    """The part of ``box`` that is on the canvas, or None when none of it is.
+
+    A `clipped-text` finding puts its box at or past the edge — measured, three of them
+    were entirely outside (one right of the canvas, one below it) and drew nothing at
+    all, so the picture and the text report disagreed about what had been found.
+    """
+    clipped = (
+        max(0.0, box[0]),
+        max(0.0, box[1]),
+        min(float(width), box[2]),
+        min(float(height), box[3]),
+    )
+    if clipped[0] >= clipped[2] or clipped[1] >= clipped[3]:
+        return None
+    return clipped
+
+
+def tag_origin(
+    box: tuple[float, float, float, float], width: int, height: int, tw: float, th: float
+) -> tuple[float, float]:
+    """Top-left for a box's number tag, always inside the canvas.
+
+    The number is the only thing that ties a rectangle to the text report, so it is
+    drawn even when the rectangle itself was off-canvas (it is then placed at the edge
+    the box left by).
+    """
+    x = max(0.0, min(box[0], max(0.0, width - tw - 8)))
+    y = box[1] - th - 6
+    if y < 0:
+        y = box[1] + 2
+    return x, max(0.0, min(y, max(0.0, float(height) - th - 6)))
+
+
+def _numbers(numbers: Sequence[int]) -> str:
+    """The tag for a box's numbers, compressing consecutive runs into ranges.
+
+    `1,2,3` stays `1,2,3`; `1..12` becomes `1-5,6-12`-free `1-12`. The text report
+    lists every number, and the picture has to be able to draw the tag that names them.
+    """
+    runs: list[str] = []
+    start: int | None = None
+    previous = 0
+    for number in sorted(numbers):
+        if start is None:
+            start = previous = number
+            continue
+        if number == previous + 1:
+            previous = number
+            continue
+        runs.append(f"{start}" if start == previous else f"{start}-{previous}")
+        start = previous = number
+    if start is not None:
+        runs.append(f"{start}" if start == previous else f"{start}-{previous}")
+    return ",".join(runs)
 
 
 def annotate(
@@ -137,15 +195,24 @@ def annotate(
         box = drawn.rectangle
         p = drawn.problem
         color = _COLORS.get(p.severity, (128, 128, 128))
-        draw.rectangle(box, outline=color, width=max(2, int(H / 400)))
+        # A box can sit entirely outside the canvas (a clipped block is *at* the edge):
+        # measured, three `clipped-text` errors drew one number and two nothing, so the
+        # picture and the text report disagreed about what was found. The rectangle is
+        # clamped to the canvas — an off-canvas box becomes an edge strip, which is
+        # what the finding says — and the tag is clamped to it, so every number the
+        # text lists is drawn.
+        width = image.width
+        clipped = visible_box(box, width, H)
+        if clipped is not None:
+            draw.rectangle(clipped, outline=color, width=max(2, int(H / 400)))
 
-        tag = ",".join(str(n) for n in drawn.numbers)
+        # Consecutive numbers become a range: a shared box can carry a dozen (measured:
+        # 12 findings on one rectangle), and `1,2,…,12` ran off the right edge with
+        # numbers 7-12 undrawn.
+        tag = _numbers(drawn.numbers)
         tb = draw.textbbox((0, 0), tag, font=font)
         tw, th = tb[2] - tb[0], tb[3] - tb[1]
-        ty = box[1] - th - 6
-        if ty < 0:
-            ty = box[1] + 2
-        tx = max(0.0, box[0])
+        tx, ty = tag_origin(clipped or box, width, H, tw, th)
         draw.rectangle((tx, ty, tx + tw + 8, ty + th + 6), fill=color)
         draw.text((tx + 4, ty + 2), tag, fill=(255, 255, 255), font=font)
 

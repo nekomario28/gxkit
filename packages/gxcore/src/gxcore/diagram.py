@@ -109,6 +109,22 @@ def _arrowhead(
     draw.polygon([tip, a, b], fill=color)
 
 
+def _inside(low: float, high: float, size: int, margin: float) -> float:
+    """How far a span has to move to start inside the canvas.
+
+    Only the near (top/left) edge is reachable, and only because a self-loop is drawn
+    *above and right of* its node: the layout keeps every node's circle on the canvas,
+    so a loop below or right of one is already inside. Measured, the drawn arc needed
+    this for the top node of the shipped schemagx example, whose loop reached y = -10.8.
+    The far case and the "span larger than the canvas" case are not written, because no
+    input reaches them and a branch nothing can reach is a line nothing can check.
+    """
+    del high, size
+    if low < margin:
+        return margin - low
+    return 0.0
+
+
 def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
     ids = [n.id for n in nodes]
     by_id = {n.id: n for n in nodes}
@@ -124,10 +140,24 @@ def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
         p0, p1 = positions[e.src], positions[e.dst]
         if e.src == e.dst:
             x, y = p0
-            draw.ellipse(
-                (x + r * 0.35, y - r * 1.95, x + r * 1.95, y - r * 0.35), outline=EDGE, width=2
+            # The loop sits above-right of the node by default. For a node near the top
+            # of the canvas that put the arc off it (measured: the shipped schemagx
+            # example drew 4 edge pixels on row 0, a loop clipped by the border), so the
+            # whole ellipse is translated back inside instead of being drawn off-canvas.
+            loop = (x + r * 0.35, y - r * 1.95, x + r * 1.95, y - r * 0.35)
+            # A margin of the stroke width plus one: the outline is drawn `width=2`
+            # wide, so an arc at y = 0 still paints row 0.
+            margin = 3.0
+            shift_x = _inside(loop[0], loop[2], w, margin)
+            shift_y = _inside(loop[1], loop[3], h, margin)
+            loop = (loop[0] + shift_x, loop[1] + shift_y, loop[2] + shift_x, loop[3] + shift_y)
+            draw.ellipse(loop, outline=EDGE, width=2)
+            _arrowhead(
+                draw,
+                (x + r * 1.2 + shift_x, y - r * 0.5 + shift_y),
+                (0.4, 1.0),
+                EDGE,
             )
-            _arrowhead(draw, (x + r * 1.2, y - r * 0.5), (0.4, 1.0), EDGE)
             continue
         dx, dy = p1[0] - p0[0], p1[1] - p0[1]
         dist = math.hypot(dx, dy) or 1
@@ -148,7 +178,10 @@ def render(nodes: Sequence[Node], edges: Sequence[Edge]) -> Image.Image:
             draw.ellipse(node_box(pos, r - 3), outline=RING[node.kind], width=2)
         # `one_line`: Pillow cannot measure a string with a newline in it, and a
         # module name is arbitrary text. Measured: `"a\nb"` lost the whole storyboard.
-        font, shown = _fit(draw, one_line(node.text), r * 1.7, r * 0.55)
+        label = one_line(node.text)
+        # Three spaces is a *name* in the model and drew a blank disc, so the picture
+        # showed a node with no label rather than a node whose label is blank.
+        font, shown = _fit(draw, label if label.strip() else "?", r * 1.7, r * 0.55)
         tb = draw.textbbox((0, 0), shown, font=font)
         draw.text(
             (pos[0] - (tb[2] - tb[0]) / 2, pos[1] - (tb[3] - tb[1]) / 2 - tb[1]),

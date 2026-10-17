@@ -7,6 +7,24 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+Found by a review of the **drawn output** — the first to open the pixels (five findings,
+recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):
+
+- **Every number the text lists is drawn.** A `clipped-text` box is *at* the canvas edge
+  and often entirely outside it; the storyboard clamped only the tag's left edge, so
+  three findings drew one number and two nothing. The rectangle is intersected with the
+  canvas and the tag is placed inside it, so a box the renderer cannot draw is still
+  named at the edge it left by.
+- A shared rectangle with a dozen findings now labels itself `1-12` rather than
+  `1,2,…,12`, which ran off the right edge with numbers 7-12 undrawn.
+- A **self-loop on the top node** is translated back inside the canvas (the shipped
+  `schemagx` example painted edge pixels on row 0, against the property test's "nothing
+  spills off the canvas", which checked node boxes but never the arc).
+- An **unwritable `-o`** no longer discards the report: the failure is still exit 2, but
+  the verdict is printed — the report is the verdict, the picture is not.
+- A **whitespace-only name** draws a marker instead of a blank disc, and an inverted bbox
+  (`x0 > x1`) is sorted rather than raising inside Pillow.
+
 Found by a review of the **declaration route** — the module constants, dict shapes and
 Python models an agent writes, for the twelve tools the document review did not cover
 (seven findings, recorded in [`docs/SEMANTICS.md`](docs/SEMANTICS.md)):

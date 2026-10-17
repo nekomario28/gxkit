@@ -798,6 +798,41 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/chartgx/tests/test_model_route.py::test_a_declaration_that_cannot_be_read_is_refused_where_it_is_wrong",
             ),
             Mutation(
+                "off-canvas-box-not-clamped",
+                "packages/gxcore/src/gxcore/storyboard.py",
+                "    x = max(0.0, min(box[0], max(0.0, width - tw - 8)))",
+                "    x = max(0.0, box[0])",
+                "packages/gxcore/tests/test_more.py::test_every_number_the_report_lists_is_drawn_even_when_its_box_is_off_canvas",
+            ),
+            Mutation(
+                "numbers-not-compressed",
+                "packages/gxcore/src/gxcore/storyboard.py",
+                '        runs.append(f"{start}" if start == previous else f"{start}-{previous}")\n    return ",".join(runs)',
+                '        runs.append(f"{start}" if start == previous else f"{start},{previous}")\n    return ",".join(runs)',
+                "packages/gxcore/tests/test_more.py::test_a_shared_box_names_its_numbers_as_ranges",
+            ),
+            Mutation(
+                "self-loop-not-clamped",
+                "packages/gxcore/src/gxcore/diagram.py",
+                "    if low < margin:\n        return margin - low",
+                "    if False:\n        return margin - low",
+                "packages/gxcore/tests/test_more.py::test_a_self_loop_stays_inside_the_canvas",
+            ),
+            Mutation(
+                "blank-label-drawn-as-blank",
+                "packages/gxcore/src/gxcore/diagram.py",
+                '        font, shown = _fit(draw, label if label.strip() else "?", r * 1.7, r * 0.55)',
+                "        font, shown = _fit(draw, label, r * 1.7, r * 0.55)",
+                "packages/gxcore/tests/test_more.py::test_a_node_whose_name_is_only_spaces_shows_a_marker",
+            ),
+            Mutation(
+                "unwritable-output-drops-the-report",
+                "packages/gxcore/src/gxcore/cli.py",
+                "                failed_output = True",
+                "                return 2",
+                "packages/gxkit/tests/test_inspection_gates.py::test_an_unwritable_output_still_prints_the_report",
+            ),
+            Mutation(
                 "flag-coerced-from-a-string",
                 "packages/gxcore/src/gxcore/loading.py",
                 "    if not isinstance(value, bool):",
@@ -884,8 +919,8 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "diagram-label-keeps-its-newline",
                 "packages/gxcore/src/gxcore/diagram.py",
-                "        font, shown = _fit(draw, one_line(node.text), r * 1.7, r * 0.55)",
-                "        font, shown = _fit(draw, node.text, r * 1.7, r * 0.55)",
+                "        label = one_line(node.text)",
+                "        label = node.text",
                 "packages/gxcore/tests/test_more.py::test_a_label_with_a_newline_is_flattened_rather_than_losing_the_image",
             ),
             Mutation(
