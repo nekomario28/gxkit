@@ -378,6 +378,16 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
                     report_problem(
                         "negative-error", f"{kind} mark has a negative error magnitude", target
                     )
+                # A magnitude is drawn too: `NaN` in a `y_err` array passed the
+                # negative test (every comparison is false) and the coordinate test
+                # (it is not a coordinate), so the reader accepted the file and the
+                # report was clean while the sibling route refused to parse it.
+                if any(not math.isfinite(value) for value in magnitudes):
+                    report_problem(
+                        "non-finite-value",
+                        f"{kind} mark declares an error magnitude that cannot be placed",
+                        target,
+                    )
             if any(not math.isfinite(value) for value in coordinates):
                 report_problem(
                     "non-finite-value",
