@@ -843,6 +843,37 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/gxcore/tests/test_more.py::test_states_are_deduplicated_in_first_seen_order",
             ),
             Mutation(
+                "crongx-run-fields-unchecked",
+                "packages/crongx/src/crongx/model.py",
+                '        validate_number(self.start, field="start")',
+                "        pass",
+                "packages/gxkit/tests/test_declaration_inputs.py::test_a_model_built_with_a_wrong_typed_field_is_refused_where_it_is_set",
+            ),
+            Mutation(
+                "flowgx-states-unchecked",
+                "packages/flowgx/src/flowgx/machine.py",
+                '        validate_names(self.states, field="states")',
+                "        pass",
+                "packages/gxkit/tests/test_declaration_inputs.py::test_a_model_built_with_a_wrong_typed_field_is_refused_where_it_is_set",
+            ),
+            Mutation(
+                "docgx-width-unchecked",
+                "packages/docgx/src/docgx/model.py",
+                '        validate_number(self.width, field="width", integer=True)',
+                "        pass",
+                "packages/gxkit/tests/test_declaration_inputs.py::test_a_model_built_with_a_wrong_typed_field_is_refused_where_it_is_set",
+            ),
+            Mutation(
+                # A guard in the other direction: validating the *value* would take the
+                # finding away, so the mutation restores that validation.
+                "seed-value-validated-again",
+                "packages/seedgx/src/seedgx/model.py",
+                '        validate_names([self.name], field="name")',
+                '        validate_names([self.name], field="name")\n'
+                '        validate_optional_number(self.seed, field="seed", integer=True)',
+                "packages/gxkit/tests/test_declaration_inputs.py::test_a_value_the_tool_has_a_finding_for_is_not_refused_at_construction",
+            ),
+            Mutation(
                 "overlap-rule-back-to-every-pair",
                 "packages/gxcore/src/gxcore/layout.py",
                 "        if covering > cell_budget:",

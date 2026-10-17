@@ -289,3 +289,137 @@ def test_protogx_transitions_are_two_or_three_names(tmp_path):
     )
     with pytest.raises(InvalidArtifact, match=r"TRANSITIONS\[0\]"):
         load_protocol(bad)
+
+
+# --------------------------------------------------------------------------
+# A model *built in Python* with a wrong-typed field used to reach the inspector
+# and raise a bare TypeError/AttributeError there (13 of them, measured), so the
+# refusal belongs where the field is set.
+# --------------------------------------------------------------------------
+
+BUILDERS = {
+    "crongx.start": (
+        lambda: __import__("crongx").Schedule(
+            runs=[__import__("crongx").Run("a", "oops", 1, "cpu")]
+        ),
+        "start",
+    ),
+    "crongx.duration": (
+        lambda: __import__("crongx").Schedule(runs=[__import__("crongx").Run("a", 0, "x", "cpu")]),
+        "duration",
+    ),
+    "apigx.method": (
+        lambda: __import__("apigx").API(endpoints=[__import__("apigx").Endpoint(200, "/x")]),
+        "method",
+    ),
+    "apigx.statuses": (
+        lambda: __import__("apigx").API(
+            endpoints=[__import__("apigx").Endpoint("GET", "/x", statuses=[1.5])]
+        ),
+        "statuses",
+    ),
+    "protogx.transitions": (
+        lambda: __import__("protogx").Protocol(states=["a", "b"], transitions=[("a",)]),
+        "transitions",
+    ),
+    "apigx.path": (
+        lambda: __import__("apigx").API(endpoints=[__import__("apigx").Endpoint("GET", 7)]),
+        "path",
+    ),
+    "authzgx.assigned": (
+        lambda: __import__("authzgx").AuthModel(
+            principals=["u"], roles=["r"], assigned=[("u", "r", "x")]
+        ),
+        "assigned",
+    ),
+    "depsgx.layers": (
+        lambda: __import__("depsgx").ModuleGraph(modules=["a"], depends=[], layers=[7]),
+        "layers",
+    ),
+    "flowgx.states": (
+        lambda: __import__("flowgx").Machine(states=[7], transitions=[("a", "b")]),
+        "states",
+    ),
+    "flowgx.transitions": (
+        lambda: __import__("flowgx").Machine(states=["a", "b"], transitions=[("a",)]),
+        "transitions",
+    ),
+    "flowgx.accept": (
+        lambda: __import__("flowgx").Machine(states=["a"], transitions=[], accept=[7]),
+        "accept",
+    ),
+    "protogx.responses": (
+        lambda: __import__("protogx").Protocol(states=["a"], transitions=[], responses=["x"]),
+        "responses",
+    ),
+    "schemagx.foreign_keys": (
+        lambda: __import__("schemagx").Schema(tables={"a": {"id": "int"}}, foreign_keys=["a.id"]),
+        "foreign_keys",
+    ),
+    "schemagx.roots": (
+        lambda: __import__("schemagx").Schema(tables={"a": {"id": "int"}}, roots=[7]),
+        "roots",
+    ),
+    "pipegx.steps": (lambda: __import__("pipegx").Pipeline(steps=[7]), "steps"),
+    "pipegx.goals": (
+        lambda: __import__("pipegx").Pipeline(steps=[__import__("pipegx").Step("a")], goals=[7]),
+        "goals",
+    ),
+    "levelgx.rows": (lambda: __import__("levelgx").Level(rows=[7]), "rows"),
+    "docgx.blocks": (
+        lambda: __import__("docgx").Page(title="t", blocks=[7]),
+        "blocks",
+    ),
+    "docgx.x": (
+        lambda: __import__("docgx").Page(
+            title="t", blocks=[__import__("docgx").Block("t", x="left")]
+        ),
+        "x",
+    ),
+    "docgx.width": (
+        lambda: __import__("docgx").Page(title="t", width="wide", blocks=[]),
+        "width",
+    ),
+    "shadergx.size": (
+        lambda: __import__("shadergx").Shader(fragment="void main(){}", size=("a", "b")),
+        "size",
+    ),
+    "shadergx.uniforms": (
+        lambda: __import__("shadergx").Shader(fragment="void main(){}", uniforms=["u"]),
+        "uniforms",
+    ),
+    "framegx.expected_duration": (
+        lambda: __import__("framegx").Video("x.mp4", expected_duration="2.0"),
+        "expected_duration",
+    ),
+    "framegx.sample_fps": (
+        lambda: __import__("framegx").Video("x.mp4", sample_fps="2"),
+        "sample_fps",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(BUILDERS))
+def test_a_model_built_with_a_wrong_typed_field_is_refused_where_it_is_set(name):
+    build, field = BUILDERS[name]
+    with pytest.raises(InvalidArtifact, match=field):
+        build()
+
+
+def test_a_value_the_tool_has_a_finding_for_is_not_refused_at_construction():
+    """Type errors are refused at the field; *values* are the checks' business.
+
+    `Stream("bad", 0.5)` must reach `inspect_spec` to be reported as `invalid-seed` (the
+    whole point of making that code reachable), and a NaN time is `non-finite-time`, so
+    validating the values here would take those findings away.
+    """
+    from seedgx import SeedSpec, Stream, inspect_spec
+
+    report = inspect_spec(SeedSpec(streams=[Stream("bad", 0.5)]))
+    assert "invalid-seed" in {problem.code for problem in report.problems}
+    from crongx import Run, Schedule, inspect_schedule
+
+    assert "non-finite-time" in {
+        problem.code
+        for problem in inspect_schedule(Schedule(runs=[Run("a", float("nan"), 1, "cpu")])).problems
+    }

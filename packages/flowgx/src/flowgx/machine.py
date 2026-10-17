@@ -27,7 +27,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import terminals
-from gxcore.loading import InvalidArtifact, _name, convert_items, convert_names
+from gxcore.loading import (
+    InvalidArtifact,
+    _name,
+    convert_items,
+    convert_names,
+    validate_names,
+    validate_pairs,
+)
 
 Transition = tuple[str, str] | tuple[str, str, str]
 
@@ -106,6 +113,13 @@ class Machine:
                     known.add(s)
                     out.append(s)
         return out
+
+    def __post_init__(self) -> None:
+        validate_names(self.states, field="states")
+        validate_names(self.accept, field="accept")
+        validate_pairs(self.transitions, field="transitions", arity=(2, 3))
+        if self.start is not None:
+            validate_names([self.start], field="start")
 
 
 def _as_machine(value: object) -> Machine | None:

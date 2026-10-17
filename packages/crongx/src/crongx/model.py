@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from math import isfinite
 from pathlib import Path
 
-from gxcore.loading import convert_items
+from gxcore.loading import convert_items, validate_names, validate_number
 
 
 @dataclass
@@ -34,6 +34,12 @@ class Run:
     @property
     def is_finite(self) -> bool:
         return all(isfinite(value) for value in (self.start, self.duration, self.end))
+
+    def __post_init__(self) -> None:
+        validate_names([self.name], field="name")
+        validate_names([self.resource], field="resource")
+        validate_number(self.start, field="start")
+        validate_number(self.duration, field="duration")
 
 
 @dataclass

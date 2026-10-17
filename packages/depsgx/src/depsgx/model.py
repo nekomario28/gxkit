@@ -23,7 +23,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import reachable
-from gxcore.loading import convert_items, convert_names, convert_pairs
+from gxcore.loading import (
+    convert_items,
+    convert_names,
+    convert_pairs,
+    validate_names,
+    validate_pairs,
+)
 
 
 @dataclass
@@ -52,6 +58,14 @@ class ModuleGraph:
         if not self.roots:
             return set(self.modules)
         return reachable(self.edges(), self.roots)
+
+    def __post_init__(self) -> None:
+        validate_names(self.modules, field="modules")
+        validate_names(self.roots, field="roots")
+        validate_pairs(self.depends, field="depends", arity=2)
+        validate_pairs(self.forbidden, field="forbidden", arity=2)
+        for index, layer in enumerate(self.layers):
+            validate_names(layer, field=f"layers[{index}]")
 
 
 def _as_graph(value: object) -> ModuleGraph | None:

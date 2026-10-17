@@ -25,6 +25,12 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import (
+    validate_mapping,
+    validate_names,
+    validate_number,
+)
+
 PREAMBLE = "#version 330 core"
 # A real directive starts a line; `#version` inside a comment must not switch
 # the shader to "verbatim" mode and silently drop the preamble.
@@ -56,13 +62,24 @@ class Shader:
             lines.append("out vec4 fragColor;")
         return "\n".join(lines) + "\n" + src
 
+    def __post_init__(self) -> None:
+        validate_names([self.fragment], field="fragment")
+        validate_mapping(self.uniforms, field="uniforms")
+        validate_number(self.time, field="time")
+        width, height = self.size
+        validate_number(width, field="size[0]", integer=True)
+        validate_number(height, field="size[1]", integer=True)
+
 
 def _as_shader(value: object) -> Shader | None:
     return value if isinstance(value, Shader) else None
 
 
 def load_shader(path: str | Path) -> tuple[Shader, object]:
-    from gxcore.loading import load_module, resolve
+    from gxcore.loading import (
+        load_module,
+        resolve,
+    )
 
     path = Path(path)
     module = load_module(path)

@@ -20,7 +20,15 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import InvalidArtifact, _name, convert_bool, convert_items, convert_names
+from gxcore.loading import (
+    InvalidArtifact,
+    _name,
+    convert_bool,
+    convert_items,
+    convert_names,
+    validate_flag,
+    validate_names,
+)
 
 MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -46,6 +54,15 @@ class Endpoint:
 
     def label(self) -> str:
         return f"{self.verb} {self.path}"
+
+    def __post_init__(self) -> None:
+        validate_names([self.method], field="method")
+        validate_names([self.path], field="path")
+        validate_flag(self.auth, field="auth")
+        validate_flag(self.deprecated, field="deprecated")
+        for index, status in enumerate(self.statuses):
+            if isinstance(status, bool) or not isinstance(status, (int, str)):
+                raise InvalidArtifact(f"statuses[{index}]: expected a status code, not {status!r}")
 
 
 @dataclass

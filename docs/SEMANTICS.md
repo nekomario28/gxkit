@@ -536,3 +536,48 @@ presented as fixed.
 Also fixed while measuring: the crongx finding's `target` (the box the storyboard draws)
 now names the *second* run of the pair, as it did before the sweep — the sweep's variables
 are ordered by start, not by index, and the picture would have pointed at the wrong node.
+
+## Tenth review: a model built in Python with a wrong-typed field
+
+The seventh review recorded that field validation stops at the loader; this round pays it
+off, and *finds the set myself* rather than fixing only the four cases the reviewer
+happened to write. A probe that builds every tool's model with one plausible wrong-typed
+field and inspects it found **13 crashes** — a bare `TypeError`/`AttributeError` out of
+the inspector, which reads as exit 2 for a readable declaration:
+
+| model | field | before |
+| --- | --- | --- |
+| `crongx.Run` | `start="oops"`, `duration="x"` | `TypeError: can only concatenate str` |
+| `apigx.Endpoint` | `method=200`, `path=7` | `AttributeError: 'int' object has no attribute 'upper'` |
+| `authzgx.AuthModel` | `assigned=[("u","r","x")]` | `ValueError: too many values to unpack` |
+| `depsgx.ModuleGraph` | `layers=[7]` | `TypeError: can only join an iterable` |
+| `flowgx.Machine` | `states=[7]`, `transitions=[("a",)]`, `accept=[7]` | `TypeError` / `IndexError` |
+| `protogx.Protocol` | `responses=["x"]` | `AttributeError: 'list' object has no attribute 'items'` |
+| `schemagx.Schema` | `foreign_keys=["a.id"]`, `roots=[7]` | `ValueError` / `TypeError` |
+| `pipegx.Pipeline` | `steps=[7]`, `goals=[7]` | `AttributeError` / `TypeError` |
+| `levelgx.Level` | `rows=[7]` | `TypeError: object of type 'int' has no len()` |
+| `docgx.Page`/`Block` | `blocks=[7]`, `x="left"`, `width="wide"` | `AttributeError` / `ValueError` |
+| `shadergx.Shader` | `size=("a","b")`, `uniforms=["u"]` | `TypeError` / `ValueError` |
+| `framegx.Video` | `expected_duration="2.0"` | `TypeError: unsupported operand type(s) for -` |
+
+Each model now validates its fields in `__post_init__` with the same located refusal the
+loaders use (`start: expected a number, not 'oops'`), through a small set of shared
+validators (`validate_names`, `validate_pairs`, `validate_mapping`, `validate_number`,
+`validate_optional_number`, `validate_flag`) so the message and the field name have one
+owner.
+
+**The line between a type and a value is drawn deliberately, and it is the interesting
+part.** Nothing that the tool has a *finding* for is refused at construction: a fractional
+seed (`.5`, `True`, `"42"`) still reaches `inspect_spec` to be reported as `invalid-seed` —
+refusing it here would take that finding away again — and a `NaN` start is still
+`non-finite-time`. A *mutation restores the value check* to prove the guard runs in that
+direction, so "validate the value too" cannot quietly return. A name, by contrast, is a
+key: a non-string is refused where it is set, because no check could name it.
+
+Two tests that had been written against the older shape of their model were updated rather
+than the validation weakened: `depsgx` declared `layers` as a mapping and `protogx` a
+`requests` mapping, and both shapes are exactly what the declaration review made refusals
+(the fraction-of-a-string/mapping class). The rule they were testing still fires — with the
+member declared the way the model says.
+
+Verified: `scripts/check.sh --full` — 100% coverage, **184** mutants (up from 180).

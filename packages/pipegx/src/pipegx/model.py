@@ -19,7 +19,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items, convert_names
+from gxcore.loading import (
+    InvalidArtifact,
+    convert_items,
+    convert_names,
+    validate_names,
+)
 
 
 @dataclass
@@ -27,6 +32,11 @@ class Step:
     name: str
     needs: list[str] = field(default_factory=list)
     produces: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        validate_names([self.name], field="name")
+        validate_names(self.needs, field="needs")
+        validate_names(self.produces, field="produces")
 
 
 @dataclass
@@ -48,6 +58,12 @@ class Pipeline:
 
     def artifacts(self) -> list[str]:
         return [artifact for step in self.steps for artifact in step.produces]
+
+    def __post_init__(self) -> None:
+        for index, step in enumerate(self.steps):
+            if not isinstance(step, Step):
+                raise InvalidArtifact(f"steps[{index}]: expected a Step, not {type(step).__name__}")
+        validate_names(self.goals, field="goals")
 
 
 def _as_step(value: object) -> Step | None:

@@ -22,7 +22,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items, convert_number
+from gxcore.loading import (
+    InvalidArtifact,
+    convert_items,
+    convert_number,
+    validate_names,
+    validate_number,
+)
 
 
 @dataclass
@@ -31,6 +37,12 @@ class Block:
     x: float = 0.08
     y: float = 0.25
     font_size: int = 28
+
+    def __post_init__(self) -> None:
+        validate_names([self.text], field="text")
+        validate_number(self.x, field="x")
+        validate_number(self.y, field="y")
+        validate_number(self.font_size, field="font_size", integer=True)
 
 
 @dataclass
@@ -42,6 +54,17 @@ class Page:
     title_size: int = 44
     max_words: int = 0
     name: str = "page"
+
+    def __post_init__(self) -> None:
+        validate_number(self.width, field="width", integer=True)
+        validate_number(self.height, field="height", integer=True)
+        validate_number(self.title_size, field="title_size", integer=True)
+        validate_number(self.max_words, field="max_words", integer=True)
+        for index, block in enumerate(self.blocks):
+            if not isinstance(block, Block):
+                raise InvalidArtifact(
+                    f"blocks[{index}]: expected a Block, not {type(block).__name__}"
+                )
 
 
 def _as_page(value: object) -> Page | None:
