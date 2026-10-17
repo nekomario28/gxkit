@@ -102,6 +102,15 @@ def _diagram_of(text: str, *, source: str) -> _Diagram:
                     f"{source}:{number}: a second initial state ({diagram.start!r} is already "
                     "the start); the machine has one start"
                 )
+            if target_state == INITIAL:
+                # Both ends are markers: the diagram asserts that the initial state
+                # is also accepting, and the model has no state to say that about
+                # (it was read as a state literally named `[*]`).
+                raise InvalidArtifact(
+                    f"{source}:{number}: `[*] --> [*]` marks the start as accepting, "
+                    "which needs a state the diagram does not name; declare the machine "
+                    "in Python"
+                )
             diagram.start = target_state
             continue
         if target_state == INITIAL:
@@ -116,13 +125,20 @@ def _blank(line: str) -> bool:
     return not stripped or stripped.startswith("%%")
 
 
+NOTE = re.compile(r"^\s*note\s+(?:(?:right|left)\s+of|over)\s", re.IGNORECASE)
+
+
 def _note(line: str, number: int, source: str) -> bool:
     """`note right of a : text` is prose about a state; a block form is not read.
 
     A single-line note carries its text after a colon. Without one, the note
     opens a block, which this importer does not follow.
     """
-    if not re.match(r"^\s*note\b", line, re.IGNORECASE):
+    # The *form* matters: `note right of x : text`, `note left of x : text` and
+    # `note over x : text` are notes, while `note --> done : finish` is a transition
+    # whose source state happens to be named `note`. Matching the bare word deleted
+    # that transition and then judged the flow stuck and unreachable.
+    if not NOTE.match(line):
         return False
     if ":" not in line:
         raise InvalidArtifact(f"{source}:{number}: a note block is not read")

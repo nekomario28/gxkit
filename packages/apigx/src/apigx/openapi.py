@@ -109,17 +109,48 @@ def _security_of(operation: dict[str, Any], document: dict[str, Any]) -> bool:
     nothing — so it makes the operation anonymous however many schemes are
     listed beside it. Reading it as authenticated would hide a public mutation.
     """
+    for where, holder in (("operation", operation), ("document", document)):
+        if "security" in holder and not isinstance(holder["security"], list):
+            # An object here is a malformed document (`security` is an array of
+            # requirement objects). Reading it as "anonymous" turned a typo into a
+            # hard "this mutation is public" error — a verdict on a document that
+            # does not say that.
+            raise InvalidArtifact(
+                f"security must be an array of requirement objects, and the {where} "
+                f"has {type(holder['security']).__name__}"
+            )
     requirements = operation["security"] if "security" in operation else document.get("security")
     if not isinstance(requirements, list) or not requirements:
         return False
-    return all(isinstance(requirement, dict) and requirement for requirement in requirements)
+    for requirement in requirements:
+        if not isinstance(requirement, dict):
+            raise InvalidArtifact(
+                f"a security requirement must be an object, not {type(requirement).__name__}"
+            )
+    return all(requirement for requirement in requirements)
 
 
-def _statuses(responses: object) -> list[int]:
+#: The ranged response keys OpenAPI defines, plus `default`.
+_RANGES = frozenset({"1XX", "2XX", "3XX", "4XX", "5XX"})
+
+
+def _statuses(responses: object) -> list[int | str]:
+    """The declared statuses: numbers, plus the ranged keys as written.
+
+    `5XX` and `default` are legal and meaningful, and dropping them made
+    `no-error-status` fire on an operation that documents its errors (measured).
+    They are kept as text because a range is not a number.
+    """
     if not isinstance(responses, dict):
         return []
-    codes = []
+    codes: list[int | str] = []
     for key in responses:
+        if isinstance(key, str) and key.upper() in _RANGES:
+            codes.append(key.upper())
+            continue
+        if isinstance(key, str) and key.lower() == "default":
+            codes.append("default")
+            continue
         if isinstance(key, str) and key.isdigit():
             try:
                 codes.append(int(key))
@@ -127,7 +158,9 @@ def _statuses(responses: object) -> list[int]:
                 # `isdigit` is true for characters `int` rejects — a superscript
                 # '²' among them — so this branch is reachable and is tested.
                 raise InvalidArtifact(f"responses: {key!r} is not a status code") from exc
-    return sorted(codes)
+    # Ints and the range strings do not compare: sort by their text form, which is
+    # a total order and keeps `1XX` before `200` before `default`.
+    return sorted(codes, key=str)
 
 
 def _server_path(document: dict[str, Any]) -> str:
@@ -214,6 +247,13 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
     server_path = _server_path(document)
     endpoints: list[Endpoint] = []
     for path, operations in paths.items():
+        # A specification extension holds arbitrary data, not a path item: iterating
+        # one as a path invented an endpoint (measured: `x-internal` holding a `get`
+        # became `GET /v1/x-internal`), and a scalar one was refused as "not an
+        # object". The key-shape guard above already allows `x-`; this is where the
+        # allowance has to land.
+        if str(path).lower().startswith("x-"):
+            continue
         if not isinstance(operations, dict):
             raise InvalidArtifact(f"{source}: paths[{path!r}] is not an object")
         # OpenAPI lets a path item or an operation override the server, and the
@@ -254,6 +294,21 @@ def api_from_document(document: object, *, source: str = "openapi") -> API:
                 raise InvalidArtifact(
                     f"{source}: paths[{path!r}].{method} is a reference; this importer does not "
                     "resolve references"
+                )
+            if "responses" not in operation:
+                # `responses` is REQUIRED by OpenAPI, and an operation without one
+                # has an undefined status set — reading it as a valid API turned a
+                # required-field violation into an info about a missing error status.
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method} declares no 'responses'; "
+                    "OpenAPI requires them, and without them the status set is undefined"
+                )
+            if "deprecated" in operation and not isinstance(operation["deprecated"], bool):
+                # `bool("false")` is True: a string typo would be silently read as
+                # "deprecated", which the document does not say.
+                raise InvalidArtifact(
+                    f"{source}: paths[{path!r}].{method}.deprecated is "
+                    f"{type(operation['deprecated']).__name__}, not a boolean"
                 )
             operation_override = _override_path(operation.get("servers"))
             if operation_override is not None and operation_override != server_path:

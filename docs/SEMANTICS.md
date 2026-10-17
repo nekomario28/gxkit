@@ -130,3 +130,55 @@ keys, 2- and 3-table cycles, type families), `depsgx` (layers, forbidden edges),
 overlaps), and the rest were attacked on boundary artifacts and behaved as their names
 claim. Two of the twelve were found *because* the first audit's record was wrong — a
 review of the record, not only of the code.
+
+## Third review: the *importers*, against the formats they read
+
+Same instrument, third prompt: the four readers that translate a document a project
+already has — OpenAPI 3 (`apigx`), SQL DDL (`schemagx`), Mermaid `stateDiagram`
+(`flowgx`) and a chart declared as data (`chartgx`) — attacked with documents built
+from the formats. **Fifteen findings**, every one reproduced here; the first group is
+the dangerous one, because a wrong translation is a verdict about a document the tool
+did not actually read.
+
+**A valid document read wrongly (a verdict on a misreading):**
+
+| what the document said | what the tool said |
+| --- | --- |
+| `paths: {"x-internal": {…}}` — a specification extension holding data | a second endpoint, `GET /v1/x-internal` |
+| `responses: {"201": {}, "5XX": {}}` — it documents an error range | `no-error-status`: "documents no error status" |
+| `DEFAULT 'see REFERENCES users for detail'` — text in a column | a foreign key, and a type mismatch against it |
+| `KEY idx_email (email)` — an index | a column named `KEY` |
+| `CONSTRAINT "users pk" PRIMARY KEY (id)` — a key the quoted name introduces | `missing-primary-key` |
+| `note --> done : finish` — a transition from a state named `note` | the transition deleted, then `dead-end` and `unreachable-state` |
+| `[*] --> [*]` — the start marker is accepting | a state literally named `[*]` |
+
+**A valid document refused:** a scalar `x-` extension; `) WITHOUT ROWID` and
+`) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4` (every MySQL dump); `DEFAULT 'see references
+section below'`, refused with a diagnosis naming a table that does not exist.
+
+**An invalid document accepted, and judged as if it stated facts:**
+`security: {"apiKey": []}` (an object where an array is required) read as *anonymous*,
+so a mutation was reported public; `"deprecated": "false"` read as deprecated, because
+`bool("false")` is true; an operation with no `responses` — which OpenAPI marks
+**REQUIRED** — read as a valid API with an undefined status set; and, in the declared
+chart route, `y_scale: "logarithmic"` silently falling back to linear (disabling every
+log check), an unknown key inside a series, `width: "wide"`, and a heatmap with `y_min`
+— all four of which the renderer that owns the model refuses.
+
+**What changed.** The importers now: skip `x-` keys where they iterate paths; keep
+`5XX`/`default` as statuses (a range is not a number, and the check understands one);
+refuse a malformed `security` and a non-boolean `deprecated`; require `responses`; mask
+string literals before matching DDL clauses, so a keyword in text is text; recognise
+index clauses and table options as clauses the model does not carry (reported, not
+refused); accept a quoted constraint name; and, in the declared route, check the closed
+sets, the field types, the series fields, and the heatmap axis setting (a new code,
+`inapplicable-axis-setting`, matching the renderer's). Eleven mutations were added —
+**149** in the catalogue.
+
+**The sound list**, so the next reviewer can differ deliberately: OpenAPI security
+inheritance, `security: []`, `security: [{}]`, path templating, path-item/operation
+`servers`, `$ref` refusal and unknown-key refusal in `info`; quoted identifiers,
+column- and table-level keys, composite-key refusal in DDL; `direction`, `%%`
+comments, `classDef`, a single-line note, plain transitions and the start/accept
+markers in Mermaid; unknown top-level keys, mark kinds and colour ramps in the declared
+chart.

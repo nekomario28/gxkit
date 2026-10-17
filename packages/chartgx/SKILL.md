@@ -54,6 +54,7 @@ uv tool install ./packages/chartgx
 | `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | fine for trends, not for magnitudes |
 | `mismatched-lengths` | error | an error array, bar group or heatmap rows disagree in number with what they annotate |
+| `inapplicable-axis-setting` | error | `y_min` or a log scale on a heatmap, whose rows are its y axis |
 | `non-finite-value` | error | a declared number cannot be placed |
 | `two-error-shapes` | error | symmetric and asymmetric error bars declared at once |
 | `negative-error` | error | an error magnitude is negative |

@@ -46,7 +46,8 @@ or whatever `matplotlib.pyplot` has open.
 ## Checks
 
 error: `truncated-baseline`, `clipped-text`, `text-overlap`, `log-nonpositive`,
-`empty-chart`, `mismatched-lengths`, `non-finite-value`, `two-error-shapes`,
+`empty-chart`, `inapplicable-axis-setting` (a heatmap cannot take `y_min` or a log
+scale), `mismatched-lengths`, `non-finite-value`, `two-error-shapes`,
 `negative-error`, `short-line`, `ambiguous-labels`.
 warn: `no-title`, `no-xlabel`, `no-ylabel`, `dual-axis`, `too-many-series`,
 `pie-slices`, `constant-series`, `clipped-data`, `legend-covers`,

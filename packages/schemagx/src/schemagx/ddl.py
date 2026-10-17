@@ -38,9 +38,12 @@ REFERENCES = re.compile(
     r"REFERENCES\s+(?P<table>" + IDENTIFIER + r")\s*(?:\(\s*(?P<column>" + IDENTIFIER + r")\s*\))?",
     re.IGNORECASE,
 )
-PRIMARY_KEY = re.compile(r"^(?:CONSTRAINT\s+\S+\s+)?PRIMARY\s+KEY\s*\((?P<columns>[^)]*)\)", re.I)
+_CONSTRAINT_NAME = r"CONSTRAINT\s+(?:" + IDENTIFIER + r")\s+"
+PRIMARY_KEY = re.compile(
+    r"^(?:" + _CONSTRAINT_NAME + r")?PRIMARY\s+KEY\s*\((?P<columns>[^)]*)\)", re.I
+)
 FOREIGN_KEY = re.compile(
-    r"^(?:CONSTRAINT\s+\S+\s+)?FOREIGN\s+KEY\s*\((?P<columns>[^)]*)\)\s*"
+    r"^(?:" + _CONSTRAINT_NAME + r")?FOREIGN\s+KEY\s*\((?P<columns>[^)]*)\)\s*"
     r"REFERENCES\s+(?P<table>" + IDENTIFIER + r")\s*(?:\((?P<target>[^)]*)\))?",
     re.IGNORECASE,
 )
@@ -48,11 +51,33 @@ FOREIGN_KEY = re.compile(
 #: they can be *reported*; a statement outside `CREATE TABLE` is refused outright.
 NOT_MODELLED = re.compile(
     r"\b(NOT\s+NULL|DEFAULT|UNIQUE|CHECK|EXCLUDE|AUTOINCREMENT|AUTO_INCREMENT|"
-    r"COLLATE|GENERATED|ON\s+DELETE|ON\s+UPDATE|ON\s+CONFLICT)\b",
+    r"COLLATE|GENERATED|ON\s+DELETE|ON\s+UPDATE|ON\s+CONFLICT"
+    r"|AUTO_INCREMENT\s*=|COLLATE)\b",
     re.IGNORECASE,
 )
+#: Index clauses are matched by `INDEX_CLAUSE` first, which requires the name and the
+#: column list: adding a bare `KEY`/`INDEX` alternative here made a *column* named
+#: `key` a constraint and dropped it (measured: a column-level PRIMARY KEY vanished).
 TABLE_CONSTRAINT = re.compile(
     r"^(?:CONSTRAINT\b|PRIMARY\s+KEY\b|FOREIGN\s+KEY\b|UNIQUE\b|CHECK\b|EXCLUDE\b)",
+    re.IGNORECASE,
+)
+#: An index definition is a table-level clause the model has no place for — and
+#: reading `KEY idx_email (email)` as a column named `KEY` invented one (measured).
+INDEX_CLAUSE = re.compile(
+    r"^(?:CONSTRAINT\s+(?:" + IDENTIFIER + r")\s+)?"
+    r"(?:UNIQUE\s+|FULLTEXT\s+|SPATIAL\s+)?(?:KEY|INDEX)\s+(?:" + IDENTIFIER + r")\s*\(",
+    re.IGNORECASE,
+)
+#: Table options that follow the closing parenthesis. They are SQL (not another
+#: statement), so a dump that has them is readable — reported, not refused.
+#: No leading `^`: this is matched at an offset with `Pattern.match(text, pos)`, and
+#: `^` would still require the start of the whole document.
+TABLE_OPTIONS = re.compile(
+    r"(?:WITHOUT\s+ROWID|STRICT|ENGINE\s*=\s*\w+|DEFAULT\s+(?:CHARSET|CHARACTER\s+SET|"
+    r"COLLATE)\s*=\s*[\w']+|CHARSET\s*=\s*\w+|COLLATE\s*=\s*\w+|"
+    r"AUTO_INCREMENT\s*=\s*\d+|COMMENT\s*=\s*'(?:[^']|'')*'|ROW_FORMAT\s*=\s*\w+|"
+    r"TABLESPACE\s+\w+|PARTITION\s+BY[^;]*)",
     re.IGNORECASE,
 )
 COLUMN = re.compile(r"^(?P<name>" + IDENTIFIER + r")\s*(?P<rest>.*)$", re.DOTALL)
@@ -132,6 +157,40 @@ def _matching_paren(text: str, start: int) -> int:
             if depth == 0:
                 return index
     raise InvalidArtifact("a CREATE TABLE is never closed")
+
+
+def _mask_literals(text: str) -> str:
+    """The text with the contents of single-quoted literals blanked, same length.
+
+    SQL strings are single-quoted; double quotes are identifiers. `REFERENCES` and
+    the other clause words are only meaningful outside a literal: measured,
+    `DEFAULT 'see REFERENCES users for detail'` invented a foreign key, and
+    `DEFAULT 'see references section below'` refused the statement with a diagnosis
+    naming a table that does not exist. Blanking keeps every offset, so a line
+    number and a slice still mean what they meant.
+    """
+    out: list[str] = []
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character != "'":
+            out.append(character)
+            index += 1
+            continue
+        out.append("'")
+        index += 1
+        while index < len(text):
+            if text[index] == "'":
+                if index + 1 < len(text) and text[index + 1] == "'":
+                    out.append("  ")  # an escaped quote stays blanked
+                    index += 2
+                    continue
+                out.append("'")
+                index += 1
+                break
+            out.append(" ")
+            index += 1
+    return "".join(out)
 
 
 def _items(body: str, line: int, text: str, offset: int) -> list[tuple[int, str]]:
@@ -230,8 +289,11 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
         columns: dict[str, str] = {}
         seen_not_modelled: set[str] = set()
         for item_line, item in _items(body, 0, cleaned, open_paren + 1):
-            for clause in NOT_MODELLED.findall(item):
+            for clause in NOT_MODELLED.findall(_mask_literals(item)):
                 seen_not_modelled.add(" ".join(str(clause).upper().split()))
+            if INDEX_CLAUSE.match(item):
+                seen_not_modelled.add("an index clause")
+                continue
             if TABLE_CONSTRAINT.match(item):
                 primary, foreign, unresolved = _table_constraint(
                     item, table, f"{source}:{item_line}"
@@ -250,8 +312,9 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
             if name in columns:
                 raise InvalidArtifact(f"{source}:{item_line}: column {name!r} is declared twice")
             rest = column.group("rest")
-            columns[name] = _column_type(rest)
-            reference = REFERENCES.search(rest)
+            masked_rest = _mask_literals(rest)
+            columns[name] = _column_type(masked_rest)
+            reference = REFERENCES.search(masked_rest)
             if reference is not None:
                 parent = _unquote(reference.group("table"))
                 target = reference.group("column")
@@ -260,23 +323,34 @@ def schema_from_ddl(text: str, *, source: str = "schema.sql") -> Schema:
                     pending.append((child, parent, item_line))
                 else:
                     foreign_keys.append((child, f"{parent}.{_unquote(target)}"))
-            if re.search(r"\bPRIMARY\s+KEY\b", rest, re.IGNORECASE):
+            if re.search(r"\bPRIMARY\s+KEY\b", masked_rest, re.IGNORECASE):
                 if table in primary_keys:
                     raise InvalidArtifact(
                         f"{source}:{item_line}: table {table!r} declares two primary keys"
                     )
                 primary_keys[table] = name
-        if seen_not_modelled:
-            not_modelled.append((table, ", ".join(sorted(seen_not_modelled))))
         tables[table] = columns
         position = close_paren + 1
         while position < len(cleaned) and cleaned[position] in " \t\r\n":
             position += 1
-        if position < len(cleaned) and cleaned[position] != ";":
-            raise InvalidArtifact(
-                f"{source}:{_line_of(cleaned, position)}: expected ';' after the table body"
-            )
+        # Table options (`) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`, `) WITHOUT ROWID`)
+        # are part of the same statement. Refusing them made every MySQL dump
+        # unreadable; they are recognised, recorded as not carried, and skipped.
+        while position < len(cleaned) and cleaned[position] != ";":
+            option = TABLE_OPTIONS.match(cleaned, position)
+            if option is None:
+                raise InvalidArtifact(
+                    f"{source}:{_line_of(cleaned, position)}: expected ';' after the table "
+                    f"body, or a table option this reader knows; found "
+                    f"{cleaned[position : position + 24]!r}"
+                )
+            seen_not_modelled.add("a table option")
+            position = option.end()
+            while position < len(cleaned) and cleaned[position] in " \t\r\n,":
+                position += 1
         position += 1
+        if seen_not_modelled:
+            not_modelled.append((table, ", ".join(sorted(seen_not_modelled))))
     if not found:
         raise InvalidArtifact(f"{source}: no CREATE TABLE statement")
     for child, parent, line in pending:

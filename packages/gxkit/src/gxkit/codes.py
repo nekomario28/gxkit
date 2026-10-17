@@ -36,6 +36,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "cut-value-axis": "info",
         "red-green": "info",
         # Reported by the declared-model route, which a figure cannot express.
+        "inapplicable-axis-setting": "error",
         "mismatched-lengths": "error",
         "short-line": "error",
         "ambiguous-labels": "error",

@@ -37,6 +37,7 @@ MODEL_CODES: dict[str, str] = {
     "ambiguous-labels": ERROR,
     "truncated-baseline": ERROR,
     "log-nonpositive": ERROR,
+    "inapplicable-axis-setting": ERROR,
     "mismatched-lengths": ERROR,
     "non-finite-value": ERROR,
     "two-error-shapes": ERROR,
@@ -58,6 +59,12 @@ MARK_FIELDS: dict[str, frozenset[str]] = {
     "grouped_bar": frozenset({"kind", "categories", "series"}),
     "heatmap": frozenset({"kind", "values", "row_labels", "col_labels", "color_map", "label"}),
 }
+
+#: The axis scales the model names.
+SCALES = frozenset({"linear", "log"})
+
+#: The fields one series of a grouped bar may carry.
+SERIES_FIELDS = frozenset({"values", "label", "color"})
 
 #: The colour ramps the model names, matching the declaration this tool reads.
 COLOR_MAPS = frozenset(
@@ -101,6 +108,19 @@ def load_model(path: str | Path) -> dict[str, Any]:
     unknown = sorted(key for key in model if key not in FIGURE_FIELDS)
     if unknown:
         raise InvalidModel(f"{path}: unrecognised key(s) {unknown}")
+    for optional in ("width", "height"):
+        if optional in model:
+            value = model[optional]
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise InvalidModel(f"{path}: {optional} is {value!r}, expected a positive integer")
+    for scale_field in ("x_scale", "y_scale"):
+        if scale_field in model and model[scale_field] not in SCALES:
+            # A typo'd `logarithmic` used to fall back to the linear default, which
+            # silently disabled every log-axis check for the figure and made this
+            # route disagree with the renderer that owns the model.
+            raise InvalidModel(
+                f"{path}: {scale_field} is {model[scale_field]!r}, expected one of {sorted(SCALES)}"
+            )
     marks = model.get("marks")
     if not isinstance(marks, list):
         raise InvalidModel(f"{path}: 'marks' must be a list")
@@ -198,6 +218,14 @@ def _series_of(mark: dict[str, Any], where: str) -> list[tuple[str, list[float]]
     out: list[tuple[str, list[float]]] = []
     for position, one in enumerate(series):
         _expect_object(one, f"{where}.series[{position}]")
+        unknown = sorted(key for key in one if key not in SERIES_FIELDS)
+        if unknown:
+            # `colour` for `color` was accepted and dropped: the figure was
+            # inspected as if the key were absent.
+            raise InvalidModel(
+                f"{where}.series[{position}] has unrecognised key(s) {unknown} for a "
+                f"series, expected one of {sorted(SERIES_FIELDS)}"
+            )
         out.append(
             (
                 f"series {position}",
@@ -249,6 +277,19 @@ def inspect_model(model: dict[str, Any], name: str = "figure") -> Report:
         report_problem("empty-chart", "the figure declares no marks, so there is nothing to read")
 
     logged = model.get("x_scale") == "log" or model.get("y_scale") == "log"
+    if model.get("y_min") is not None or model.get("y_scale") == "log":
+        for index, mark in enumerate(marks):
+            if mark.get("kind") == "heatmap":
+                # A heatmap's rows are its y axis, so a start or a log scale cannot
+                # apply — the renderer that owns the model refuses the same
+                # declaration, and this route reported it clean.
+                report_problem(
+                    "inapplicable-axis-setting",
+                    "a heatmap's rows are its y axis, so `y_min` and a log scale "
+                    "cannot apply to it",
+                    f"m[{index}]",
+                )
+                break
     minimum = model.get("y_min")
     if minimum is not None:
         minimum = _number(minimum, f"{name}: y_min")
