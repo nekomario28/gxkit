@@ -218,3 +218,20 @@ def _tmp_png() -> str:
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as handle:
         name = handle.name
     return str(Path(name))
+
+
+def test_states_are_deduplicated_in_first_seen_order():
+    """The dedupe the performance fix introduced computes a *result*, and this pins it.
+
+    A set membership test replaced a list scan (measured: 8 000 states spent 1.6 s of a
+    2.0 s inspection in three such methods), and the order is the declaration's, which
+    messages and baselines read.
+    """
+    from flowgx import Machine
+
+    machine = Machine(
+        states=["a", "b", "a"],
+        transitions=[("b", "c"), ("c", "b"), ("a", "b")],
+    )
+    assert machine.all_states() == ["a", "b", "c"]
+    assert machine.pairs() == [("b", "c"), ("c", "b"), ("a", "b")]

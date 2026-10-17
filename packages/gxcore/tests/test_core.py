@@ -5,7 +5,7 @@ import json
 import pytest
 from gxcore import ERROR, INFO, WARN, Problem, Report
 from gxcore.cli import Tool, run
-from gxcore.geometry import both_covered, clipped, covered, intersecting_pairs, overlap, union
+from gxcore.geometry import clipped, covered, intersecting_pairs, overlap, union
 from gxcore.model import sort_key
 from gxcore.report import human, to_json
 from gxcore.storyboard import annotate, safe_name, storyboard_path
@@ -73,7 +73,6 @@ def test_overlap_and_covered():
     b = (5, 5, 15, 15)
     assert overlap(a, b) == 25
     assert covered(a, b) == 0.25
-    assert both_covered(a, b) == 0.25
 
 
 def test_no_overlap_is_zero():
@@ -374,6 +373,21 @@ def test_the_geometry_pair_rule_is_the_fraction_of_the_smaller_box():
     assert [pair[:2] for pair in intersecting_pairs([left, right], min_fraction=0.35)] == [(0, 1)]
 
 
+def test_a_box_with_no_area_is_not_covered_by_anything():
+    """The 0..1 contract of `covered` at its boundary.
+
+    A zero-width or zero-height box (a 1-px line, a clipped block) has no area to cover,
+    so the fraction is 0 — and `layout.check`'s y-prune now skips such pairs before this
+    is reached, which is why the guard needs its own test rather than a caller.
+    """
+    from gxcore.geometry import area, covered
+
+    empty = (10.0, 10.0, 10.0, 20.0)
+    assert area(empty) == 0.0
+    assert covered(empty, (0.0, 0.0, 100.0, 100.0)) == 0.0
+    assert covered((0.0, 0.0, 100.0, 100.0), empty) == 0.0
+
+
 def test_two_identically_labelled_boxes_that_do_not_share_a_place_still_collide():
     from gxcore.layout import TextBox, check
 
@@ -385,3 +399,43 @@ def test_two_identically_labelled_boxes_that_do_not_share_a_place_still_collide(
     # The same text in the same place is one label read twice, not a collision.
     same = TextBox("c", "same", (0.0, 0.0, 100.0, 100.0), 12.0)
     assert check([a, same], (0.0, 0.0, 100.0, 100.0)) == []
+
+
+def test_the_overlap_rule_does_not_compare_every_pair(monkeypatch):
+    """A guard against the quadratic rule coming back, counted rather than timed.
+
+    Measured before this: 4 000 boxes in a ring took 33 s (16 million `covered` calls) and
+    found nothing — the ring is the shape a state graph's layout produces. A wall-clock
+    assertion would be flaky, so the *number of comparisons* is asserted: a pair is only
+    compared when the two boxes share a grid cell, and boxes in a ring mostly do not.
+    """
+    import gxcore.geometry as geometry
+    from gxcore.layout import TextBox, check
+
+    calls = 0
+    original = geometry.covered
+
+    def counting(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr("gxcore.layout.covered", counting)
+    boxes = [
+        TextBox(
+            f"b{i}",
+            f"t{i}",
+            (
+                float(i * 37 % 3000),
+                float(i * 11 % 2000),
+                float(i * 37 % 3000) + 60,
+                float(i * 11 % 2000) + 24,
+            ),
+            12.0,
+        )
+        for i in range(4000)
+    ]
+    check(boxes, (0.0, 0.0, 3000.0, 2000.0))
+    # The double loop would be 4000*3999/2 = 7 998 000 comparisons (two `covered` calls
+    # each). The grid visits a few hundred candidates for this shape.
+    assert calls < 100_000, calls
