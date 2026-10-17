@@ -181,7 +181,7 @@ def inspect_protocol(proto: Protocol, name: str | None = None) -> Report:
                     )
                 )
 
-    for witness, component in cycle_witnesses(edges):
+    for witness, component in cycle_witnesses(edges, self_loops=False):
         report.details.append("cycle: " + " → ".join(witness))
         out.append(
             Problem(

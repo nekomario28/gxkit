@@ -77,6 +77,17 @@ def test_cyclic_inheritance():
     assert_fires(inspect_auth(m), "cyclic-inheritance", ERROR)
 
 
+def test_a_role_that_inherits_itself_is_cyclic_too():
+    """The one-node case of the same rule.
+
+    Measured: `inherits=[("editor", "editor")]` reported no problem at all (exit 0)
+    while the same cycle spread over two roles was an error, because the shared
+    `cycle_witnesses` skipped size-one components.
+    """
+    m = AuthModel(roles=["editor"], permissions=["p"], inherits=[("editor", "editor")], name="x")
+    assert_fires(inspect_auth(m), "cyclic-inheritance", ERROR)
+
+
 def test_unreachable_role_and_orphan_permission():
     m = AuthModel(
         principals=["p"],

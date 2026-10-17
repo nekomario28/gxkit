@@ -103,7 +103,7 @@ def inspect_graph(graph: ModuleGraph, name: str | None = None) -> Report:
     # One witness per cyclic component, and the component is the finding: a
     # global first-cycle search hides faults in other components, and a rotated
     # witness must not read as new debt.
-    for witness, component in cycle_witnesses(acyclic):
+    for witness, component in cycle_witnesses(acyclic, self_loops=False):
         out.append(
             Problem(
                 ERROR,

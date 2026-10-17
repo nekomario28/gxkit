@@ -24,6 +24,18 @@ from typing import Any
 from .cli import Tool, run
 
 
+def one_line(text: str) -> str:
+    """A label's text as one drawable line.
+
+    Pillow refuses to measure a string containing a newline (`ValueError: can't
+    measure length of multiline text`), and a model's name or text is an arbitrary
+    string: a dependency graph with a module named `"a\\nb"` lost its whole
+    storyboard to that exception (measured). A storyboard is a diagnostic overlay, so
+    a control character becomes a space rather than travelling into the picture.
+    """
+    return "".join(" " if character in "\r\n\t\v\f" else character for character in text)
+
+
 def distribution_version(name: str, fallback: str = "0.0.0") -> str:
     """The installed version of a distribution, so `--version` cannot drift
     from `pyproject.toml`."""

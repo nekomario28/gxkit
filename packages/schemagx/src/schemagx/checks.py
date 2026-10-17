@@ -142,7 +142,7 @@ def inspect_schema(schema: Schema, name: str | None = None) -> Report:
                 )
             )
 
-    for witness, component in cycle_witnesses(schema.edges()):
+    for witness, component in cycle_witnesses(schema.edges(), self_loops=False):
         out.append(
             Problem(
                 WARN,

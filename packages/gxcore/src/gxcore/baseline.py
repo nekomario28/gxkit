@@ -46,11 +46,16 @@ def _record(problem: Any) -> dict[str, Any]:
 
 
 def _key(record: dict[str, Any]) -> str:
+    # `identity: null` is the legal way to write "no identity" — the loader accepts
+    # `null` for every other optional field, and rejected only a *non-None* identity
+    # of the wrong type. `tuple(None)` then crashed `compare` with a bare TypeError
+    # naming neither the field nor the index (measured).
+    identity = record.get("identity") or ()
     return fingerprint(
         record.get("code", ""),
         record.get("target"),
         record.get("label", ""),
-        tuple(record.get("identity", ())),
+        tuple(identity),
     )
 
 

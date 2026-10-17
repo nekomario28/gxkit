@@ -221,7 +221,9 @@ def topological_sort(edges: Adjacency[_H], nodes: Iterable[_H] | None = None) ->
     return out if len(out) == len(ordered) else None
 
 
-def cycle_witnesses(edges: Adjacency[_H]) -> list[tuple[list[_H], list[_H]]]:
+def cycle_witnesses(
+    edges: Adjacency[_H], *, self_loops: bool = True
+) -> list[tuple[list[_H], list[_H]]]:
     """One cycle witness per cyclic component, with the component it belongs to.
 
     A single global `find_cycle` reports the first cycle it meets and hides the
@@ -231,6 +233,14 @@ def cycle_witnesses(edges: Adjacency[_H]) -> list[tuple[list[_H], list[_H]]]:
     the finding by the component rather than by whichever node the search
     happened to start from, or a rotated witness reads as new debt.
 
+    `self_loops` decides whether an edge from a node to itself is a cycle, and the
+    answer is the *domain's*, not the graph's: a role that inherits itself is an
+    escalation loop (`authzgx` reports it), while a table whose foreign key points
+    at itself is how a self-referencing tree is written (`schemagx` does not), a
+    module that imports itself has its own `self-dependency` finding (`depsgx`), and
+    a state or protocol step that returns to itself is a retry whose real fault — no
+    way out — is reported as `dead-end`/`no-exit` (`flowgx`, `protogx`).
+
     Returns ``(witness, sorted_component)`` pairs in a deterministic order, and an
     empty list when the graph is acyclic.
     """
@@ -238,6 +248,15 @@ def cycle_witnesses(edges: Adjacency[_H]) -> list[tuple[list[_H], list[_H]]]:
     witnesses: list[tuple[list[_H], list[_H]]] = []
     for component in strongly_connected_components(e):
         if len(component) < 2:
+            # A size-one component is cyclic exactly when the node reaches itself, and
+            # whether that is a fault depends on the domain (`self_loops` above).
+            # `len(component) < 2: continue` reported a self-inheriting role as clean
+            # (measured: `authzgx` with `editor -> editor` exit 0, while the same cycle
+            # spread over two roles was an error).
+            only = component[0] if component else None
+            if not self_loops or only is None or only not in e.get(only, ()):
+                continue
+            witnesses.append(([only, only], [only]))
             continue
         members = set(component)
         inside: dict[_H, list[_H]] = {

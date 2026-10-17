@@ -272,3 +272,79 @@ unwritable path, a declaration with no storyboard (refused), a directory run wit
 Also: a symlink loop, a file deleted between listing and reading, unicode names and
 messages on an ASCII console, and extreme numeric values (`NaN`, `∞`, `10¹⁰⁰`, 2³²
 bounds) across seven tools were handled, not crashed.
+
+## Sixth review: the shared core
+
+The same instrument, a sixth prompt: what all 16 tools inherit — `geometry`,
+`layout`, `storyboard`, `diagram`, `report`, `model`, `baseline`, `graph`. Six
+findings, every one reproduced before it was fixed; the catalogue is at 163.
+
+**One shared helper had a rule the domains disagreed about.** `cycle_witnesses`
+skipped size-one components, so `authzgx` reported `editor -> editor` (a role that
+inherits itself — an escalation loop) as **clean**, while the same cycle spread over
+two roles was an error. The other side is real too, and this is why the fix is a
+parameter rather than a flag flip: a table whose foreign key points at itself is how a
+self-referencing tree is written (`schemagx`'s own property test says "a self-reference
+is a tree, not a cycle"), a module that imports itself has its own `self-dependency`
+finding (`depsgx`), and a state or protocol step that returns to itself is a retry
+whose real fault — no way out — is `dead-end`/`no-exit` (`flowgx`, `protogx`).
+`cycle_witnesses(edges, *, self_loops=True)` now states the graph rule, and each caller
+chooses for its domain in one visible place.
+
+**`intersecting_pairs` inverted its own docstring.** It reported the fraction of the
+*larger* box (`both_covered`, i.e. `min`) while documenting "of the smaller", so a
+small box entirely inside a big one scored 0.01 and was reported as no collision at
+all — the same defect `layout.check` had fixed with its own inline copy of the rule.
+It now computes the fraction of the smaller and compares `>=` ("at least"), and
+`layout.check` uses the same expression, so the rule has one spelling. The Shapely
+property test's *reference* was `min(...)` too — it had been written to mirror the
+code, and a reference that mirrors the code proves only self-consistency.
+
+**`layout.check` skipped pairs that shared their text, wherever they were.** Two boxes
+both called `"same"`, one 0.72 inside the other, were accepted. The skip is now "the
+same text in the same place", which is what it was for.
+
+**A newline in a label lost the whole storyboard.** Pillow cannot measure a
+multi-line string, and a tool's name is arbitrary: a dependency graph with a module
+named `"a\nb"` raised `ValueError` and only a stderr line remained (exit 0 without
+`-o`, 2 with). `gxcore.toolkit.one_line` flattens control characters for the
+storyboard, and the diagram draws the flattened label.
+
+**`identity: null` was accepted by the loader and crashed `compare`.** The guard
+rejects only a *non-None* identity of the wrong type, so `null` — the legal encoding
+of "no identity", as for every other optional field — reached `tuple(None)`. The
+key treats it as empty.
+
+**An unplaceable box lost the storyboard** (a finding with a `NaN` bbox): rounding it
+raised, and the view of the report died with it. The number keeps the sorted position
+the printed list shows; no rectangle is drawn for it. The finding itself is still in
+the report, which is where the verdict lives.
+
+### Attacked and found sound
+
+`geometry`'s `area`/`overlap`/`covered`/`both_covered`/`union`/`clipped`/`canvas_box`
+against Shapely on hand-computed values (edge-touching boxes → 0, zero-width and
+negative boxes → area 0, `union([]) is None`, `clipped` at exactly the tolerance vs
+just past it, all four edges named); `layout`'s `small-text` boundary and its
+`clipped-text` delegation; `storyboard` numbering against `Report.sorted()` including a
+bbox-less finding keeping its number, two findings on one object grouped into one
+rectangle, non-RGB image modes (`L`, `RGBA`, `P`), empty/1×1/2000×2000 images, and an
+edge box; `report`/`model` human text against JSON (same count, same order, no collapse
+and no double print), stable `sorted()` for equal keys, `as_dict` omitting empty
+optionals; the exit policy with warn/info only and with a severity override; `baseline`
+wrong-typed fields, code prefixes (`"a"` vs `"ab"`), `b"/c"` vs `"b","c/"`, `identity=()`
+as no identity, occurrences matched one-for-one, an empty baseline, and `new_errors`
+counting only errors among new; `graph` self-loop/duplicate-edge/two-node-cycle/unknown
+node through `find_cycle`, `reachable`, `weak_components`, `topological_sort`, `traps`
+against NetworkX, and a 10 000-node chain and cycle staying linear; `diagram` labels
+with `<`, `&`, `"`, an emoji and a 300-character word (it is raster: PIL does no string
+escaping, so double escaping is structurally impossible), no nodes, deterministic
+layout, and unknown edge endpoints; `backslashreplace` on an ASCII console.
+
+### Recorded limits (not defects)
+
+`layout.check`'s overlap loop is O(n²) — 4000 boxes take 4.75 s; no scalability is
+claimed. NaN coordinates in `geometry` score 0.0 for `area`/`overlap` (Python's
+`max(0.0, nan)` is `0.0`); a box with inverted coordinates has `area == 0` and is not
+`clipped`. The `clipped-text` tolerance is 2 px, which is why a 1 px overflow is not
+reported.

@@ -694,19 +694,31 @@ def mutations(root: Path) -> list[Mutation]:
         + "test_input_boundaries.py::test_every_independent_cycle_is_a_finding_not_only_the_first"
     )
     for tool, path, call in [
-        ("depsgx", "packages/depsgx/src/depsgx/checks.py", "cycle_witnesses(acyclic)"),
+        (
+            "depsgx",
+            "packages/depsgx/src/depsgx/checks.py",
+            "cycle_witnesses(acyclic, self_loops=False)",
+        ),
         (
             "authzgx",
             "packages/authzgx/src/authzgx/checks.py",
             "cycle_witnesses(model.role_edges())",
         ),
         ("pipegx", "packages/pipegx/src/pipegx/checks.py", "cycle_witnesses(edges)"),
-        ("flowgx", "packages/flowgx/src/flowgx/checks.py", "cycle_witnesses(edges)"),
-        ("protogx", "packages/protogx/src/protogx/checks.py", "cycle_witnesses(edges)"),
+        (
+            "flowgx",
+            "packages/flowgx/src/flowgx/checks.py",
+            "cycle_witnesses(edges, self_loops=False)",
+        ),
+        (
+            "protogx",
+            "packages/protogx/src/protogx/checks.py",
+            "cycle_witnesses(edges, self_loops=False)",
+        ),
         (
             "schemagx",
             "packages/schemagx/src/schemagx/checks.py",
-            "cycle_witnesses(schema.edges())",
+            "cycle_witnesses(schema.edges(), self_loops=False)",
         ),
     ]:
         cases.append(
@@ -784,6 +796,48 @@ def mutations(root: Path) -> list[Mutation]:
                 '    if unknown:\n        raise InvalidModel(f"{path}: unrecognised key(s) {unknown}")',
                 "    if False:\n        pass",
                 "packages/chartgx/tests/test_model_route.py::test_a_declaration_that_cannot_be_read_is_refused_where_it_is_wrong",
+            ),
+            Mutation(
+                "self-loop-cycle-skipped",
+                "packages/gxcore/src/gxcore/graph.py",
+                "            if not self_loops or only is None or only not in e.get(only, ()):",
+                "            if True:",
+                "packages/gxcore/tests/test_core.py::test_a_self_loop_is_a_cycle_only_where_the_domain_says_so",
+            ),
+            Mutation(
+                "pair-rule-uses-the-larger-box",
+                "packages/gxcore/src/gxcore/geometry.py",
+                "            frac = max(covered(boxes[i], boxes[j]), covered(boxes[j], boxes[i]))",
+                "            frac = both_covered(boxes[i], boxes[j])",
+                "packages/gxcore/tests/test_core.py::test_the_geometry_pair_rule_is_the_fraction_of_the_smaller_box",
+            ),
+            Mutation(
+                "same-text-position-ignored",
+                "packages/gxcore/src/gxcore/layout.py",
+                "            if x.text.strip() == y.text.strip() and x.bbox == y.bbox:",
+                "            if x.text.strip() == y.text.strip():",
+                "packages/gxcore/tests/test_core.py::test_two_identically_labelled_boxes_that_do_not_share_a_place_still_collide",
+            ),
+            Mutation(
+                "null-identity-crashes-compare",
+                "packages/gxcore/src/gxcore/baseline.py",
+                '    identity = record.get("identity") or ()',
+                '    identity = record.get("identity")',
+                "packages/gxcore/tests/test_baseline.py::test_a_null_identity_is_no_identity_rather_than_a_crash",
+            ),
+            Mutation(
+                "diagram-label-keeps-its-newline",
+                "packages/gxcore/src/gxcore/diagram.py",
+                "        font, shown = _fit(draw, one_line(node.text), r * 1.7, r * 0.55)",
+                "        font, shown = _fit(draw, node.text, r * 1.7, r * 0.55)",
+                "packages/gxcore/tests/test_more.py::test_a_label_with_a_newline_is_flattened_rather_than_losing_the_image",
+            ),
+            Mutation(
+                "storyboard-non-finite-box-rounded",
+                "packages/gxcore/src/gxcore/storyboard.py",
+                "        if any(not math.isfinite(value) for value in problem.bbox):",
+                "        if False:",
+                "packages/gxcore/tests/test_more.py::test_a_finding_with_an_unplaceable_box_does_not_lose_the_whole_storyboard",
             ),
             Mutation(
                 # Removing the trap itself cannot be caught by an in-process test —
