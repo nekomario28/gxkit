@@ -71,6 +71,62 @@ def convert_names(values: object, *, field: str) -> list[str]:
     return convert_items(values, _name, field=field)
 
 
+def convert_bool(value: object, *, field: str) -> bool:
+    """A declared flag, or a located refusal.
+
+    `bool("no")` is `True`, so a string where a flag belongs made the tool assert the
+    opposite of the declaration: measured, `secret = "no"` produced a
+    `secret-with-default` *error*, `DETERMINISTIC = "no"` reported `deterministic`, and
+    `EXPECT_AUDIO = "no"` expected an audio track. The OpenAPI importer has guarded this
+    for `deprecated` since its own review; the declaration route did not.
+    """
+    if not isinstance(value, bool):
+        raise InvalidArtifact(f"{field}: expected true or false, not {value!r}")
+    return value
+
+
+def convert_number(value: object, *, field: str, integer: bool = False) -> float:
+    """A declared number, or a located refusal. `bool` is not a number here."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise InvalidArtifact(f"{field}: expected a number, not {value!r}")
+    if integer and float(value) != int(value):
+        raise InvalidArtifact(f"{field}: expected a whole number, not {value!r}")
+    return float(value)
+
+
+def convert_pairs(
+    values: object, *, field: str, arity: int, names: bool = True
+) -> list[tuple[Any, ...]]:
+    """Declared pairs/triples, or a located refusal.
+
+    A string is not a list of names (it is eight characters), and a tuple with a
+    fourth element in a three-element list was silently truncated: measured,
+    `TRANSITIONS = [("a", "b", "e", "extra")]` dropped `extra` and `STATES = "ab"`
+    became the states `a` and `b` — a clean, finishable machine invented from a
+    declaration that contained none.
+    """
+    items = convert_items(values, lambda value: value, field=field)
+    out: list[tuple[Any, ...]] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, (list, tuple)) or len(item) != arity:
+            raise InvalidArtifact(f"{field}[{index}]: expected {arity} names, not {item!r}")
+        parts = tuple(_name(part) if names else part for part in item)
+        out.append(parts)
+    return out
+
+
+def convert_mapping(value: object, *, field: str) -> dict[str, Any]:
+    """A declared name→value mapping, or a located refusal.
+
+    `dict("AB")` and `dict([("a",)])` fail with messages about sequence elements —
+    naming neither the declaration nor the field — and a string that happens to look
+    like pairs was read as one.
+    """
+    if not isinstance(value, dict):
+        raise InvalidArtifact(f"{field}: expected a mapping, not {value!r}")
+    return {_name(key): item for key, item in value.items()}
+
+
 _MODULES: ContextVar[dict[Path, ModuleType] | None] = ContextVar("gx_modules", default=None)
 
 

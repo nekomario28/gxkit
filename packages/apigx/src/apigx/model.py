@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import convert_items, convert_names
+from gxcore.loading import InvalidArtifact, _name, convert_bool, convert_items, convert_names
 
 MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -78,15 +78,24 @@ def _as_endpoint(value: object) -> Endpoint | None:
         method, _, path = value.partition(" ")
         return Endpoint(method, path or "/")
     if isinstance(value, dict):
+        # A *declaration* states its method: defaulting a missing one invented `GET /`
+        # (measured: `{"endpoints": [{}]}` inspected as a clean API with an endpoint the
+        # file never named). The path defaults to `/`, which the model documents; a
+        # non-string method or path is refused — `Endpoint(200, ...)` reached `.upper()`
+        # and raised.
+        if "method" not in value:
+            raise InvalidArtifact("endpoint: no 'method'; an endpoint is a method and a path")
+        method = _name(value["method"])
+        path = _name(value.get("path", "/"))
         return Endpoint(
-            method=str(value.get("method", "GET")),
-            path=str(value.get("path", "/")),
-            auth=bool(value.get("auth", True)),
+            method=method,
+            path=path,
+            auth=convert_bool(value.get("auth", True), field="auth"),
             statuses=_statuses(value.get("statuses", [])),
-            deprecated=bool(value.get("deprecated", False)),
+            deprecated=convert_bool(value.get("deprecated", False), field="deprecated"),
         )
     if isinstance(value, (tuple, list)) and len(value) == 2:
-        return Endpoint(str(value[0]), str(value[1]))
+        return Endpoint(_name(value[0]), _name(value[1]))
     return None
 
 

@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import reachable, shortest_path
+from gxcore.loading import convert_names, convert_pairs
 
 
 @dataclass
@@ -129,22 +130,29 @@ def load_model(path: str | Path) -> tuple[AuthModel, object]:
         grants = getattr(module, "GRANTS", getattr(module, "grants", None))
         if grants is not None:
             model = AuthModel(
-                principals=list(getattr(module, "PRINCIPALS", getattr(module, "principals", []))),
-                roles=list(getattr(module, "ROLES", getattr(module, "roles", []))),
-                permissions=list(
-                    getattr(module, "PERMISSIONS", getattr(module, "permissions", []))
+                principals=_names(
+                    getattr(module, "PRINCIPALS", getattr(module, "principals", [])), "PRINCIPALS"
                 ),
-                grants=[(g[0], g[1]) for g in grants],
-                inherits=[
-                    (i[0], i[1])
-                    for i in getattr(module, "INHERITS", getattr(module, "inherits", []))
-                ],
-                assigned=[
-                    (a[0], a[1])
-                    for a in getattr(module, "ASSIGNED", getattr(module, "assigned", []))
-                ],
-                sensitive=list(getattr(module, "SENSITIVE", getattr(module, "sensitive", []))),
-                low=list(getattr(module, "LOW", getattr(module, "low", []))),
+                roles=_names(getattr(module, "ROLES", getattr(module, "roles", [])), "ROLES"),
+                permissions=_names(
+                    getattr(module, "PERMISSIONS", getattr(module, "permissions", [])),
+                    "PERMISSIONS",
+                ),
+                grants=convert_pairs(grants, field="GRANTS", arity=2),
+                inherits=convert_pairs(
+                    getattr(module, "INHERITS", getattr(module, "inherits", [])),
+                    field="INHERITS",
+                    arity=2,
+                ),
+                assigned=convert_pairs(
+                    getattr(module, "ASSIGNED", getattr(module, "assigned", [])),
+                    field="ASSIGNED",
+                    arity=2,
+                ),
+                sensitive=_names(
+                    getattr(module, "SENSITIVE", getattr(module, "sensitive", [])), "SENSITIVE"
+                ),
+                low=_names(getattr(module, "LOW", getattr(module, "low", [])), "LOW"),
             )
     if model is None:
         raise ValueError(
@@ -153,6 +161,16 @@ def load_model(path: str | Path) -> tuple[AuthModel, object]:
     if model.name == "auth":
         model.name = getattr(module, "NAME", path.stem)
     return model, module
+
+
+def _names(value: object, field: str) -> list[str]:
+    """A declared name list, or a located refusal.
+
+    `GRANTS = ["rp"]` was read as a role→permission grant of the characters `r` and
+    `p`: a string inside a list of pairs invented permissions the declaration never
+    named.
+    """
+    return convert_names(value, field=field)
 
 
 def auth_from_parts(

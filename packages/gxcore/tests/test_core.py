@@ -328,11 +328,11 @@ def test_an_interrupt_in_an_artifact_is_the_shells_code(tmp_path, capsys):
             return load_module(path)
 
         @staticmethod
-        def inspect(artifact):
+        def inspect(artifact):  # pragma: no cover - the load interrupts first
             raise AssertionError("never inspected")
 
         @staticmethod
-        def render(artifact, out, dpi):
+        def render(artifact, out, dpi):  # pragma: no cover - never reached either
             raise AssertionError("never rendered")
 
     assert run(_Tool(), ["inspect", str(artifact), "--no-storyboard"]) == 130

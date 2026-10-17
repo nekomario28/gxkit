@@ -104,6 +104,13 @@ class Schema:
     #: that drops what it read and then says "clean" is the silence this family
     #: refuses. Hand-written schemas leave it empty.
     not_modelled: list[tuple[str, str]] = field(default_factory=list)
+    #: Whether `roots` means anything for this schema. A reader that cannot express
+    #: entry points (the SQL importer: DDL has no such declaration) leaves it False,
+    #: which is what tells the rules *roots* decides — `orphan-table` among them —
+    #: not to apply. Measured: without it the same schema gained
+    #: `orphan-table: nothing references 'users'` on the SQL route and was clean on
+    #: the Python one.
+    roots_modelled: bool = True
     name: str = "schema"
 
     def table_names(self) -> list[str]:

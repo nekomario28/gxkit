@@ -44,7 +44,7 @@ def _as_video(value: object) -> Video | None:
 
 
 def load_video(path: str | Path) -> tuple[Video, object]:
-    from gxcore.loading import load_module, resolve
+    from gxcore.loading import convert_bool, load_module, resolve
 
     path = Path(path)
     module = load_module(path)
@@ -62,7 +62,11 @@ def load_video(path: str | Path) -> tuple[Video, object]:
                 expected_duration=getattr(module, "EXPECTED_DURATION", None),
                 expected_fps=getattr(module, "EXPECTED_FPS", None),
                 expected_size=getattr(module, "EXPECTED_SIZE", None),
-                expect_audio=bool(getattr(module, "EXPECT_AUDIO", False)),
+                # A string here read as truthy: `EXPECT_AUDIO = "no"` produced
+                # `no-audio: an audio track was expected`.
+                expect_audio=convert_bool(
+                    getattr(module, "EXPECT_AUDIO", False), field="EXPECT_AUDIO"
+                ),
                 frozen_seconds=float(getattr(module, "FROZEN_SECONDS", 1.0)),
                 sample_fps=float(getattr(module, "SAMPLE_FPS", 2.0)),
             )

@@ -340,6 +340,22 @@ def _check_log(ax: Any, i: int, out: list[Problem]) -> None:
                     )
             except Exception:
                 continue
+    # Bars are patches, not lines, so a bar of 0 on a log axis was reported clean by
+    # the figure route while the declared route reports `log-nonpositive` — the same
+    # concept and the same code name, disagreeing on the same chart.
+    if ax.get_yscale() == "log":
+        # Every patch answers `get_height` (a `Circle` and an annotation too, measured),
+        # so there is no guard here: a try/except would be a line nothing can reach.
+        for j, patch in enumerate(ax.patches):
+            if float(patch.get_height()) <= 0:
+                out.append(
+                    Problem(
+                        ERROR,
+                        "log-nonpositive",
+                        f"bar {j} has a height <= 0 on a log y-axis — it vanishes",
+                        target=f"ax[{i}]",
+                    )
+                )
 
 
 def _check_inverted_axis(ax: Any, i: int, out: list[Problem]) -> None:

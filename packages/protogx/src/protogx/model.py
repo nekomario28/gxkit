@@ -30,6 +30,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import terminals
+from gxcore.loading import InvalidArtifact, _name, convert_items, convert_mapping, convert_names
 
 Transition = tuple[str, str] | tuple[str, str, str]
 
@@ -102,15 +103,29 @@ def load_protocol(path: str | Path) -> tuple[Protocol, object]:
         transitions = getattr(module, "TRANSITIONS", getattr(module, "transitions", None))
         if transitions is not None:
             proto = Protocol(
-                states=list(getattr(module, "STATES", getattr(module, "states", []))),
+                states=convert_names(
+                    getattr(module, "STATES", getattr(module, "states", [])), field="STATES"
+                ),
                 transitions=[
-                    (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions
+                    _transition(t, index)
+                    for index, t in enumerate(
+                        convert_items(transitions, lambda value: value, field="TRANSITIONS")
+                    )
                 ],
                 start=getattr(module, "START", getattr(module, "start", None)),
-                terminal=list(getattr(module, "TERMINAL", getattr(module, "terminal", []))),
-                messages=list(getattr(module, "MESSAGES", getattr(module, "messages", []))),
-                requests=list(getattr(module, "REQUESTS", getattr(module, "requests", []))),
-                responses=dict(getattr(module, "RESPONSES", getattr(module, "responses", {}))),
+                terminal=convert_names(
+                    getattr(module, "TERMINAL", getattr(module, "terminal", [])), field="TERMINAL"
+                ),
+                messages=convert_names(
+                    getattr(module, "MESSAGES", getattr(module, "messages", [])), field="MESSAGES"
+                ),
+                requests=convert_names(
+                    getattr(module, "REQUESTS", getattr(module, "requests", [])), field="REQUESTS"
+                ),
+                responses=convert_mapping(
+                    getattr(module, "RESPONSES", getattr(module, "responses", {})),
+                    field="RESPONSES",
+                ),
             )
     if proto is None:
         raise ValueError(
@@ -120,6 +135,19 @@ def load_protocol(path: str | Path) -> tuple[Protocol, object]:
     if proto.name == "protocol":
         proto.name = getattr(module, "NAME", path.stem)
     return proto, module
+
+
+def _transition(value: object, index: int) -> tuple[str, str] | tuple[str, str, str]:
+    """A transition as `(source, target, message)`, or a located refusal."""
+    if not isinstance(value, (list, tuple)) or len(value) not in (2, 3):
+        raise InvalidArtifact(
+            f"TRANSITIONS[{index}]: expected 2 or 3 names (source, target[, message]), "
+            f"not {value!r}"
+        )
+    parts = tuple(_name(part) for part in value)
+    if len(parts) == 2:
+        return (parts[0], parts[1])
+    return (parts[0], parts[1], parts[2])
 
 
 def protocol_from_parts(

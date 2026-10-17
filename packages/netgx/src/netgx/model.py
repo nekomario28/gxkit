@@ -18,6 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import _name, convert_mapping, convert_names, convert_pairs
+
 KINDS = ("public", "edge", "service", "data")
 
 
@@ -62,17 +64,23 @@ def _as_network(value: object) -> Network | None:
     if isinstance(value, Network):
         return value
     if isinstance(value, dict) and ("nodes" in value or "edges" in value):
+        # `InvalidArtifact`, not a bare `ValueError`/`TypeError`: `resolve` re-raises
+        # the former and *swallows* the latter, so a malformed `network` dict was
+        # silently skipped and a second, clean declaration in the same module was
+        # inspected instead (measured: the report was about an object the malformed
+        # field did not name). The shape is recognised here, so its members are
+        # validated here.
         return Network(
-            nodes={str(k): str(v) for k, v in dict(value.get("nodes", {})).items()},
-            edges=[(str(a), str(b)) for a, b in value.get("edges", [])],
-            sensitive=[str(s) for s in value.get("sensitive", [])],
-            name=str(value.get("name", "network")),
+            nodes=convert_mapping(value.get("nodes", {}), field="nodes"),
+            edges=convert_pairs(value.get("edges", []), field="edges", arity=2),
+            sensitive=convert_names(value.get("sensitive", []), field="sensitive"),
+            name=_name(value.get("name", "network")),
         )
     return None
 
 
 def load_network(path: str | Path) -> tuple[Network, object]:
-    from gxcore.loading import load_module, resolve
+    from gxcore.loading import convert_mapping, convert_names, convert_pairs, load_module, resolve
 
     path = Path(path)
     module = load_module(path)
@@ -86,9 +94,9 @@ def load_network(path: str | Path) -> tuple[Network, object]:
         nodes = getattr(module, "NODES", None)
         if nodes is not None:
             net = Network(
-                nodes={str(k): str(v) for k, v in dict(nodes).items()},
-                edges=[(str(a), str(b)) for a, b in getattr(module, "EDGES", [])],
-                sensitive=[str(s) for s in getattr(module, "SENSITIVE", [])],
+                nodes=convert_mapping(nodes, field="NODES"),
+                edges=convert_pairs(getattr(module, "EDGES", []), field="EDGES", arity=2),
+                sensitive=convert_names(getattr(module, "SENSITIVE", []), field="SENSITIVE"),
             )
     if net is None:
         raise ValueError(f"{path}: no network found — define `network` (a Network) or NODES/EDGES")

@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import terminals
+from gxcore.loading import InvalidArtifact, _name, convert_items, convert_names
 
 Transition = tuple[str, str] | tuple[str, str, str]
 
@@ -124,12 +125,22 @@ def load_machine(path: str | Path) -> tuple[Machine, object]:
         transitions = getattr(module, "TRANSITIONS", getattr(module, "transitions", None))
         if transitions is not None:
             machine = Machine(
-                states=list(getattr(module, "STATES", getattr(module, "states", []))),
+                states=convert_names(
+                    getattr(module, "STATES", getattr(module, "states", [])), field="STATES"
+                ),
+                # Two or three names, and *nothing else*: a fourth element used to be
+                # dropped silently, so `("a", "b", "e", "extra")` looked like a
+                # transition, and `STATES = "ab"` became the states `a` and `b`.
                 transitions=[
-                    (t[0], t[1], t[2]) if len(t) == 3 else (t[0], t[1]) for t in transitions
+                    _transition(t, index)
+                    for index, t in enumerate(
+                        convert_items(transitions, lambda value: value, field="TRANSITIONS")
+                    )
                 ],
                 start=getattr(module, "START", getattr(module, "start", None)),
-                accept=list(getattr(module, "ACCEPT", getattr(module, "accept", []))),
+                accept=convert_names(
+                    getattr(module, "ACCEPT", getattr(module, "accept", [])), field="ACCEPT"
+                ),
             )
     if machine is None:
         raise ValueError(
@@ -139,6 +150,18 @@ def load_machine(path: str | Path) -> tuple[Machine, object]:
     if machine.name == "machine":
         machine.name = getattr(module, "NAME", path.stem)
     return machine, module
+
+
+def _transition(value: object, index: int) -> tuple[str, str] | tuple[str, str, str]:
+    """A transition as `(source, target, event)`, or a located refusal."""
+    if not isinstance(value, (list, tuple)) or len(value) not in (2, 3):
+        raise InvalidArtifact(
+            f"TRANSITIONS[{index}]: expected 2 or 3 names (source, target[, event]), not {value!r}"
+        )
+    parts = tuple(_name(part) for part in value)
+    if len(parts) == 2:
+        return (parts[0], parts[1])
+    return (parts[0], parts[1], parts[2])
 
 
 def machine_from_parts(
