@@ -19,6 +19,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from gxcore.loading import (
+    validate_names,
+)
+
 WALL = "#"
 FLOOR = "."
 SPACE = " "
@@ -100,6 +104,10 @@ class Level:
                 continue  # cannot enter against the arrow
             out.append((nr, nc))
         return out
+
+    def __post_init__(self) -> None:
+        validate_names(self.rows, field="rows")
+        validate_names([self.name], field="name")
 
 
 def _as_rows(value: object) -> list[str] | None:

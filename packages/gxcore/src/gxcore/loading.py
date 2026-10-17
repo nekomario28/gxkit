@@ -71,6 +71,45 @@ def convert_names(values: object, *, field: str) -> list[str]:
     return convert_items(values, _name, field=field)
 
 
+def validate_names(value: object, *, field: str) -> None:
+    """Names, or a located refusal.
+
+    For a model's `__post_init__`, which returns nothing: a model *built in Python* with a
+    wrong-typed field reached the inspector and raised a bare `TypeError`/`AttributeError`
+    there (measured: `Run("a", start="oops")`, `Endpoint(200, "/x")`, `Machine(states=[7])`
+    and ten more), so the refusal belongs where the field is set.
+    """
+    convert_names(value, field=field)
+
+
+def validate_pairs(value: object, *, field: str, arity: int | tuple[int, ...]) -> None:
+    """Pairs (or tuples of one of ``arity`` lengths), or a located refusal."""
+    lengths = arity if isinstance(arity, tuple) else (arity,)
+    for index, item in enumerate(convert_items(value, lambda item: item, field=field)):
+        if not isinstance(item, (list, tuple)) or len(item) not in lengths:
+            expected = " or ".join(str(length) for length in lengths)
+            raise InvalidArtifact(f"{field}[{index}]: expected {expected} names, not {item!r}")
+        for part in item:
+            _name(part)
+
+
+def validate_mapping(value: object, *, field: str) -> None:
+    convert_mapping(value, field=field)
+
+
+def validate_number(value: object, *, field: str, integer: bool = False) -> None:
+    convert_number(value, field=field, integer=integer)
+
+
+def validate_optional_number(value: object, *, field: str, integer: bool = False) -> None:
+    if value is not None:
+        convert_number(value, field=field, integer=integer)
+
+
+def validate_flag(value: object, *, field: str) -> None:
+    convert_bool(value, field=field)
+
+
 def convert_bool(value: object, *, field: str) -> bool:
     """A declared flag, or a located refusal.
 

@@ -23,6 +23,13 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gxcore.loading import (
+    validate_flag,
+    validate_mapping,
+    validate_names,
+    validate_pairs,
+)
+
 CONSTRAINT_WORDS = (
     "PRIMARY",
     "NOT",
@@ -138,6 +145,14 @@ class Schema:
         return {self.split(child)[0] for child, _ in self.foreign_keys} | {
             self.split(parent)[0] for _, parent in self.foreign_keys
         }
+
+    def __post_init__(self) -> None:
+        validate_mapping(self.tables, field="tables")
+        validate_mapping(self.primary_keys, field="primary_keys")
+        validate_pairs(self.foreign_keys, field="foreign_keys", arity=2)
+        validate_names(self.roots, field="roots")
+        validate_pairs(self.not_modelled, field="not_modelled", arity=2)
+        validate_flag(self.roots_modelled, field="roots_modelled")
 
 
 def type_family(declared: str) -> str:

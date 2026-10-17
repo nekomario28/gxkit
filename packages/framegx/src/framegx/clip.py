@@ -19,6 +19,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from gxcore.loading import (
+    validate_flag,
+    validate_names,
+    validate_number,
+    validate_optional_number,
+)
+
 VIDEO_SUFFIXES = (".mp4", ".mov", ".mkv", ".webm", ".gif", ".avi")
 
 
@@ -38,13 +45,29 @@ class Video:
         p = Path(self.path)
         return p if p.is_absolute() else Path(base).parent / p
 
+    def __post_init__(self) -> None:
+        validate_names([self.path], field="path")
+        validate_optional_number(self.expected_duration, field="expected_duration")
+        validate_optional_number(self.expected_fps, field="expected_fps")
+        validate_number(self.frozen_seconds, field="frozen_seconds")
+        validate_number(self.sample_fps, field="sample_fps")
+        validate_flag(self.expect_audio, field="expect_audio")
+        if self.expected_size is not None:
+            width, height = self.expected_size
+            validate_number(width, field="expected_size[0]", integer=True)
+            validate_number(height, field="expected_size[1]", integer=True)
+
 
 def _as_video(value: object) -> Video | None:
     return value if isinstance(value, Video) else None
 
 
 def load_video(path: str | Path) -> tuple[Video, object]:
-    from gxcore.loading import convert_bool, load_module, resolve
+    from gxcore.loading import (
+        convert_bool,
+        load_module,
+        resolve,
+    )
 
     path = Path(path)
     module = load_module(path)

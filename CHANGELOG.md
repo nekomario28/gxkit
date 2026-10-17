@@ -7,6 +7,15 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+**A model built in Python with a wrong-typed field** is refused where the field is set,
+with the field named, instead of reaching the inspector and raising a bare
+`TypeError`/`AttributeError` (13 cases found by probing every tool's model, up from the
+four a review happened to write — `Run("a", start="oops")`, `Endpoint(200, "/x")`,
+`Machine(states=[7])`, `Schema(roots=[7])`, `Page(width="wide")`, `Shader(size=("a","b"))`
+and the rest). Values the tool has a *finding* for are deliberately not refused at
+construction — a fractional seed is still `invalid-seed`, a `NaN` time still
+`non-finite-time` — and a mutation proves it stays that way.
+
 **Performance**: the measured limits recorded by an earlier review are paid off, with the
 numbers in [`docs/SEMANTICS.md`](docs/SEMANTICS.md). `crongx` compares runs with a sweep
 instead of every pair (10 000 non-overlapping runs: 33.8 s → 0.008 s; 100 000: no report

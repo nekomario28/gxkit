@@ -17,7 +17,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from gxcore.loading import InvalidArtifact, convert_bool, convert_items
+from gxcore.loading import (
+    InvalidArtifact,
+    convert_bool,
+    convert_items,
+    validate_names,
+)
 
 SEED_MAX = 2**32 - 1
 
@@ -26,6 +31,13 @@ SEED_MAX = 2**32 - 1
 class Stream:
     name: str
     seed: int | None = None
+
+    def __post_init__(self) -> None:
+        # The *name* is a key, so a non-string is refused here; the seed is not validated
+        # on purpose: a non-integer scalar is carried and reported as `invalid-seed`
+        # (measured, that was the whole point of making the code reachable), so refusing
+        # it at construction would take the finding away again.
+        validate_names([self.name], field="name")
 
 
 @dataclass

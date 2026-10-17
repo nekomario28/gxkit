@@ -134,7 +134,10 @@ def test_a_declared_rule_that_names_nothing_is_reported():
 
     table = [
         ("forbidden", {"forbidden": [("ghost", "b")]}),
-        ("layers", {"layers": {"L": ["ghost"]}}),
+        # `layers` is a list of layers; a mapping here is a *malformed shape* now
+        # (a mapping where a list belongs), so the typo'd member is declared the way
+        # the model says and the rule under test is the one that fires.
+        ("layers", {"layers": [["ghost"]]}),
         ("roots", {"roots": ["ghost"]}),
     ]
     for field, extra in table:

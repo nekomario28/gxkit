@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import reachable, shortest_path
-from gxcore.loading import convert_names, convert_pairs
+from gxcore.loading import convert_names, convert_pairs, validate_names, validate_pairs
 
 
 @dataclass
@@ -109,6 +109,16 @@ class AuthModel:
         for p in self.principals:
             all_nodes |= reachable(self.graph(), [self.pid(p)])
         return all_nodes
+
+    def __post_init__(self) -> None:
+        validate_names(self.principals, field="principals")
+        validate_names(self.roles, field="roles")
+        validate_names(self.permissions, field="permissions")
+        validate_names(self.sensitive, field="sensitive")
+        validate_names(self.low, field="low")
+        validate_pairs(self.grants, field="grants", arity=2)
+        validate_pairs(self.inherits, field="inherits", arity=2)
+        validate_pairs(self.assigned, field="assigned", arity=2)
 
 
 def _as_model(value: object) -> AuthModel | None:

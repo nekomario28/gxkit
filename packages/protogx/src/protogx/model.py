@@ -30,7 +30,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from gxcore.graph import terminals
-from gxcore.loading import InvalidArtifact, _name, convert_items, convert_mapping, convert_names
+from gxcore.loading import (
+    InvalidArtifact,
+    _name,
+    convert_items,
+    convert_mapping,
+    convert_names,
+    validate_mapping,
+    validate_names,
+)
 
 Transition = tuple[str, str] | tuple[str, str, str]
 
@@ -93,6 +101,25 @@ class Protocol:
         if self.terminal:
             return set(self.terminal)
         return set(terminals(self.edges(), self.all_states()))
+
+    def __post_init__(self) -> None:
+        validate_names(self.states, field="states")
+        validate_names(self.terminal, field="terminal")
+        validate_names(self.messages, field="messages")
+        validate_names(self.requests, field="requests")
+        # The third element is the message, and `None` is a transition with no message
+        # (`message_of` documents that), so only the names are checked.
+        for index, transition in enumerate(self.transitions):
+            if not isinstance(transition, (list, tuple)) or len(transition) not in (2, 3):
+                raise InvalidArtifact(
+                    f"transitions[{index}]: expected 2 or 3 names, not {transition!r}"
+                )
+            validate_names(list(transition[:2]), field=f"transitions[{index}]")
+            if len(transition) == 3 and transition[2] is not None:
+                validate_names([transition[2]], field=f"transitions[{index}][2]")
+        validate_mapping(self.responses, field="responses")
+        if self.start is not None:
+            validate_names([self.start], field="start")
 
 
 def _as_protocol(value: object) -> Protocol | None:

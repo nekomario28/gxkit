@@ -160,7 +160,7 @@ def test_a_statement_about_a_state_or_message_that_does_not_exist_is_reported():
         start="a",
         terminal=["b"],
         messages=["m"],
-        requests={},
+        requests=[],
         responses={},
     )
     assert inspect_protocol(Protocol(**base)).errors == 0
@@ -171,7 +171,7 @@ def test_a_statement_about_a_state_or_message_that_does_not_exist_is_reported():
         p.message for p in report.problems if p.code == "unknown-state"
     )
 
-    report = inspect_protocol(Protocol(**(base | {"requests": {"ghost": "m"}})))
+    report = inspect_protocol(Protocol(**(base | {"requests": ["ghost"]})))
     assert_fires(report, "unknown-message", ERROR)
     assert "request names undeclared message 'ghost'" in next(
         p.message for p in report.problems if p.code == "unknown-message"
