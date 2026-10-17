@@ -325,3 +325,48 @@ def test_a_clause_the_model_cannot_carry_is_reported_not_dropped():
     # A schema without such clauses says nothing about them.
     plain = inspect_schema(schema_from_ddl("CREATE TABLE t (id INTEGER PRIMARY KEY);"))
     assert "not-modelled" not in {problem.code for problem in plain.problems}
+
+
+def test_a_table_option_is_read_and_recorded_rather_than_refused():
+    """Every MySQL dump has them, and refusing them made those dumps unreadable."""
+    schema = schema_from_ddl(
+        "CREATE TABLE a (id INT PRIMARY KEY, n INT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+    )
+    assert list(schema.tables) == ["a"], "the table is read"
+    assert any("table option" in kinds for _table, kinds in schema.not_modelled), (
+        schema.not_modelled
+    )
+
+
+def test_a_string_literal_is_not_sql():
+    """`DEFAULT 'see REFERENCES users for detail'` is text, not a foreign key.
+
+    Measured before this guard: it invented a foreign key and then flagged a type
+    mismatch against it.
+    """
+    schema = schema_from_ddl(
+        "CREATE TABLE posts (id INT PRIMARY KEY, note TEXT DEFAULT 'see REFERENCES users for detail');"
+    )
+    assert schema.foreign_keys == [], schema.foreign_keys
+    assert schema.tables["posts"]["note"] == "TEXT", schema.tables
+
+
+def test_an_index_clause_is_not_a_column():
+    """`KEY idx_email (email)` is an index; reading it as a column named KEY hid it."""
+    schema = schema_from_ddl(
+        "CREATE TABLE users (id INT PRIMARY KEY, email VARCHAR(255), KEY idx_email (email));"
+    )
+    assert set(schema.tables["users"]) == {"id", "email"}, schema.tables
+    assert any("index clause" in kinds for _table, kinds in schema.not_modelled)
+
+
+def test_a_quoted_constraint_name_with_a_space_still_declares_its_key():
+    schema = schema_from_ddl('CREATE TABLE users (id INT, CONSTRAINT "users pk" PRIMARY KEY (id));')
+    assert schema.primary_keys == {"users": "id"}, schema.primary_keys
+
+
+def test_a_column_named_key_is_a_column():
+    """The index-clause rule must not eat a column whose name is a keyword."""
+    schema = schema_from_ddl("CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT);")
+    assert schema.primary_keys == {"settings": "key"}, schema.primary_keys
+    assert set(schema.tables["settings"]) == {"key", "value"}, schema.tables

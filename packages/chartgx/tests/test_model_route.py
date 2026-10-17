@@ -157,6 +157,7 @@ def test_every_code_in_the_table_is_reachable_from_these_tests():
     cases = [
         {"marks": []},
         clean() | {"y_min": 25},
+        {"marks": [heat([[1.0, 2.0]])], "y_min": 1},
         {"marks": [bars([1.0, 2.0])]},
         {"marks": [bars([0.0, 1.0])], "y_scale": "log"},
         {"marks": [{"kind": "bar", "categories": ["a"], "values": [float("nan")]}]},
@@ -396,11 +397,18 @@ def test_a_non_finite_cell_cannot_be_coloured():
     assert_fires(inspect_model({"marks": [heat([[1.0, float("nan")]])]}), "non-finite-value", ERROR)
 
 
-def test_colour_is_not_a_length_and_not_on_the_axis():
-    # Neither a trimmed axis nor a log one is a finding for a matrix.
+def test_colour_is_not_a_length_but_the_axis_setting_still_cannot_apply():
+    """A matrix is not a bar chart — and its axis cannot be moved either.
+
+    The renderer that owns the model refuses `y_min` and a log scale for a heatmap
+    (they stretch its cells), and this route reported the same declaration clean
+    until an importer audit compared the two.
+    """
     for extra in ({"y_min": 1}, {"y_scale": "log"}):
         report = inspect_model({"marks": [heat([[0.0, 2.0]])]} | extra)
-        assert report.errors == 0, [problem.code for problem in report.problems]
+        codes = [problem.code for problem in report.problems]
+        assert "inapplicable-axis-setting" in codes, codes
+        assert "truncated-baseline" not in codes, "a matrix is not a bar"
 
 
 def test_the_two_names_are_part_of_the_finding_not_just_its_code():
@@ -486,3 +494,41 @@ def test_an_unknown_ramp_is_refused_rather_than_defaulted(tmp_path):
     )
     with pytest.raises(InvalidModel, match="rainbow"):
         load_model(path)
+
+
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        ({"y_scale": "logarithmic"}, "y_scale is 'logarithmic'"),
+        ({"width": "wide"}, "width is 'wide'"),
+        ({"height": 0}, "height is 0"),
+    ],
+)
+def test_the_closed_sets_and_types_are_checked_where_the_model_is_read(tmp_path, payload, expected):
+    """A typo used to fall back to the default instead of being refused.
+
+    Measured: `y_scale: "logarithmic"` read as linear and silently disabled every
+    log-axis check, while the renderer that owns the model refuses the same file.
+    """
+    model = {"marks": [bars([1.0, 2.0])]} | payload
+    path = tmp_path / "m.json"
+    path.write_text(json.dumps(model), encoding="utf-8")
+    with pytest.raises(InvalidModel, match=re.escape(expected)):
+        load_model(path)
+
+
+def test_a_series_is_an_object_with_named_fields():
+    """`colour` for `color` was accepted and dropped, so the figure was read as if
+    the key were absent. (The mark *bodies* are validated here, as `load_model`'s
+    docstring says: it owns the figure's own shape.)"""
+    model = {
+        "marks": [
+            {
+                "kind": "grouped_bar",
+                "categories": ["a"],
+                "series": [{"values": [1.0], "colour": "red"}],
+            }
+        ]
+    }
+    with pytest.raises(InvalidModel, match=r"series\[0\] has unrecognised key"):
+        inspect_model(model)

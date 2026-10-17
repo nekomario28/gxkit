@@ -88,6 +88,7 @@ declaration, because a figure cannot express them:
 | code | severity | what it means |
 | --- | --- | --- |
 | `mismatched-lengths` | error | an error array, a bar group or a heatmap's rows and labels disagree in number with what they annotate |
+| `inapplicable-axis-setting` | error | a heatmap's rows are its y axis, so `y_min` and a log scale cannot apply to it |
 | `non-finite-value` | error | a declared number is NaN or infinite and cannot be placed |
 | `two-error-shapes` | error | a mark declares symmetric and asymmetric error bars at once |
 | `negative-error` | error | an error magnitude is negative, which is not a distance |

@@ -30,7 +30,10 @@ class Endpoint:
     method: str
     path: str
     auth: bool = True
-    statuses: list[int] = field(default_factory=list)
+    #: Numeric statuses, plus the ranged keys (`"5XX"`) and `"default"` as written:
+    #: a range is not a number, and dropping it made `no-error-status` fire on an
+    #: operation that documents its errors.
+    statuses: list[int | str] = field(default_factory=list)
     deprecated: bool = False
 
     @property
@@ -56,6 +59,18 @@ class API:
         return [(e.verb, e.path) for e in self.endpoints]
 
 
+def _statuses(value: object) -> list[int | str]:
+    """A declared status list: numbers stay numbers, range text stays text."""
+    if not isinstance(value, (list, tuple)):
+        return []
+    out: list[int | str] = []
+    for item in value:
+        if isinstance(item, bool) or not isinstance(item, (int, str)):
+            continue
+        out.append(item if isinstance(item, str) else int(item))
+    return out
+
+
 def _as_endpoint(value: object) -> Endpoint | None:
     if isinstance(value, Endpoint):
         return value
@@ -67,7 +82,7 @@ def _as_endpoint(value: object) -> Endpoint | None:
             method=str(value.get("method", "GET")),
             path=str(value.get("path", "/")),
             auth=bool(value.get("auth", True)),
-            statuses=[int(s) for s in value.get("statuses", [])],
+            statuses=_statuses(value.get("statuses", [])),
             deprecated=bool(value.get("deprecated", False)),
         )
     if isinstance(value, (tuple, list)) and len(value) == 2:

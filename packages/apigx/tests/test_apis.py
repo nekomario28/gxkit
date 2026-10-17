@@ -117,3 +117,24 @@ def test_image_size_tracks_the_endpoint_count():
     from apigx.render import image_size
 
     assert image_size(API(base="/v1", endpoints=[Endpoint("GET", "/v1/x")]))[0] > 0
+
+
+def test_the_model_loader_keeps_status_text_and_ignores_what_is_not_a_status(tmp_path):
+    """A declared status list: numbers stay numbers, `5XX` stays text, junk is junk.
+
+    The dict form is what a hand-written declaration uses, and the ranged key has to
+    survive it — dropping ranges in the OpenAPI reader was one bug, and dropping them
+    again here would be the same bug in a second place.
+    """
+    path = tmp_path / "api.py"
+    path.write_text(
+        "api = {'endpoints': [{'method': 'GET', 'path': '/v1/a', "
+        "'statuses': ['5XX', 200, True, None]}]}\n",
+        encoding="utf-8",
+    )
+    api, _module = load_api(path)
+    assert api.endpoints[0].statuses == ["5XX", 200], api.endpoints[0].statuses
+
+    path.write_text("api = {'endpoints': [{'method': 'GET', 'statuses': 42}]}\n", encoding="utf-8")
+    api, _module = load_api(path)
+    assert api.endpoints[0].statuses == []

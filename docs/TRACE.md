@@ -11,7 +11,7 @@ checks (that every check can fail, that the docs agree) live in
 
 | tool | inspects | reads | module | codes (#) | examples |
 | --- | --- | --- | --- | --- | --- |
-| `chartgx` | matplotlib charts | `.py`, `.json` | `chartgx.tool` | 25 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
+| `chartgx` | matplotlib charts | `.py`, `.json` | `chartgx.tool` | 26 | `bad_chart.py`, `bad_chart_fixed.py`, `good_chart.py` |
 | `levelgx` | game levels | `.py` | `levelgx.tool` | 8 | `broken_level.py`, `good_level.py`, `softlock_level.py` |
 | `authzgx` | permission models | `.py` | `authzgx.tool` | 13 | `escalate_auth.py`, `good_auth.py` |
 | `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 10 | `broken_modules.py`, `good_modules.py` |

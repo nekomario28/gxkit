@@ -64,7 +64,13 @@ def inspect_api(api: API, name: str | None = None) -> Report:
                     label=label,
                 )
             )
-        if not any(400 <= status < 600 for status in endpoint.statuses):
+
+        def is_error(status: int | str) -> bool:
+            if isinstance(status, int):
+                return 400 <= status < 600
+            return status.upper().startswith(("4", "5")) or status.lower() == "default"
+
+        if not any(is_error(status) for status in endpoint.statuses):
             out.append(
                 Problem(
                     INFO,

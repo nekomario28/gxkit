@@ -331,7 +331,15 @@ def test_a_document_without_servers_reports_no_base_rather_than_inventing_one(tm
             "CREATE INDEX i ON a (x);\nCREATE TABLE a (id INT);\n",
             "a statement it does not translate",
         ),
-        ("schemagx", "CREATE TABLE a (id INT) ENGINE=InnoDB;\n", "a clause it does not translate"),
+        # `ENGINE=InnoDB` is read *and recorded* now (a `not-modelled` note): it is a
+        # table option every MySQL dump has, and refusing it made those dumps
+        # unreadable. A trailing clause the reader genuinely cannot account for is
+        # still refused, which is the property this test is about.
+        (
+            "schemagx",
+            "CREATE TABLE a (id INT) WITH (fillfactor=70);\n",
+            "a clause it does not translate",
+        ),
         ("flowgx", "stateDiagram-v2\n    [*] --> a\n    a ~~> b\n", "a line it cannot read"),
     ],
 )

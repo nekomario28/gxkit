@@ -6,10 +6,14 @@ a soft-lock, computed with the same `gxcore.graph` reachability.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
+import pytest
 from flowgx import Machine, inspect_machine, load_machine
+from flowgx.mermaid import machine_from_mermaid
 from gxcore import ERROR, INFO
+from gxcore.loading import InvalidArtifact
 from gxcore.testing import assert_fires, assert_quiet, has
 
 GOOD = Machine(
@@ -146,3 +150,21 @@ def test_identical_duplicate_transitions_are_not_ambiguity():
         transitions=[("a", "b", "go"), ("a", "c", "go")],
     )
     assert_fires(inspect_machine(different), "ambiguous-transition", ERROR)
+
+
+def test_a_state_named_note_keeps_its_transition():
+    """A note is one of Mermaid's note forms, not any line starting with the word.
+
+    Measured: `note --> done : finish` was swallowed as a note, and the flow was then
+    judged stuck and unreachable.
+    """
+    machine = machine_from_mermaid(
+        "stateDiagram-v2\n    [*] --> note\n    note --> done : finish\n    done --> [*]\n"
+    )
+    assert ("note", "done", "finish") in machine.transitions, machine.transitions
+
+
+def test_both_ends_being_the_marker_is_refused():
+    """`[*] --> [*]` says the start is accepting, and names no state to say it about."""
+    with pytest.raises(InvalidArtifact, match=re.escape("[*] --> [*]")):
+        machine_from_mermaid("stateDiagram-v2\n    [*] --> [*]\n")

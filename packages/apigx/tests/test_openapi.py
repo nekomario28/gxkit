@@ -54,11 +54,24 @@ def test_a_document_without_security_has_an_unauthenticated_api():
     assert [endpoint.auth for endpoint in api_from_document(document).endpoints] == [False]
 
 
-def test_statuses_come_from_the_numeric_response_keys():
+def test_statuses_come_from_the_numeric_and_ranged_response_keys():
+    """`5XX` and `default` are legal and meaningful.
+
+    Measured before this: they were dropped, so an operation documenting `5XX` was
+    told it "documents no error status".
+    """
     api = api_from_document(
-        _doc(paths={"/a": {"get": {"responses": {"404": {}, "default": {}, "201": {}}}}})
+        _doc(
+            paths={
+                "/a": {
+                    "get": {
+                        "responses": {"404": {}, "default": {}, "201": {}, "5XX": {}, "2XX": {}}
+                    }
+                }
+            }
+        )
     )
-    assert api.endpoints[0].statuses == [201, 404]
+    assert api.endpoints[0].statuses == [201, "2XX", 404, "5XX", "default"]
 
 
 @pytest.mark.parametrize("responses", [None, 42, [], "x"])
@@ -113,7 +126,10 @@ def test_an_operation_path_is_relative_to_the_server_path():
 
 
 def test_a_server_without_a_path_does_not_prefix_anything():
-    document = _doc(servers=[{"url": "https://api.example.com"}], paths={"/items": {"get": {}}})
+    document = _doc(
+        servers=[{"url": "https://api.example.com"}],
+        paths={"/items": {"get": {"responses": {"200": {}}}}},
+    )
     api = api_from_document(document)
     assert api.base == "" and [endpoint.path for endpoint in api.endpoints] == ["/items"]
 
@@ -379,3 +395,55 @@ def test_a_key_nothing_reads_is_refused_wherever_it_sits():
     extended["x-internal"] = {"anything": True}
     extended["info"]["x-owner"] = "platform"
     assert api_from_document(extended).endpoints, "x- keys must not be refused"
+
+
+def test_a_specification_extension_in_paths_is_not_a_route():
+    """`x-` holds arbitrary data; iterating one invented an endpoint.
+
+    Measured: `paths: {"x-internal": {"get": ...}}` reported "2 endpoints" for a
+    document declaring one.
+    """
+    extended = _doc(paths={"/a": {"get": {"responses": {"200": {}}}}, "x-internal": {"get": {}}})
+    api = api_from_document(extended)
+    assert [endpoint.path for endpoint in api.endpoints] == ["/v1/a"], api.endpoints
+
+    # A scalar extension value is legal too, and was refused as "not an object".
+    scalars = _doc(paths={"/a": {"get": {"responses": {"200": {}}}}, "x-tags": ["public"]})
+    assert [endpoint.path for endpoint in api_from_document(scalars).endpoints] == ["/v1/a"]
+
+
+def test_a_ranged_response_key_documents_its_errors():
+    """`5XX` is a response; dropping it told the author to add what is there."""
+    http = api_from_document(_doc(paths={"/a": {"get": {"responses": {"201": {}, "5XX": {}}}}}))
+    assert "5XX" in http.endpoints[0].statuses
+    assert "no-error-status" not in {problem.code for problem in inspect_api(http).problems}
+
+
+def test_a_malformed_security_block_is_refused_rather_than_read_as_anonymous():
+    """`security` is an array; an object read as "anonymous" turned a typo into a
+    hard "this mutation is public" error."""
+    with pytest.raises(InvalidArtifact, match="security must be an array"):
+        api_from_document(
+            _doc(paths={"/a": {"post": {"security": {"apiKey": []}, "responses": {"201": {}}}}})
+        )
+
+
+def test_deprecated_has_to_be_a_boolean():
+    """`bool("false")` is True: a string typo became "this endpoint is deprecated"."""
+    with pytest.raises(InvalidArtifact, match="deprecated is str, not a boolean"):
+        api_from_document(
+            _doc(paths={"/a": {"get": {"deprecated": "false", "responses": {"200": {}}}}})
+        )
+
+
+def test_a_response_list_is_required():
+    """`responses` is REQUIRED by OpenAPI; without it the status set is undefined."""
+    with pytest.raises(InvalidArtifact, match="declares no 'responses'"):
+        api_from_document(_doc(paths={"/a": {"get": {}}}))
+
+
+def test_a_security_requirement_that_is_not_an_object_is_refused():
+    with pytest.raises(InvalidArtifact, match="security requirement must be an object"):
+        api_from_document(
+            _doc(paths={"/a": {"post": {"security": [42], "responses": {"201": {}}}}})
+        )
