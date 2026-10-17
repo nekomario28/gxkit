@@ -581,3 +581,76 @@ than the validation weakened: `depsgx` declared `layers` as a mapping and `proto
 member declared the way the model says.
 
 Verified: `scripts/check.sh --full` — 100% coverage, **184** mutants (up from 180).
+
+## Eleventh review: `authzgx`'s traversal cost, paid off
+
+The ninth review measured `authzgx` as *half* paid and recorded the rest as "output-bound,
+not claimed fixed". Half of that was not output at all: three causes, each named by
+profiling, and all three fixed.
+
+**1. The graph was rebuilt inside a loop.** `model.graph()` was called *inside* the
+role loop, so every role paid for a fresh adjacency dict — with 2 000 roles that alone
+was 1.8 s of allocation for a graph that had not changed. One graph is now built per
+inspection and threaded through every question (`effective`, `path`,
+`reachable_from_principals`, `effective_map` all take the graph they should use).
+
+**2. "What can any principal reach" was a union of one traversal per principal.**
+The union of the reachable sets from each principal *is* the reachable set from all of
+them at once, so it was N traversals for a result one traversal gives. (The same
+observation was already the fix for the sensitive-permission question; it had not been
+applied to this one.)
+
+**3. The questions were asked once per node instead of once.** "Which role grants a
+permission (directly or by inheritance)" is the same reverse traversal for every role — a
+role is empty exactly when it cannot reach any permission — so it is one `can_reach`
+instead of one `reachable` and one graph per role. And the escalation question spent *two*
+traversals per low principal (`reachable` for the effective set, `shortest_path` for the
+arrow); it is now one reverse traversal from the sensitive permissions (does this
+principal escalate?) plus one route traversal per sensitive permission, remembered, for
+the arrow.
+
+`gxcore.graph` gained the primitive the third fix needs: `route_to(edges, targets)` is the
+next hop on a shortest route to a target for **every** node that can reach one — one
+reverse traversal where `shortest_path` answers it for one start — and `route_nodes` turns
+that map into the node list a message shows. Both are cross-checked against NetworkX (the
+hop map's key set equals `can_reach`'s, and every walk is exactly as long as NetworkX's
+shortest path). `AuthModel.path` now derives from the same pair, so "the way in" has one
+owner whether it is asked for one principal or walked for every finding.
+
+### Measured
+
+| shape | before | after |
+| --- | --- | --- |
+| 2 000 principals, 200 roles, one finding | 1.8 s | **0.00 s** |
+| 20 000 principals, 200 roles, one finding | quadratic (≈180 s, extrapolated) | **0.05 s** |
+| 2 000 principals, all escalating | 5.8 s | **0.38 s** |
+| one role and one permission per principal (1 000 / 2 000 / 4 000) | 3.9 / 17.4 / ≈70 s | **0.8 / 3.7 / 15.7 s** |
+| 20 000 escalating principals | — | 69 s, for a report of **268 MB** of detail lines |
+
+### Guards
+
+A clock would be flaky, and a pure performance change is invisible to a mutant, so the
+guard *counts traversals*: `test_the_escalation_check_does_not_traverse_once_per_principal`
+inspects a model with 10 principals and one with 200 and asserts the traversal count is
+**the same** (`<= 6`) and that the graph is built once. The walk *is* allowed to grow — one
+per finding, and it is the finding's own path — and that is asserted too. Six mutants keep
+the old shapes out, including the two that restore a per-principal form and the one that
+always asks the forward question: all three produce identical findings, and all three are
+killed by the count.
+
+### Recorded, not claimed
+
+- **A 4 000-entry `sensitive` list is still O(P × (V+E)).** Each sensitive permission named
+  by a finding costs one route traversal, and `effective_map` costs one per permission; at
+  4 000 entries that is 15.7 s (measured above). An all-nodes pass — reachable sets for
+  every node in one sweep over the condensation — would remove the term, and is not
+  implemented.
+- **The report's own size is now the wall.** 20 000 escalating principals take 69 s and
+  produce 268 MB of detail lines: the time is proportional to the text, not to the model.
+  Whether the effective set should be abbreviated is a report-shape decision, not a
+  traversal one, and is left alone.
+- The `effective` and `effective_map` cost profiles must agree;
+  `test_effective_map_agrees_with_effective` pins it, because two forms of one rule are
+  exactly where drift hides.
+
+Verified: `scripts/check.sh --full` — 100% coverage, **190** mutants (up from 184).

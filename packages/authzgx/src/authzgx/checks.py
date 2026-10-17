@@ -9,7 +9,7 @@ plain reachability plus `gxcore.graph.shortest_path`.
 from __future__ import annotations
 
 from gxcore import ERROR, INFO, Problem, Report
-from gxcore.graph import can_reach, cycle_witnesses, reachable
+from gxcore.graph import can_reach, cycle_witnesses, route_nodes, route_to
 
 from .authmodel import AuthModel
 from .render import compute_layout, node_box
@@ -126,6 +126,11 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
                     )
                 )
 
+    # Every traversal below asks the *same* graph, so it is built once for the whole
+    # inspection (it was built again inside each loop: with 2 000 roles the empty-role
+    # scan alone spent 1.8 s rebuilding a graph it already had).
+    graph = model.graph()
+
     # privilege escalation: a low principal reaches a sensitive permission
     if not model.sensitive:
         out.append(
@@ -144,40 +149,75 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
             )
         )
     else:
-        graph = model.graph()
-        # One reverse BFS for the whole check, not one per low principal: "which
-        # principals can reach a sensitive permission" is the *same* traversal for all
-        # of them, and the path is only needed where it actually escalates. Measured, a
-        # model with 5 000 low principals spent 25 s here.
+        # "Does this principal escalate?" is one reverse traversal from all the
+        # sensitive permissions at once. "Which permission is the one in the message,
+        # and how does it get there?" is one reverse traversal *per sensitive
+        # permission* — asked when a finding needs it and remembered, so a model whose
+        # findings all land on the same permission pays for that one. The count of
+        # traversals is bounded by the curated `sensitive` list and not by the number
+        # of low principals: this used to be two traversals per low principal
+        # (measured, 2 000 escalating principals: 5.8 s).
         reaches_sensitive = can_reach(graph, [model.xid(perm) for perm in model.sensitive])
-        for principal in model.low:
-            if principal not in declared_principals:
-                continue
-            if model.pid(principal) not in reaches_sensitive:
-                continue
-            reached = reachable(graph, [model.pid(principal)])
-            for perm in model.sensitive:
-                if model.xid(perm) in reached:
-                    path = model.path(principal, perm)
-                    shown = _arrow(model, path) if path else f"{principal} → {perm}"
-                    out.append(
-                        Problem(
-                            ERROR,
-                            "escalation",
-                            f"low principal {principal!r} reaches sensitive permission {perm!r} "
-                            f"via {shown}",
-                            target=model.xid(perm),
-                            bbox=None,
-                        )
-                    )
-                    report.details.append(
-                        f"{principal} effective: "
-                        + (", ".join(sorted(model.effective(principal))) or "none")
-                    )
-                    break
+        routes: dict[str, dict[str, str]] = {}
 
-    reachable_all = model.reachable_from_principals()
-    granted_perms = {perm for _, perm in model.grants}
+        def route(permission: str) -> dict[str, str]:
+            found = routes.get(permission)
+            if found is None:
+                found = routes[permission] = route_to(graph, [model.xid(permission)])
+            return found
+
+        escalating = [
+            p for p in model.low if p in declared_principals and model.pid(p) in reaches_sensitive
+        ]
+        # The detail line lists what each escalating principal is effective for. The
+        # reverse form is one traversal per *permission* for all of them at once; the
+        # forward form is one per escalating principal. Ask the cheaper question, so
+        # neither a long inventory nor a long permission list is paid for twice.
+        everything = (
+            model.effective_map(graph, escalating)
+            if len(escalating) > len(model.permissions)
+            else None
+        )
+
+        for principal in escalating:
+            pid = model.pid(principal)
+            for perm in model.sensitive:
+                hops = route(perm)
+                if pid not in hops:
+                    continue
+                # `hops` has a route for `pid` — that is what `reaches_sensitive`
+                # said — so the walk always lands on the permission named here.
+                path = route_nodes(hops, pid)
+                assert path is not None
+                shown = _arrow(model, path)
+                out.append(
+                    Problem(
+                        ERROR,
+                        "escalation",
+                        f"low principal {principal!r} reaches sensitive permission {perm!r} "
+                        f"via {shown}",
+                        target=model.xid(perm),
+                        bbox=None,
+                    )
+                )
+                effective = (
+                    everything[principal]
+                    if everything is not None
+                    else model.effective(principal, graph)
+                )
+                report.details.append(
+                    f"{principal} effective: " + (", ".join(sorted(effective)) or "none")
+                )
+                break
+
+    reachable_all = model.reachable_from_principals(graph)
+    granted_perms = {
+        perm for _, perm in model.grants
+    }  # "Which roles grant a permission, directly or by inheritance" is one reverse
+    # traversal for all of them: a role is empty exactly when it cannot reach any
+    # permission. Asked per role it was one fresh traversal — and one rebuilt graph —
+    # for each role, which is what made this scan quadratic.
+    reaches_a_permission = can_reach(graph, [model.xid(x) for x in model.permissions])
 
     for role in model.roles:
         if model.rid(role) not in reachable_all:
@@ -189,8 +229,7 @@ def inspect_auth(model: AuthModel, name: str | None = None) -> Report:
                     target=model.rid(role),
                 )
             )
-        role_reached = reachable(model.graph(), [model.rid(role)])
-        if not any(model.xid(x) in role_reached for x in model.permissions):
+        if model.rid(role) not in reaches_a_permission:
             out.append(
                 Problem(
                     INFO,

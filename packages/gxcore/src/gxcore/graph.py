@@ -92,6 +92,48 @@ def shortest_path(edges: Adjacency[_H], start: _H, target: _H) -> list[_H] | Non
     return None
 
 
+def route_to(edges: Adjacency[_H], targets: Iterable[_H]) -> dict[_H, _H]:
+    """For every node that can reach a target, the next hop on a shortest route.
+
+    ``route_to(g, [t])[u]`` is where to step from ``u`` so that ``t`` is reached in
+    the fewest hops; a target maps to itself. One reverse traversal from all the
+    targets answers it for *every* starting node at once, where `shortest_path`
+    answers it for one start — so a caller that needs a route from many starts (or
+    only the path's length) asks once instead of once per start.
+
+    A node absent from the result cannot reach any target. Walking the map from a
+    node that is in it lands on a target in ``len(walk) - 1`` hops (`route_nodes`
+    does that walk). Deterministic: ties break in ``targets`` order, and then in
+    adjacency order.
+    """
+    ordered = list(dict.fromkeys(targets))
+    hop: dict[_H, _H] = {t: t for t in ordered}
+    q = deque(ordered)
+    r = reverse(edges)
+    while q:
+        v = q.popleft()
+        for u in r.get(v, ()):
+            if u not in hop:
+                hop[u] = v
+                q.append(u)
+    return hop
+
+
+def route_nodes(hop: Mapping[_H, _H], start: _H) -> list[_H] | None:
+    """The node list a `route_to` map describes from ``start``, or None.
+
+    The walk is separate from the map so the map can be built once for many starts
+    and walked cheaply per finding; this is the one place a route is turned into the
+    node list a message shows.
+    """
+    if start not in hop:
+        return None
+    path = [start]
+    while hop[path[-1]] != path[-1]:
+        path.append(hop[path[-1]])
+    return path
+
+
 def traps(
     edges: Adjacency[_H],
     starts: Iterable[_H],
