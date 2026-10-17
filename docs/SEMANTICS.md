@@ -182,3 +182,22 @@ column- and table-level keys, composite-key refusal in DDL; `direction`, `%%`
 comments, `classDef`, a single-line note, plain transitions and the start/accept
 markers in Mermaid; unknown top-level keys, mark kinds and colour ramps in the declared
 chart.
+
+## Fourth review: the sibling route, against its own project
+
+figspec — the renderer that owns this model — was reviewed the same way (its
+`docs/SEMANTICS.md` has the record; eighteen findings, all fixed there). Three
+of its findings are about *this* project's declared route, and one is fixed here:
+
+- **`y_err` carrying `NaN`.** `chartgx` reported a clean figure (exit 0) for
+  `"y_err": [NaN, 0.1]` while figspec refused to parse the file at all. A magnitude
+  is drawn, so it is `non-finite-value` (error) now — the negative test missed it
+  (every comparison with `NaN` is false) and so did the coordinate test (it is not
+  a coordinate).
+- **Not fixed, deliberately.** The two routes keep their own codebooks
+  (`no-axis-label`/info here against `no-xlabel`/warn there) and this one emits
+  additional codes (`empty-chart`, and `mismatched-lengths` for an empty array)
+  without changing the error verdict. Each codebook is stable for its own
+  consumers, and folding one into the other would break them.
+- `width: 0` and column-axis label ambiguity are refused by figspec's reader; this
+  route refused the first already (exit 2) and gained the second in review three.

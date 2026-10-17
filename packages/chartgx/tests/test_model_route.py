@@ -146,6 +146,22 @@ def test_a_non_finite_value_cannot_be_placed():
             "grouped_bar",
             {"kind": "grouped_bar", "categories": ["a"], "series": [{"values": [float("nan")]}]},
         ),
+        # An error magnitude is drawn too. `NaN` passed the negative test (every
+        # comparison is false) and the coordinate test (it is not a coordinate), so
+        # the file was accepted with a clean report while the sibling reader refused
+        # to parse it at all.
+        (
+            "line y_err",
+            {"kind": "line", "points": [[0.0, 1.0], [1.0, 2.0]], "y_err": [float("nan"), 0.1]},
+        ),
+        (
+            "line y_err_asymmetric",
+            {
+                "kind": "line",
+                "points": [[0.0, 1.0], [1.0, 2.0]],
+                "y_err_asymmetric": [[0.1, float("inf")], [0.2, 0.3]],
+            },
+        ),
     ):
         assert_fires(inspect_model({"marks": [mark]}), "non-finite-value", ERROR), kind
 

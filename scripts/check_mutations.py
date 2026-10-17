@@ -786,6 +786,13 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/chartgx/tests/test_model_route.py::test_a_declaration_that_cannot_be_read_is_refused_where_it_is_wrong",
             ),
             Mutation(
+                "declared-model-non-finite-error-accepted",
+                "packages/chartgx/src/chartgx/model.py",
+                "                if any(not math.isfinite(value) for value in magnitudes):",
+                "                if False:",
+                "packages/chartgx/tests/test_model_route.py::test_a_non_finite_value_cannot_be_placed",
+            ),
+            Mutation(
                 "declared-model-truncated-baseline-missed",
                 "packages/chartgx/src/chartgx/model.py",
                 "        if minimum is not None and minimum > 0:",
