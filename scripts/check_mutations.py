@@ -1232,8 +1232,8 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "chartgx-categorical-x-skips-the-line",
                 "packages/chartgx/src/chartgx/checks.py",
-                "            if not xs and not ys:",
-                "            if not xs or not ys:",
+                "artist.get_xydata()",
+                "np.column_stack((artist.get_xdata(), artist.get_ydata()))",
                 "packages/chartgx/tests/test_charts.py::test_clipped_data_is_reported_whatever_the_x_axis_is",
             ),
             Mutation(
@@ -1654,6 +1654,81 @@ def mutations(root: Path) -> list[Mutation]:
                 'if problem.code == "clipped-text":',
                 "if False:",
                 chart_text + "test_real_title_clipping_is_actionable_and_wrapping_repairs_it",
+            ),
+        ]
+    )
+    value_axes = "packages/chartgx/tests/test_value_axes.py::"
+    cases.extend(
+        [
+            Mutation(
+                "chart-bar-orientation-guessed-from-magnitude",
+                chart_checks,
+                'axis = {"vertical": "y", "horizontal": "x"}.get(container.orientation or "")',
+                'axis = "y" if container.patches[0].get_height() >= container.patches[0].get_width() else "x"',
+                value_axes + "test_bar_value_axis_is_independent_of_magnitude_and_direction",
+            ),
+            Mutation(
+                "chart-bar-unit-axis-duplicated",
+                chart_checks,
+                'for axis in _bar_value_axes(ax) if kind == "bar" else ["y"]:',
+                'for axis in ["y"]:',
+                value_axes + "test_units_note_uses_the_same_native_bar_value_axis",
+            ),
+            Mutation(
+                "chart-inverted-bar-baseline-compared-in-view-order",
+                chart_checks,
+                'lo, hi = sorted(ax.get_ylim() if axis == "y" else ax.get_xlim())',
+                'lo, hi = ax.get_ylim() if axis == "y" else ax.get_xlim()',
+                value_axes + "test_bar_value_axis_is_independent_of_magnitude_and_direction",
+            ),
+            Mutation(
+                "chart-only-first-bar-value-axis",
+                chart_checks,
+                "    return axes\n",
+                "    return axes[:1]\n",
+                value_axes + "test_mixed_bar_value_axes_are_checked_and_identified_separately",
+            ),
+            Mutation(
+                "chart-bar-value-axis-unidentified",
+                chart_checks,
+                "                    identity=(axis,),\n",
+                "",
+                value_axes + "test_mixed_bar_value_axes_are_checked_and_identified_separately",
+            ),
+            Mutation(
+                "chart-scatter-clipping-ignored",
+                chart_checks,
+                '("scatter", getattr(ax, "collections", ()))',
+                '("scatter", ())',
+                value_axes + "test_data_clipping_uses_both_axes_and_order_independent_limits",
+            ),
+            Mutation(
+                "chart-undrawn-points-retained",
+                chart_checks,
+                "points = points[np.isfinite(points).all(axis=1)]",
+                "points = np.asarray(points)",
+                value_axes + "test_undrawn_masked_or_nonfinite_points_do_not_create_clipping",
+            ),
+            Mutation(
+                "chart-nondata-dimension-compared",
+                chart_checks,
+                "                    data_axes[column]\n                    and values.size\n",
+                "                    values.size\n",
+                value_axes + "test_axes_relative_artists_are_not_compared_with_data_limits",
+            ),
+            Mutation(
+                "chart-unclipped-artists-flagged-as-clipped",
+                chart_checks,
+                "                if not artist.get_clip_on():\n                    continue\n",
+                "",
+                value_axes + "test_unclipped_artists_do_not_claim_data_is_cut_off",
+            ),
+            Mutation(
+                "chart-artist-to-data-transform-ignored",
+                chart_checks,
+                "points = (transform - ax.transData).transform(points)",
+                "points = points.copy()",
+                value_axes + "test_artist_coordinates_are_mapped_to_data_before_comparison",
             ),
         ]
     )

@@ -7,6 +7,13 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+**`chartgx` respects native value axes and coordinate systems.** Small or negative
+bar values no longer hide a truncated baseline or move the units check to the
+category axis: `bar`/`barh` metadata owns orientation. Mixed value axes are checked
+separately, and reversed limits containing zero are not truncation. `clipped-data`
+now includes scatter points and shares the line check's data-coordinate rule;
+masked/nonfinite samples and axes-relative dimensions do not create false alarms.
+
 **`chartgx` no longer blocks a valid chart on an undrawn tick label.** Text
 checks use Matplotlib's render-eligible ticks (major/minor, either side, linear/log
 and inverted axes) and honor hidden ancestors. Genuine title clipping remains an

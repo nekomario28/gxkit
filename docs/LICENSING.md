@@ -35,7 +35,7 @@ licensed. Anyone may implement it; the MIT code is a reference.
 | --- | --- | --- |
 | Pillow | HPND (permissive) | gxcore, chartgx, levelgx, flowgx, authzgx, depsgx, schemagx, docgx, protogx, shadergx, framegx, apigx, netgx, envgx, pipegx, seedgx, crongx |
 | matplotlib | PSF-based (BSD-compatible) | chartgx |
-| numpy | BSD-3-Clause | shadergx, framegx |
+| numpy | BSD-3-Clause | chartgx, shadergx, framegx |
 | moderngl | MIT | shadergx |
 | glcontext | MIT | shadergx (via moderngl) |
 | ffmpeg | LGPL/GPL (system binary) | framegx (invoked as a subprocess, not linked) |
