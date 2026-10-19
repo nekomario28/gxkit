@@ -47,12 +47,27 @@ def _has_axis_labels(ax: Any) -> bool:
 
 
 def _texts(ax: Any) -> list[tuple[str, Any]]:
+    if not ax.get_visible():
+        return []
     out: list[tuple[str, Any]] = [("title", ax.title)]
+    # Axes3D draws its own axes with _axis3don, ignoring 2D's axison and each
+    # Axis.get_visible(). Keep the projection's drawing policy, not a 2D proxy.
+    axis3d_on = getattr(ax, "_axis3don", None)
+    axes = [
+        axis
+        for axis in (ax.xaxis, ax.yaxis)
+        if (axis3d_on if axis3d_on is not None else ax.axison and axis.get_visible())
+    ]
     if _has_axis_labels(ax):
-        out.append(("xlabel", ax.xaxis.label))
-        out.append(("ylabel", ax.yaxis.label))
+        out += [(axis.axis_name + "label", axis.label) for axis in axes]
     out += [("text", t) for t in ax.texts]
-    out += [("tick", t) for t in ax.get_xticklabels() + ax.get_yticklabels()]
+    for axis in axes:
+        # Axis.draw uses this same selector: a visible label can belong to an
+        # off-view tick that is never drawn. Reuse Matplotlib's transformed-range
+        # and boundary-tolerance policy, including minor ticks and inverted axes.
+        for tick in axis._update_ticks():
+            if tick.get_visible():
+                out += [("tick", tick.label1), ("tick", tick.label2)]
     legend = ax.get_legend()
     if legend is not None:
         out += [("legend", t) for t in legend.get_texts()]
@@ -442,11 +457,17 @@ def _text_items(ax: Any, renderer: Any) -> list[TextBox]:
 
 
 def _check_text(fig: Any, ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:
-    out.extend(
-        check_text_layout(
-            _text_items(ax, renderer), _figure_box(fig), target=f"ax[{i}]", surface="figure"
-        )
+    problems = check_text_layout(
+        _text_items(ax, renderer), _figure_box(fig), target=f"ax[{i}]", surface="figure"
     )
+    for problem in problems:
+        if problem.code == "clipped-text":
+            problem.message += (
+                "; wrap the text or reduce its fontsize/adjust figure margins; for a title, "
+                "shorten it or insert '\\n' in ax.set_title(...). Preserve data values and "
+                "axis limits; changing them is not a text-layout repair. Redraw and inspect again"
+            )
+    out.extend(problems)
 
 
 def _check_legend_covers(ax: Any, i: int, renderer: Any, out: list[Problem]) -> None:

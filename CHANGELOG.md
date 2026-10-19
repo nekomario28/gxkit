@@ -7,6 +7,14 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+**`chartgx` no longer blocks a valid chart on an undrawn tick label.** Text
+checks use Matplotlib's render-eligible ticks (major/minor, either side, linear/log
+and inverted axes) and honor hidden ancestors. Genuine title clipping remains an
+error, now with text-layout repair advice rather than an incentive to alter data
+or axis limits. Regressions use a real CI-duration chart and observe actual text
+draw calls; seven mutations guard the selection and advice, including preservation
+of 3D x/y labels under their projection's own visibility switch.
+
 **A model built in Python with a wrong-typed field** is refused where the field is set,
 with the field named, instead of reaching the inspector and raising a bare
 `TypeError`/`AttributeError` (13 cases found by probing every tool's model, up from the

@@ -1600,6 +1600,63 @@ def mutations(root: Path) -> list[Mutation]:
             coverage_test,
         )
     )
+    # Artist visibility is not render eligibility: the real pilot chart offered
+    # tick 350 but never drew it. The oracle observes Text.draw, not our selector.
+    chart_text = "packages/chartgx/tests/test_rendered_text.py::"
+    chart_checks = "packages/chartgx/src/chartgx/checks.py"
+    cases.extend(
+        [
+            Mutation(
+                "chart-undrawn-ticks-inspected",
+                chart_checks,
+                "for tick in axis._update_ticks():",
+                "for tick in axis.get_major_ticks() + axis.get_minor_ticks():",
+                chart_text + "test_valid_pilot_chart_has_no_errors_from_undrawn_tick",
+            ),
+            Mutation(
+                "chart-minor-labels-ignored",
+                chart_checks,
+                "for tick in axis._update_ticks():",
+                "for tick in (t for t in axis._update_ticks() if t in axis.majorTicks):",
+                chart_text + "test_selected_ticks_match_actual_draw_calls",
+            ),
+            Mutation(
+                "chart-hidden-axes-text-inspected",
+                chart_checks,
+                "    if not ax.get_visible():\n        return []\n",
+                "",
+                chart_text + "test_hidden_ancestors_do_not_contribute_text[axes]",
+            ),
+            Mutation(
+                "chart-hidden-axis-text-inspected",
+                chart_checks,
+                "if (axis3d_on if axis3d_on is not None else ax.axison and axis.get_visible())",
+                "if True",
+                chart_text + "test_hidden_ancestors_do_not_contribute_text",
+            ),
+            Mutation(
+                "chart-hidden-tick-text-inspected",
+                chart_checks,
+                "if tick.get_visible():",
+                "if True:",
+                chart_text + "test_hidden_ancestors_do_not_contribute_text[tick]",
+            ),
+            Mutation(
+                "chart-3d-axis-labels-dropped",
+                chart_checks,
+                'axis3d_on = getattr(ax, "_axis3don", None)',
+                "axis3d_on = None",
+                chart_text + "test_3d_axis_labels_follow_the_projection_visibility",
+            ),
+            Mutation(
+                "chart-clipping-advice-removed",
+                chart_checks,
+                'if problem.code == "clipped-text":',
+                "if False:",
+                chart_text + "test_real_title_clipping_is_actionable_and_wrapping_repairs_it",
+            ),
+        ]
+    )
     return cases
 
 

@@ -72,6 +72,13 @@ fig.tight_layout()
 | `red-green` | info | a red/green encoding says nothing to a colour-blind reader |
 | `cut-value-axis` | info | a line axis cut away from zero (fine for trends) |
 
+Layout checks consider the major and minor tick labels Matplotlib selects for
+painting, including either side of an axis, not every label offered by its locator.
+An off-view tick or a hidden axis is not clipped text. A `clipped-text` finding
+includes repair advice: wrap the text, resize it or adjust margins; for a title,
+shorten it or insert `\n` in `ax.set_title(...)`. Preserve data values and axis
+limits, then redraw and inspect again. This advice is not an automatic repair.
+
 ### Declared charts
 
 A chart written as data — a figspec model, JSON — is checked without matplotlib
