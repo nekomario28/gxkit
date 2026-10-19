@@ -79,6 +79,15 @@ includes repair advice: wrap the text, resize it or adjust margins; for a title,
 shorten it or insert `\n` in `ax.set_title(...)`. Preserve data values and axis
 limits, then redraw and inspect again. This advice is not an automatic repair.
 
+Bar value axes come from Matplotlib's `bar`/`barh` metadata, not a comparison of
+rectangle width and height (different units). Fractions and negative amounts do
+not change a bar's orientation. Both value axes are checked in a mixed bar plot;
+an inverted range containing zero is not a truncated baseline.
+
+`clipped-data` checks lines and scatter points in data coordinates. Masked or
+nonfinite points do not count as drawn samples. Reference lines are checked only
+on their data dimension, not on the axes-relative dimension that spans the plot.
+
 ### Declared charts
 
 A chart written as data — a figspec model, JSON — is checked without matplotlib

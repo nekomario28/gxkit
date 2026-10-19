@@ -198,22 +198,34 @@ def _check_empty(ax: Any, i: int, kind: str, out: list[Problem]) -> bool:
     return False
 
 
-def _check_units_note(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
-    from matplotlib.patches import Rectangle
+def _bar_value_axes(ax: Any) -> list[str]:
+    from matplotlib.container import BarContainer
 
+    # Width and height have different units. A small amount or negative value
+    # cannot tell us which dimension is categorical; bar/barh already declare it.
+    axes: list[str] = []
+    for container in getattr(ax, "containers", ()):
+        if isinstance(container, BarContainer):
+            axis = {"vertical": "y", "horizontal": "x"}.get(container.orientation or "")
+            if axis is not None and axis not in axes:
+                axes.append(axis)
+    return axes
+
+
+def _check_units_note(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
     if kind == "pie":
         return
-    axis, label = "y", ax.get_ylabel()
-    if kind == "bar":
-        rects = [p for p in ax.patches if isinstance(p, Rectangle)]
-        if rects and rects[0].get_width() > rects[0].get_height():
-            axis, label = "x", ax.get_xlabel()
-    if label and not any(ch in label for ch in "([%£$€¥):"):
-        out.append(
-            Problem(
-                INFO, "no-units", f"{axis}-axis label {label!r} names no unit", target=f"ax[{i}]"
+    for axis in _bar_value_axes(ax) if kind == "bar" else ["y"]:
+        label = ax.get_ylabel() if axis == "y" else ax.get_xlabel()
+        if label and not any(ch in label for ch in "([%£$€¥):"):
+            out.append(
+                Problem(
+                    INFO,
+                    "no-units",
+                    f"{axis}-axis label {label!r} names no unit",
+                    target=f"ax[{i}]",
+                )
             )
-        )
 
 
 def _check_title(fig: Any, axes_list: list[Any], out: list[Problem]) -> None:
@@ -232,27 +244,22 @@ def _check_axis_labels(ax: Any, i: int, kind: str, skip_x: bool, out: list[Probl
 
 
 def _check_bar_baseline(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
-    from matplotlib.patches import Rectangle
-
     if kind != "bar":
         return
-    rects = [p for p in ax.patches if isinstance(p, Rectangle)]
-    if not rects:
-        return
-    r = rects[0]
-    vertical = r.get_height() >= r.get_width()
-    lo, hi = ax.get_ylim() if vertical else ax.get_xlim()
-    axis = "y" if vertical else "x"
-    if not (lo <= 0 <= hi):
-        out.append(
-            Problem(
-                ERROR,
-                "truncated-baseline",
-                f"bar lengths start at {axis}={lo:g}, not 0 — the bars no longer show amounts "
-                "(the difference looks larger than it is). Draw the value axis from 0.",
-                target=f"ax[{i}]",
+    for axis in _bar_value_axes(ax):
+        lo, hi = sorted(ax.get_ylim() if axis == "y" else ax.get_xlim())
+        if not (lo <= 0 <= hi):
+            edge = lo if lo > 0 else hi
+            out.append(
+                Problem(
+                    ERROR,
+                    "truncated-baseline",
+                    f"bar lengths start at {axis}={edge:g}, not 0 — the bars no longer show amounts "
+                    "(the difference looks larger than it is). Draw the value axis from 0.",
+                    target=f"ax[{i}]",
+                    identity=(axis,),
+                )
             )
-        )
 
 
 def _check_line_baseline(ax: Any, i: int, kind: str, out: list[Problem]) -> None:
@@ -290,40 +297,48 @@ def _check_constant(ax: Any, i: int, out: list[Problem]) -> None:
 
 
 def _check_clipped_data(ax: Any, i: int, out: list[Problem]) -> None:
-    xlo, xhi = ax.get_xlim()
-    ylo, yhi = ax.get_ylim()
-    for j, ln in enumerate(ax.lines):
-        try:
-            # A categorical x axis returns its labels, not numbers: the x comparison
-            # does not apply there, and the y one still does. Measured: an entire
-            # class of clipped charts (categorical x, the common idiom) was silent.
-            try:
-                xs = [float(v) for v in ln.get_xdata()]
-            except (TypeError, ValueError):
-                xs = []
-            ys = [float(v) for v in ln.get_ydata()]
-            if not xs and not ys:
+    import numpy as np
+    from matplotlib.collections import PathCollection
+
+    limits = (ax.get_xlim(), ax.get_ylim())
+    sources = (("line", ax.lines), ("scatter", getattr(ax, "collections", ())))
+    for kind, artists in sources:
+        for j, artist in enumerate(artists):
+            if kind == "scatter" and not isinstance(artist, PathCollection):
                 continue
-            if xs and (min(xs) < xlo - 1e-9 or max(xs) > xhi + 1e-9):
-                out.append(
-                    Problem(
-                        WARN,
-                        "clipped-data",
-                        f"line {j} runs past the x-limits and is cut off",
-                        target=f"ax[{i}]",
-                    )
+            try:
+                if not artist.get_clip_on():
+                    continue
+                transform = (
+                    artist.get_transform() if kind == "line" else artist.get_offset_transform()
                 )
-            if min(ys) < ylo - 1e-9 or max(ys) > yhi + 1e-9:
-                out.append(
-                    Problem(
-                        WARN,
-                        "clipped-data",
-                        f"line {j} runs past the y-limits and is cut off",
-                        target=f"ax[{i}]",
+                # The historical spelling is a permanent Matplotlib alias, also
+                # present in older supported versions. Reference lines use data
+                # on one axis and axes-relative positions on the other.
+                data_axes = transform.contains_branch_seperately(ax.transData)
+                points = artist.get_xydata() if kind == "line" else artist.get_offsets()
+                points = np.ma.asarray(points, dtype=float).filled(np.nan)
+                points = (transform - ax.transData).transform(points)
+                # A point with either coordinate masked/nonfinite is not drawn.
+                points = points[np.isfinite(points).all(axis=1)]
+            except Exception:
+                continue
+            for column, (axis, bounds) in enumerate(zip(("x", "y"), limits, strict=True)):
+                values = points[:, column]
+                lo, hi = sorted(bounds)
+                if (
+                    data_axes[column]
+                    and values.size
+                    and (values.min() < lo - 1e-9 or values.max() > hi + 1e-9)
+                ):
+                    out.append(
+                        Problem(
+                            WARN,
+                            "clipped-data",
+                            f"{kind} {j} runs past the {axis}-limits and is cut off",
+                            target=f"ax[{i}]",
+                        )
                     )
-                )
-        except Exception:
-            continue
 
 
 def _check_log(ax: Any, i: int, out: list[Problem]) -> None:
