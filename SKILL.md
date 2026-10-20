@@ -31,6 +31,16 @@ a protocol, a network's intent. On `rust-browser-lab` this turned an `unused-var
 into three real bugs in one sitting - a launch that truncated the saved session, a trim policy
 that could never fire, and a content-process entry point compiled out of the release build.
 
+When generation is not worth a generator, a **membership grep** still beats nothing: keep each
+member name as a quoted literal in the model file, then have CI extract the real set from the
+source (enum variants, `method("X")` registrations, `pub mod` lines) and fail on any name absent
+from the model. For a bounded set with *known* dead members, pin them in a constant inside the
+model file (`DEAD_RESPONSES`, `UNANSWERED`) — the grep then distinguishes "listed for removal"
+from a new hole, and the list can only shrink. On `apple-music-linux` this surfaced nine
+`ApiRequest` variants the UI sends but the daemon never answers (`_ => None` — the request's
+reply variant has no producer anywhere in the crate), which a `protogx` model of the
+request→reply surface now ratchets in CI.
+
 ## The contract (every tool, identical)
 
 ```sh
