@@ -5,6 +5,15 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+### Added
+
+**`checkgx` inspects a check registry for checks that cannot fail.** Declare the names an artifact
+writes, the ones its runner evaluates, and the keys beside them; the tool reports a name written twice
+(a mapping keeps one, the rest never run), a check that landed in the report's metadata, a declared
+check nothing evaluates, and an evaluated name nobody declared. It also says what it cannot see: a
+predicate that returns a constant is invisible to a registry reading, and the `not-a-proof-of-failure`
+warning states that rather than implying the check is thereby sound.
+
 ### Fixed
 
 **`chartgx` respects native value axes and coordinate systems.** Small or negative

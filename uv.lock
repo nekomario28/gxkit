@@ -13,6 +13,7 @@ members = [
     "apigx",
     "authzgx",
     "chartgx",
+    "checkgx",
     "crongx",
     "depsgx",
     "docgx",
@@ -144,6 +145,21 @@ requires-dist = [
     { name = "gxcore", editable = "packages/gxcore" },
     { name = "matplotlib", specifier = ">=3.6" },
     { name = "numpy", specifier = ">=1.23" },
+    { name = "pillow", specifier = ">=9" },
+]
+
+[[package]]
+name = "checkgx"
+version = "1.0.0"
+source = { editable = "packages/checkgx" }
+dependencies = [
+    { name = "gxcore" },
+    { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gxcore", editable = "packages/gxcore" },
     { name = "pillow", specifier = ">=9" },
 ]
 

@@ -106,6 +106,7 @@ named once: `gxkit inspect apigx openapi.json`.
 | `levelgx` | game levels | a soft-lock created by a one-way tile |
 | `flowgx` | state machines | a state from which "done" is unreachable |
 | `protogx` | protocols | a declared message nothing handles |
+| `checkgx` | check registries | a check that is never evaluated, or written twice |
 | `authzgx` | permission models | a low principal reaching a sensitive permission |
 | `depsgx` | module graphs | a lower layer importing a higher one |
 | `schemagx` | schemas | a foreign-key cycle |
