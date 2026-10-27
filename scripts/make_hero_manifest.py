@@ -21,11 +21,25 @@ import hashlib
 import json
 import pathlib
 import re
+import runpy
 import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCENE = ROOT / "docs" / "hero" / "gxkit_hero.py"
 DOMAINS = ROOT / "docs" / "hero" / "hero_domains.py"
+
+
+def domain_count() -> int:
+    """How many domains the scene draws — read from the module the scene reads.
+
+    A written-down count is the defect this file exists to prevent: the hero said
+    "ten domains" for six tools, and this manifest said sixteen after the
+    seventeenth landed. The digests above are what refuse a stale render; this is
+    the same number the picture was drawn from.
+    """
+    return len(runpy.run_path(str(DOMAINS))["domains"]())
+
+
 GIF = ROOT / "docs" / "assets" / "hero.gif"
 OUT = ROOT / "docs" / "assets" / "hero.json"
 
@@ -118,7 +132,7 @@ def manifest() -> dict:
             "re-commenting does not demand a re-render while any change to what the "
             "code means does"
         ),
-        "domains": 16,
+        "domains": domain_count(),
         "gif": "docs/assets/hero.gif",
         "gif_sha256": hashlib.sha256(GIF.read_bytes()).hexdigest(),
         "width": int(stream["width"]),

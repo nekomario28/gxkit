@@ -44,6 +44,10 @@ UNIQUE_PER_ARTIFACT: dict[tuple[str, str], str] = {
     ("shadergx", "compile-error"): "one `except` around the single compile of the shader",
     ("shadergx", "black-output"): "one `if` on the single rendered frame",
     ("shadergx", "nan-output"): "one `if not isfinite(...).all()` on the rendered output",
+    (
+        "checkgx",
+        "no-checks",
+    ): "one `if not declared` branch fires only when the registry declares nothing",
 }
 
 

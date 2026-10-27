@@ -143,6 +143,7 @@ existence has to be an assertion.**
 | a build pipeline | `pipegx` | a `needs` that names no step |
 | a random-seed manifest | `seedgx` | two streams that share a seed |
 | a schedule of runs | `crongx` | two runs that hold a resource at once |
+| a check registry | `checkgx` | a check written twice, or never evaluated |
 
 Each tool has its own `SKILL.md` under `packages/<tool>/SKILL.md` with the exact
 input format, checks and codes. Read the one matching the artifact.

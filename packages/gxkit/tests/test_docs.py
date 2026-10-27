@@ -320,6 +320,7 @@ DOCUMENTED_EXAMPLES = {
     "pipegx": "broken_pipeline.py",
     "seedgx": "broken_seed.py",
     "crongx": "broken_schedule.py",
+    "checkgx": "broken_registry.py",
 }
 
 
@@ -517,7 +518,7 @@ def test_the_hero_draws_one_cube_per_tool():
     hero = _hero_module()
     assert hero.domains() == TOOL_PACKAGES
     assert len(hero.colours()) == len(TOOL_PACKAGES)
-    assert "sixteen" in hero.subtitle()
+    assert _NUMBER_WORDS[len(TOOL_PACKAGES)] in hero.subtitle()
     # The fixed cube has to be the only green in the ring, or the beat is invisible.
     assert hero.FIXED not in hero.PALETTE
 

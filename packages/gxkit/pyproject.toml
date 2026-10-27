@@ -37,6 +37,7 @@ dependencies = [
     "pipegx",
     "seedgx",
     "crongx",
+    "checkgx",
 ]
 
 [project.scripts]
@@ -60,6 +61,7 @@ envgx = { workspace = true }
 pipegx = { workspace = true }
 seedgx = { workspace = true }
 crongx = { workspace = true }
+checkgx = { workspace = true }
 
 [project.urls]
 Homepage = "https://github.com/nekomario28/gxkit"

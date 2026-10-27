@@ -1,7 +1,7 @@
 """The domains the hero draws — read from the packages, never written down.
 
-A hardcoded "ten domains" outlives the tenth tool; this repository has sixteen and
-the hero said ten. So the scene asks this module, and this module asks the
+A hardcoded "ten domains" outlives the tenth tool; this repository has
+seventeen and the hero once said ten. So the scene asks this module, and this module asks the
 filesystem. `packages/hero_manifest.json` records what was rendered, and a test
 refuses a scene that has been edited without being drawn again.
 
@@ -36,6 +36,7 @@ PALETTE = [
     "#facc15",
     "#ca8a04",
     "#a16207",
+    "#a78bfa",
 ]
 
 #: Counts as words, for the subtitle. A count outside this map is spelled as a

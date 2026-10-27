@@ -148,7 +148,7 @@ PyPI; the family's own packages resolve only from the local index.
 ## Check the names
 
 ```sh
-for p in gxcore chartgx levelgx flowgx protogx authzgx depsgx schemagx docgx shadergx framegx apigx netgx envgx pipegx seedgx crongx gxkit-cli; do
+for p in gxcore chartgx levelgx flowgx protogx authzgx depsgx schemagx docgx shadergx framegx apigx netgx envgx pipegx seedgx crongx checkgx gxkit-cli; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/$p/json")
   echo "$p -> $code (404 = free)"
 done

@@ -118,6 +118,14 @@ CODEBOOK: dict[str, dict[str, str]] = {
         "not-modelled": "info",
         "no-tables": "info",
     },
+    "checkgx": {
+        "duplicate-check": "error",
+        "check-in-metadata": "error",
+        "check-never-evaluated": "error",
+        "evaluated-but-undeclared": "error",
+        "no-checks": "error",
+        "not-a-proof-of-failure": "warn",
+    },
     "docgx": {
         "clipped-text": "error",
         "text-overlap": "error",

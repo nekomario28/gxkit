@@ -1,0 +1,42 @@
+# checkgx
+
+> Inspect a check registry for checks that cannot fail. Reports problems with stable codes and exit codes, and writes an annotated storyboard.
+
+checkgx is one of the `gxkit` agent-native review tools. Declare the checks an
+artifact writes, the ones its runner actually evaluates, and the keys that sit
+beside them as metadata; `checkgx inspect` names duplicates, checks nothing reads,
+names read but never declared, and checks that landed among the metadata.
+
+It reads the registry, not the predicates: a check that cannot fail inside its
+body is invisible here, which is why the standing `not-a-proof-of-failure`
+warning exists rather than silence.
+
+## Install
+
+```sh
+uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/checkgx" checkgx inspect checks.py
+# local:  uvx --from ../../packages/checkgx checkgx inspect checks.py
+```
+
+## Use
+
+A registry file defines `registry` (a `Registry`) or module-level `CHECKS` /
+`REGISTRY`:
+
+```python
+import checkgx as c
+
+registry = c.Registry(
+    checks=["a_probe_passes", "strings_match", "strings_match"],  # as written, duplicates kept
+    evaluated=["a_probe_passes", "strings_match"],  # what the runner reads
+    metadata=["status", "note"],  # never evaluated
+)
+```
+
+## Checks
+
+error: `duplicate-check`, `check-in-metadata`, `check-never-evaluated`,
+  `evaluated-but-undeclared`, `no-checks`.
+warn: `not-a-proof-of-failure`.
+
+Full documentation is in `README.md`.
