@@ -128,6 +128,7 @@ CODEBOOK: dict[str, dict[str, str]] = {
     },
     "docgx": {
         "clipped-text": "error",
+        "text-overflow": "error",
         "text-overlap": "error",
         "no-title": "warn",
         "too-much-text": "warn",

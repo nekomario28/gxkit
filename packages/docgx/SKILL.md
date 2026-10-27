@@ -44,7 +44,7 @@ are fractions of the page (0..1, top-left origin).
 
 ## Severities
 
-`error` = text is lost or unreadable (`clipped-text`, `text-overlap`).
+`error` = text is lost or unreadable (`clipped-text`, `text-overflow`, `text-overlap`).
 `warn` = missing title or over budget. `info` = small text, reading order, or
 empty page.
 
@@ -53,6 +53,7 @@ empty page.
 | code | severity | meaning |
 | --- | --- | --- |
 | `clipped-text` | error | a block runs off the page |
+| `text-overflow` | error | a block runs out of the box it declares (`width`/`height`) |
 | `text-overlap` | error | two blocks cover each other |
 | `no-title` | warn | the page has no title |
 | `too-much-text` | warn | more words than `max_words` allows |
