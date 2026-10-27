@@ -20,8 +20,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gxcore.loading import validate_names
-
 
 @dataclass
 class Registry:
@@ -54,5 +52,7 @@ def load_registry(path: str | Path) -> tuple[Registry, object]:
         convert=_as_registry,
     )
     if registry is None:
-        raise ValueError(f"{path}: no check registry found — define CHECKS or a builder returning one")
+        raise ValueError(
+            f"{path}: no check registry found — define CHECKS or a builder returning one"
+        )
     return registry, module

@@ -22,7 +22,11 @@ def inspect_registry(registry: Registry, name: str | None = None) -> Report:
     report = Report(
         name=name,
         subject=f"checks: {len(declared)} declared, {len(evaluated)} evaluated",
-        details=[f"{len(declared)} declared", f"{len(evaluated)} evaluated", f"{len(metadata)} metadata keys"],
+        details=[
+            f"{len(declared)} declared",
+            f"{len(evaluated)} evaluated",
+            f"{len(metadata)} metadata keys",
+        ],
     )
     out: list[Problem] = []
 

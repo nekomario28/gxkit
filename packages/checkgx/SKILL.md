@@ -15,9 +15,9 @@ evaluated, and a typo on either side drops a gate without a word.
 import checkgx as c
 
 CHECKS = c.Registry(
-    checks=["a_probe_passes", "strings_match"],   # as written; duplicates kept on purpose
-    evaluated=["a_probe_passes", "strings_match"],# the union of what the runner reads
-    metadata=["status", "note"],                  # beside the checks, never evaluated
+    checks=["a_probe_passes", "strings_match"],  # as written; duplicates kept on purpose
+    evaluated=["a_probe_passes", "strings_match"],  # the union of what the runner reads
+    metadata=["status", "note"],  # beside the checks, never evaluated
 )
 ```
 

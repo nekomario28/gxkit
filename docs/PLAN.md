@@ -164,6 +164,10 @@ Ranked by (gap strength × feasibility). From `docs/agent-native-landscape.md`.
 - **P14 — `crongx`.** Schedules: two runs holding the same resource at once,
   a duplicate run, a negative time. *done*
 
+- **P15 — `checkgx`.** Check registries: a check written twice, a check sitting
+  among the report's metadata, a declared check nothing evaluates, an evaluated
+  name nobody declares. The tool that asks whether a check can fail at all. *done*
+
 ## Definition of done
 
 - `gxcore`: model, geometry, storyboard, report, cli, testing, loading, graph,

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1040" height="620" viewBox="0 0 1040 620" role="img" aria-labelledby="t d" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
-<title id="t">gxkit: one shared core, 16 inspect tools</title>
-<desc id="d">gxcore is the shared review loop. 16 tools, one per artifact domain, each turn an artifact into problems with stable codes, an exit code and a storyboard.</desc>
+<title id="t">gxkit: one shared core, 17 inspect tools</title>
+<desc id="d">gxcore is the shared review loop. 17 tools, one per artifact domain, each turn an artifact into problems with stable codes, an exit code and a storyboard.</desc>
 <rect width="1040" height="620" fill="#ffffff"/>
 <rect x="24" y="24" width="360" height="572" rx="16" fill="#f1f5f9"/>
 <text x="48" y="66" font-size="19" font-weight="700" fill="#0f172a">The inspect loop</text>
@@ -29,23 +29,24 @@
 <text x="104" y="417.0" font-size="14.5" fill="#0f172a">Exit 1 on error → ship</text>
 <text x="48" y="562" font-size="12.5" fill="#64748b">every problem: a stable code, a severity,</text>
 <text x="48" y="580" font-size="12.5" fill="#64748b">and a storyboard image as evidence</text>
-<text x="712" y="44" font-size="15" fill="#64748b" text-anchor="middle">one core · 16 domains</text>
+<text x="712" y="44" font-size="15" fill="#64748b" text-anchor="middle">one core · 17 domains</text>
 <line x1="712.0" y1="320.0" x2="712.0" y2="88.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="800.8" y2="105.7" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="876.0" y2="156.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="926.3" y2="231.2" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="944.0" y2="320.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="926.3" y2="408.8" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="876.0" y2="484.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="800.8" y2="534.3" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="712.0" y2="552.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="623.2" y2="534.3" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="548.0" y2="484.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="497.7" y2="408.8" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="480.0" y2="320.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="497.7" y2="231.2" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="548.0" y2="156.0" stroke="#cbd5e1" stroke-width="1.4"/>
-<line x1="712.0" y1="320.0" x2="623.2" y2="105.7" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="795.8" y2="103.7" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="868.3" y2="148.5" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="919.7" y2="216.6" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="943.0" y2="298.6" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="935.1" y2="383.5" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="897.1" y2="459.8" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="834.1" y2="517.3" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="754.6" y2="548.0" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="669.4" y2="548.0" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="589.9" y2="517.3" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="526.9" y2="459.8" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="488.9" y2="383.5" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="481.0" y2="298.6" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="504.3" y2="216.6" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="555.7" y2="148.5" stroke="#cbd5e1" stroke-width="1.4"/>
+<line x1="712.0" y1="320.0" x2="628.2" y2="103.7" stroke="#cbd5e1" stroke-width="1.4"/>
 <rect x="620" y="258" width="184" height="124" rx="16" fill="#0f172a"/>
 <text x="712" y="294" font-size="25" font-weight="700" fill="#ffffff" text-anchor="middle">gxcore</text>
 <text x="712" y="322" font-size="12" fill="#cbd5e1" text-anchor="middle">problems · severities · exit codes</text>
@@ -56,79 +57,84 @@
 <text x="669.0" y="80.0" font-size="14.5" font-weight="700" fill="#0f172a">chartgx</text>
 <text x="658.0" y="97.0" font-size="11.5" fill="#64748b">matplotlib charts</text>
 <text x="658.0" y="114.0" font-size="11.5" fill="#ad2828">truncated-baseline</text>
-<rect x="730.8" y="76.7" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad5a28" stroke-width="1.8"/>
-<circle cx="746.8" cy="93.7" r="4.5" fill="#ad5a28"/>
-<text x="757.8" y="97.7" font-size="14.5" font-weight="700" fill="#0f172a">docgx</text>
-<text x="746.8" y="114.7" font-size="11.5" fill="#64748b">pages / slides</text>
-<text x="746.8" y="131.7" font-size="11.5" fill="#ad5a28">clipped-text</text>
-<rect x="806.0" y="127.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad8c28" stroke-width="1.8"/>
-<circle cx="822.0" cy="144.0" r="4.5" fill="#ad8c28"/>
-<text x="833.0" y="148.0" font-size="14.5" font-weight="700" fill="#0f172a">levelgx</text>
-<text x="822.0" y="165.0" font-size="11.5" fill="#64748b">game levels</text>
-<text x="822.0" y="182.0" font-size="11.5" fill="#ad8c28">soft-lock</text>
-<rect x="856.3" y="202.2" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#9cad28" stroke-width="1.8"/>
-<circle cx="872.3" cy="219.2" r="4.5" fill="#9cad28"/>
-<text x="883.3" y="223.2" font-size="14.5" font-weight="700" fill="#0f172a">flowgx</text>
-<text x="872.3" y="240.2" font-size="11.5" fill="#64748b">state machines</text>
-<text x="872.3" y="257.2" font-size="11.5" fill="#9cad28">no-exit</text>
-<rect x="874.0" y="291.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#6bad28" stroke-width="1.8"/>
-<circle cx="890.0" cy="308.0" r="4.5" fill="#6bad28"/>
-<text x="901.0" y="312.0" font-size="14.5" font-weight="700" fill="#0f172a">protogx</text>
-<text x="890.0" y="329.0" font-size="11.5" fill="#64748b">protocols</text>
-<text x="890.0" y="346.0" font-size="11.5" fill="#6bad28">unhandled-message</text>
-<rect x="856.3" y="379.8" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#39ad28" stroke-width="1.8"/>
-<circle cx="872.3" cy="396.8" r="4.5" fill="#39ad28"/>
-<text x="883.3" y="400.8" font-size="14.5" font-weight="700" fill="#0f172a">depsgx</text>
-<text x="872.3" y="417.8" font-size="11.5" fill="#64748b">module graphs</text>
-<text x="872.3" y="434.8" font-size="11.5" fill="#39ad28">layer-violation</text>
-<rect x="806.0" y="455.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28ad49" stroke-width="1.8"/>
-<circle cx="822.0" cy="472.0" r="4.5" fill="#28ad49"/>
-<text x="833.0" y="476.0" font-size="14.5" font-weight="700" fill="#0f172a">schemagx</text>
-<text x="822.0" y="493.0" font-size="11.5" fill="#64748b">schemas</text>
-<text x="822.0" y="510.0" font-size="11.5" fill="#28ad49">cyclic-foreign-key</text>
-<rect x="730.8" y="505.3" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28ad7b" stroke-width="1.8"/>
-<circle cx="746.8" cy="522.3" r="4.5" fill="#28ad7b"/>
-<text x="757.8" y="526.3" font-size="14.5" font-weight="700" fill="#0f172a">authzgx</text>
-<text x="746.8" y="543.3" font-size="11.5" fill="#64748b">permissions</text>
-<text x="746.8" y="560.3" font-size="11.5" fill="#28ad7b">escalation</text>
-<rect x="642.0" y="523.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28adad" stroke-width="1.8"/>
-<circle cx="658.0" cy="540.0" r="4.5" fill="#28adad"/>
-<text x="669.0" y="544.0" font-size="14.5" font-weight="700" fill="#0f172a">shadergx</text>
-<text x="658.0" y="561.0" font-size="11.5" fill="#64748b">shaders</text>
-<text x="658.0" y="578.0" font-size="11.5" fill="#28adad">black-output</text>
-<rect x="553.2" y="505.3" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#287bad" stroke-width="1.8"/>
-<circle cx="569.2" cy="522.3" r="4.5" fill="#287bad"/>
-<text x="580.2" y="526.3" font-size="14.5" font-weight="700" fill="#0f172a">framegx</text>
-<text x="569.2" y="543.3" font-size="11.5" fill="#64748b">animations</text>
-<text x="569.2" y="560.3" font-size="11.5" fill="#287bad">frozen</text>
-<rect x="478.0" y="455.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#2849ad" stroke-width="1.8"/>
-<circle cx="494.0" cy="472.0" r="4.5" fill="#2849ad"/>
-<text x="505.0" y="476.0" font-size="14.5" font-weight="700" fill="#0f172a">apigx</text>
-<text x="494.0" y="493.0" font-size="11.5" fill="#64748b">apis</text>
-<text x="494.0" y="510.0" font-size="11.5" fill="#2849ad">unauthenticated-mutation</text>
-<rect x="427.7" y="379.8" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#3928ad" stroke-width="1.8"/>
-<circle cx="443.7" cy="396.8" r="4.5" fill="#3928ad"/>
-<text x="454.7" y="400.8" font-size="14.5" font-weight="700" fill="#0f172a">netgx</text>
-<text x="443.7" y="417.8" font-size="11.5" fill="#64748b">networks</text>
-<text x="443.7" y="434.8" font-size="11.5" fill="#3928ad">public-reaches-sensitive</text>
-<rect x="410.0" y="291.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#6b28ad" stroke-width="1.8"/>
-<circle cx="426.0" cy="308.0" r="4.5" fill="#6b28ad"/>
-<text x="437.0" y="312.0" font-size="14.5" font-weight="700" fill="#0f172a">envgx</text>
-<text x="426.0" y="329.0" font-size="11.5" fill="#64748b">config</text>
-<text x="426.0" y="346.0" font-size="11.5" fill="#6b28ad">secret-with-default</text>
-<rect x="427.7" y="202.2" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#9c28ad" stroke-width="1.8"/>
-<circle cx="443.7" cy="219.2" r="4.5" fill="#9c28ad"/>
-<text x="454.7" y="223.2" font-size="14.5" font-weight="700" fill="#0f172a">pipegx</text>
-<text x="443.7" y="240.2" font-size="11.5" fill="#64748b">pipelines</text>
-<text x="443.7" y="257.2" font-size="11.5" fill="#9c28ad">cycle</text>
-<rect x="478.0" y="127.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad288c" stroke-width="1.8"/>
-<circle cx="494.0" cy="144.0" r="4.5" fill="#ad288c"/>
-<text x="505.0" y="148.0" font-size="14.5" font-weight="700" fill="#0f172a">seedgx</text>
-<text x="494.0" y="165.0" font-size="11.5" fill="#64748b">seeds</text>
-<text x="494.0" y="182.0" font-size="11.5" fill="#ad288c">duplicate-seed</text>
-<rect x="553.2" y="76.7" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad285a" stroke-width="1.8"/>
-<circle cx="569.2" cy="93.7" r="4.5" fill="#ad285a"/>
-<text x="580.2" y="97.7" font-size="14.5" font-weight="700" fill="#0f172a">crongx</text>
-<text x="569.2" y="114.7" font-size="11.5" fill="#64748b">schedules</text>
-<text x="569.2" y="131.7" font-size="11.5" fill="#ad285a">overlap</text>
+<rect x="725.8" y="74.7" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad5728" stroke-width="1.8"/>
+<circle cx="741.8" cy="91.7" r="4.5" fill="#ad5728"/>
+<text x="752.8" y="95.7" font-size="14.5" font-weight="700" fill="#0f172a">docgx</text>
+<text x="741.8" y="112.7" font-size="11.5" fill="#64748b">pages / slides</text>
+<text x="741.8" y="129.7" font-size="11.5" fill="#ad5728">clipped-text</text>
+<rect x="798.3" y="119.5" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad8628" stroke-width="1.8"/>
+<circle cx="814.3" cy="136.5" r="4.5" fill="#ad8628"/>
+<text x="825.3" y="140.5" font-size="14.5" font-weight="700" fill="#0f172a">levelgx</text>
+<text x="814.3" y="157.5" font-size="11.5" fill="#64748b">game levels</text>
+<text x="814.3" y="174.5" font-size="11.5" fill="#ad8628">soft-lock</text>
+<rect x="849.7" y="187.6" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#a5ad28" stroke-width="1.8"/>
+<circle cx="865.7" cy="204.6" r="4.5" fill="#a5ad28"/>
+<text x="876.7" y="208.6" font-size="14.5" font-weight="700" fill="#0f172a">flowgx</text>
+<text x="865.7" y="225.6" font-size="11.5" fill="#64748b">state machines</text>
+<text x="865.7" y="242.6" font-size="11.5" fill="#a5ad28">no-exit</text>
+<rect x="873.0" y="269.6" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#76ad28" stroke-width="1.8"/>
+<circle cx="889.0" cy="286.6" r="4.5" fill="#76ad28"/>
+<text x="900.0" y="290.6" font-size="14.5" font-weight="700" fill="#0f172a">protogx</text>
+<text x="889.0" y="307.6" font-size="11.5" fill="#64748b">protocols</text>
+<text x="889.0" y="324.6" font-size="11.5" fill="#76ad28">unhandled-message</text>
+<rect x="865.1" y="354.5" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#47ad28" stroke-width="1.8"/>
+<circle cx="881.1" cy="371.5" r="4.5" fill="#47ad28"/>
+<text x="892.1" y="375.5" font-size="14.5" font-weight="700" fill="#0f172a">depsgx</text>
+<text x="881.1" y="392.5" font-size="11.5" fill="#64748b">module graphs</text>
+<text x="881.1" y="409.5" font-size="11.5" fill="#47ad28">layer-violation</text>
+<rect x="827.1" y="430.8" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28ad38" stroke-width="1.8"/>
+<circle cx="843.1" cy="447.8" r="4.5" fill="#28ad38"/>
+<text x="854.1" y="451.8" font-size="14.5" font-weight="700" fill="#0f172a">schemagx</text>
+<text x="843.1" y="468.8" font-size="11.5" fill="#64748b">schemas</text>
+<text x="843.1" y="485.8" font-size="11.5" fill="#28ad38">cyclic-foreign-key</text>
+<rect x="764.1" y="488.3" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28ad67" stroke-width="1.8"/>
+<circle cx="780.1" cy="505.3" r="4.5" fill="#28ad67"/>
+<text x="791.1" y="509.3" font-size="14.5" font-weight="700" fill="#0f172a">authzgx</text>
+<text x="780.1" y="526.3" font-size="11.5" fill="#64748b">permissions</text>
+<text x="780.1" y="543.3" font-size="11.5" fill="#28ad67">escalation</text>
+<rect x="684.6" y="519.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#28ad96" stroke-width="1.8"/>
+<circle cx="700.6" cy="536.0" r="4.5" fill="#28ad96"/>
+<text x="711.6" y="540.0" font-size="14.5" font-weight="700" fill="#0f172a">shadergx</text>
+<text x="700.6" y="557.0" font-size="11.5" fill="#64748b">shaders</text>
+<text x="700.6" y="574.0" font-size="11.5" fill="#28ad96">black-output</text>
+<rect x="599.4" y="519.0" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#2896ad" stroke-width="1.8"/>
+<circle cx="615.4" cy="536.0" r="4.5" fill="#2896ad"/>
+<text x="626.4" y="540.0" font-size="14.5" font-weight="700" fill="#0f172a">framegx</text>
+<text x="615.4" y="557.0" font-size="11.5" fill="#64748b">animations</text>
+<text x="615.4" y="574.0" font-size="11.5" fill="#2896ad">frozen</text>
+<rect x="519.9" y="488.3" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#2867ad" stroke-width="1.8"/>
+<circle cx="535.9" cy="505.3" r="4.5" fill="#2867ad"/>
+<text x="546.9" y="509.3" font-size="14.5" font-weight="700" fill="#0f172a">apigx</text>
+<text x="535.9" y="526.3" font-size="11.5" fill="#64748b">apis</text>
+<text x="535.9" y="543.3" font-size="11.5" fill="#2867ad">unauthenticated-mutation</text>
+<rect x="456.9" y="430.8" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#2838ad" stroke-width="1.8"/>
+<circle cx="472.9" cy="447.8" r="4.5" fill="#2838ad"/>
+<text x="483.9" y="451.8" font-size="14.5" font-weight="700" fill="#0f172a">netgx</text>
+<text x="472.9" y="468.8" font-size="11.5" fill="#64748b">networks</text>
+<text x="472.9" y="485.8" font-size="11.5" fill="#2838ad">public-reaches-sensitive</text>
+<rect x="418.9" y="354.5" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#4728ad" stroke-width="1.8"/>
+<circle cx="434.9" cy="371.5" r="4.5" fill="#4728ad"/>
+<text x="445.9" y="375.5" font-size="14.5" font-weight="700" fill="#0f172a">envgx</text>
+<text x="434.9" y="392.5" font-size="11.5" fill="#64748b">config</text>
+<text x="434.9" y="409.5" font-size="11.5" fill="#4728ad">secret-with-default</text>
+<rect x="411.0" y="269.6" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#7628ad" stroke-width="1.8"/>
+<circle cx="427.0" cy="286.6" r="4.5" fill="#7628ad"/>
+<text x="438.0" y="290.6" font-size="14.5" font-weight="700" fill="#0f172a">pipegx</text>
+<text x="427.0" y="307.6" font-size="11.5" fill="#64748b">pipelines</text>
+<text x="427.0" y="324.6" font-size="11.5" fill="#7628ad">cycle</text>
+<rect x="434.3" y="187.6" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#a528ad" stroke-width="1.8"/>
+<circle cx="450.3" cy="204.6" r="4.5" fill="#a528ad"/>
+<text x="461.3" y="208.6" font-size="14.5" font-weight="700" fill="#0f172a">seedgx</text>
+<text x="450.3" y="225.6" font-size="11.5" fill="#64748b">seeds</text>
+<text x="450.3" y="242.6" font-size="11.5" fill="#a528ad">duplicate-seed</text>
+<rect x="485.7" y="119.5" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad2886" stroke-width="1.8"/>
+<circle cx="501.7" cy="136.5" r="4.5" fill="#ad2886"/>
+<text x="512.7" y="140.5" font-size="14.5" font-weight="700" fill="#0f172a">crongx</text>
+<text x="501.7" y="157.5" font-size="11.5" fill="#64748b">schedules</text>
+<text x="501.7" y="174.5" font-size="11.5" fill="#ad2886">overlap</text>
+<rect x="558.2" y="74.7" width="140.0" height="58.0" rx="11" fill="#ffffff" stroke="#ad2857" stroke-width="1.8"/>
+<circle cx="574.2" cy="91.7" r="4.5" fill="#ad2857"/>
+<text x="585.2" y="95.7" font-size="14.5" font-weight="700" fill="#0f172a">checkgx</text>
+<text x="574.2" y="112.7" font-size="11.5" fill="#64748b">check registries</text>
+<text x="574.2" y="129.7" font-size="11.5" fill="#ad2857">duplicate-check</text>
 </svg>

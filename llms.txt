@@ -83,6 +83,9 @@ single `path` with `tool:` set.
   range, two streams sharing a seed. `packages/seedgx`
 - **crongx** — schedules: two runs that hold the same resource at once, a
   duplicate run, a negative time. `packages/crongx`
+- **checkgx** — check registries: a name written twice, a check sitting in the
+  report's metadata, a declared check nothing evaluates, an evaluated name
+  nobody declares. `packages/checkgx`
 - **gxkit** — the umbrella: `gxkit inspect <file>` detects the artifact's tool
   and runs it. `packages/gxkit`
 

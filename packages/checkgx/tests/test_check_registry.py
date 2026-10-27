@@ -1,8 +1,7 @@
 """Every finding is a shape I met while measuring: a check that reads as coverage and cannot fail."""
 
-import pytest
-
 import checkgx as c
+import pytest
 from checkgx.checks import inspect_registry
 
 

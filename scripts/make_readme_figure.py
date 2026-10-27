@@ -42,6 +42,7 @@ TOOLS = [
     ("pipegx", "pipelines", "cycle"),
     ("seedgx", "seeds", "duplicate-seed"),
     ("crongx", "schedules", "overlap"),
+    ("checkgx", "check registries", "duplicate-check"),
 ]
 
 

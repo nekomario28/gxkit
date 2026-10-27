@@ -30,7 +30,7 @@ export GXKIT_REQUIRE_ALL_CAPABILITIES=1
 step uv run pytest \
   --cov=gxcore --cov=chartgx --cov=levelgx --cov=flowgx --cov=protogx \
   --cov=authzgx --cov=depsgx --cov=schemagx --cov=docgx --cov=shadergx \
-  --cov=framegx --cov=apigx --cov=netgx --cov=envgx --cov=pipegx --cov=seedgx --cov=crongx --cov=gxkit --cov-fail-under=100
+  --cov=framegx --cov=apigx --cov=netgx --cov=envgx --cov=pipegx --cov=seedgx --cov=crongx --cov=checkgx --cov=gxkit --cov-fail-under=100
 step uv run python scripts/check_mutations.py
 step uvx zizmor .
 step uv run --with pip-audit pip-audit --skip-editable

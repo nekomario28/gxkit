@@ -1373,7 +1373,7 @@ def mutations(root: Path) -> list[Mutation]:
             Mutation(
                 "hero-manifest-stale",
                 "docs/assets/hero.json",
-                '"domains": 16,',
+                '"domains": 17,',
                 '"domains": 10,',
                 "packages/gxkit/tests/test_docs.py::test_the_committed_hero_matches_what_was_rendered",
             ),

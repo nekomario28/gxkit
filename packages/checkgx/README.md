@@ -32,10 +32,33 @@ import checkgx as c
 
 registry = c.Registry(
     checks=["a_probe_passes", "strings_match", "strings_match"],  # as written, duplicates kept
-    evaluated=["a_probe_passes", "strings_match"],                # what the runner reads
-    metadata=["status", "note"],                                  # never evaluated
+    evaluated=["a_probe_passes", "strings_match"],  # what the runner reads
+    metadata=["status", "note"],  # never evaluated
 )
 ```
+
+## The contract
+
+```
+$ checkgx inspect broken_registry.py
+broken_registry.py: checks
+checks: 4 declared, 3 evaluated
+  4 declared
+  3 evaluated
+  2 metadata keys
+inspect: 4 problems (4 errors)
+  [1] error -          duplicate-check: strings_match is written 2 times; a mapping keeps one of them and the rest are never run
+  [2] error -          check-in-metadata: status sits among the report's metadata, which the runner never evaluates
+  [3] error -          check-never-evaluated: output_nonempty is declared but no evaluated mapping names it
+  [4] error -          evaluated-but-undeclared: stdout_is_json is evaluated but never declared; a typo here silently drops a gate
+```
+
+`examples/broken_registry.py` is that registry, and every one of the four is a
+way a suite reports green while a gate is missing.
+
+- **Exit code 1** when any `error`-severity problem is found.
+- `--json` prints the same report machine-readably; `--no-storyboard` skips the
+  image; `-o name.png` names it.
 
 ## Codes
 

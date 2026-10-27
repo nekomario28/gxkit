@@ -69,6 +69,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         "docgx", "pages / slides", "docgx.tool", ("page", "slide"), ("Page",), ("BLOCKS", "TITLE")
     ),
     ToolSpec(
+        "checkgx",
+        "check registries",
+        "checkgx.tool",
+        ("registry",),
+        ("Registry",),
+        ("CHECKS", "REGISTRY"),
+    ),
+    ToolSpec(
         "shadergx",
         "fragment shaders",
         "shadergx.tool",

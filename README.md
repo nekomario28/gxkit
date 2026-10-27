@@ -18,9 +18,9 @@ ship — with a storyboard image as the evidence.
 <img alt="python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
 </p>
 
-<p align="center"><img src="docs/assets/hero.gif" width="340" alt="A white core cube with sixteen coloured domain cubes orbiting it — one core, sixteen domains"></p>
+<p align="center"><img src="docs/assets/hero.gif" width="340" alt="A white core cube with seventeen coloured domain cubes orbiting it — one core, seventeen domains"></p>
 
-<p align="center"><sub>One core, sixteen domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
+<p align="center"><sub>One core, seventeen domains. The 3D is rendered with <a href="https://manimgx.academa.ai/">ManimGX</a> — the renderer gxkit's <code>framegx</code> inspects.</sub></p>
 
 ![gxkit: one shared core, an inspect tool for every artifact domain](docs/assets/architecture.svg)
 
@@ -51,7 +51,7 @@ reads the figure it builds, `apigx` and `schemagx` and `flowgx` convert the
 document and apply the same codes as a declaration, and `framegx` probes the
 encoded file.
 
-Want all sixteen? Install the family instead — the contract is identical:
+Want all seventeen? Install the family instead — the contract is identical:
 
 ```sh
 uvx --from "git+https://github.com/nekomario28/gxkit#subdirectory=packages/gxkit" gxkit tools
@@ -150,7 +150,7 @@ $ echo $?
 ```
 
 The text says which cell; the storyboard image boxes it. That is the whole
-idea, repeated for sixteen domains.
+idea, repeated for seventeen domains.
 
 ## One core, thin tools
 

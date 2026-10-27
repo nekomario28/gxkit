@@ -17,9 +17,10 @@ checks (that every check can fail, that the docs agree) live in
 | `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 10 | `broken_modules.py`, `good_modules.py` |
 | `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 9 | `broken_schema.py`, `good_schema.py` |
 | `docgx` | pages / slides | `.py` | `docgx.tool` | 7 | `crowded_page.py`, `good_page.py` |
+| `checkgx` | check registries | `.py` | `checkgx.tool` | 6 | `broken_registry.py`, `good_registry.py` |
 | `shadergx` | fragment shaders | `.py` | `shadergx.tool` | 7 | `broken_shader.py`, `good_shader.py`, `invalid_shader.py` |
 | `framegx` | rendered animations | `.py` | `framegx.tool` | 12 | `frozen_clip.py`, `good_clip.py` |
-| `protogx` | protocols | `.py` | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py` |
+| `protogx` | protocols | `.py` | `protogx.tool` | 11 | `broken_protocol.py`, `good_protocol.py`, `rpc_surface.py` |
 | `flowgx` | state machines | `.py`, `.mmd`, `.mermaid`, `.md`, `.markdown` | `flowgx.tool` | 11 | `broken_machine.py`, `good_machine.py` |
 | `apigx` | HTTP API contracts | `.py`, `.json` | `apigx.tool` | 6 | `broken_api.py`, `good_api.py` |
 | `netgx` | network topologies | `.py` | `netgx.tool` | 8 | `broken_network.py`, `good_network.py` |

@@ -8,7 +8,7 @@ its display location (`target` *and* `label`). A finding with none of the three 
 compared by its code alone, so two of them in one artifact share a fingerprint and
 replacing one with another reads as unchanged baseline debt.
 
-**14 such findings; 0 of them can occur more than once.**
+**15 such findings; 0 of them can occur more than once.**
 
 ## Can occur more than once — debt
 
@@ -22,6 +22,7 @@ generation, and the guard refuses an entry that is no longer a site.
 
 | tool | code | why it can only happen once |
 | --- | --- | --- |
+| `checkgx` | `no-checks` | one `if not declared` branch fires only when the registry declares nothing |
 | `flowgx` | `no-accept` | one `if` decides nothing is accepting |
 | `flowgx` | `no-start` | one `if` decides the machine has no start state |
 | `framegx` | `all-black` | one `if max(means) < level` over the whole clip |
