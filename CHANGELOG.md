@@ -7,6 +7,14 @@ is a snapshot. Format: [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+**`docgx` can declare a column and a card, and reports text that outgrows one.**
+A `Block` takes `width` / `height` (fractions of the page): a block with a `width` wraps inside
+that column, and a block with a `height` gets the new `text-overflow` error when its measured text
+is taller than the box it declared. Both are optional and a block that declares neither is measured
+exactly as before. Measured on a real class deck: every block wrapped at the page width, so the left
+column of a two-column slide was measured as full-width lines (its collision with the right column
+was invisible) and a references card, whose text really ran past the card, was measured as fitting.
+
 **`checkgx` inspects a check registry for checks that cannot fail.** Declare the names an artifact
 writes, the ones its runner evaluates, and the keys beside them; the tool reports a name written twice
 (a mapping keeps one, the rest never run), a check that landed in the report's metadata, a declared

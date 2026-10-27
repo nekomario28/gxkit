@@ -15,6 +15,11 @@
 ``x``/``y`` are fractions of the page (0..1, top-left origin). The renderer wraps
 text to the page width, so a long block can still overflow the bottom — which is
 what `docgx` catches.
+
+A slide is not always one column: ``width``/``height`` (fractions of the page)
+declare the column, or the card, a block lives in. A block that declares a
+``width`` wraps inside it, and a block that declares a ``height`` is reported as
+``text-overflow`` when its measured text is taller than that box.
 """
 
 from __future__ import annotations
@@ -28,6 +33,7 @@ from gxcore.loading import (
     convert_number,
     validate_names,
     validate_number,
+    validate_optional_number,
 )
 
 
@@ -37,12 +43,19 @@ class Block:
     x: float = 0.08
     y: float = 0.25
     font_size: int = 28
+    # The column, or the card, the block lives in — both fractions of the page.
+    # Declaring neither keeps the pre-column behaviour: wrap at the page width,
+    # and claim nothing about a box the block never declared.
+    width: float | None = None
+    height: float | None = None
 
     def __post_init__(self) -> None:
         validate_names([self.text], field="text")
         validate_number(self.x, field="x")
         validate_number(self.y, field="y")
         validate_number(self.font_size, field="font_size", integer=True)
+        validate_optional_number(self.width, field="width")
+        validate_optional_number(self.height, field="height")
 
 
 @dataclass

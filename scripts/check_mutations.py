@@ -1265,6 +1265,29 @@ def mutations(root: Path) -> list[Mutation]:
                 "packages/docgx/tests/test_pages.py::test_the_word_budget_counts_the_title",
             ),
             Mutation(
+                "docgx-column-width-ignored",
+                "packages/docgx/src/docgx/render.py",
+                "    if block.width is not None:\n        available = min(available, block.width * page.width)",
+                "    if False:\n        available = min(available, block.width * page.width)",
+                "packages/docgx/tests/test_columns.py::test_a_declared_width_wraps_the_text_inside_its_column",
+            ),
+            Mutation(
+                "docgx-overflow-unchecked",
+                "packages/docgx/src/docgx/checks.py",
+                "        if over > BOX_TOLERANCE:",
+                "        if over > 10**9:",
+                "packages/docgx/tests/test_columns.py::test_text_overflow_fires_when_the_text_is_taller_than_its_card",
+            ),
+            Mutation(
+                # The guard in the other direction: a check that always fires is not
+                # a check either, so the quiet case has to be able to kill it.
+                "docgx-overflow-always-fires",
+                "packages/docgx/src/docgx/checks.py",
+                "        if over > BOX_TOLERANCE:",
+                "        if over > -(10**9):",
+                "packages/docgx/tests/test_columns.py::test_text_overflow_stays_quiet_when_the_text_fits_its_card",
+            ),
+            Mutation(
                 "seedgx-noninteger-seed-refused-at-load",
                 "packages/seedgx/src/seedgx/model.py",
                 "    if value is None or isinstance(value, (int, float, str)):",
