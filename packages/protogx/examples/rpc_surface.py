@@ -32,11 +32,7 @@ protocol = p.Protocol(
     states=["Idle", "Pending", "Shutdown"],
     start="Idle",
     terminal=["Shutdown"],
-    messages=(
-        [f"q.{q}" for q in requests + UNANSWERED]
-        + [f"a.{a}" for a in replies]
-        + ["Quit"]
-    ),
+    messages=([f"q.{q}" for q in requests + UNANSWERED] + [f"a.{a}" for a in replies] + ["Quit"]),
     transitions=(
         [("Idle", "Pending", f"q.{q}") for q in requests]
         + [("Idle", "Idle", f"q.{q}") for q in UNANSWERED]
