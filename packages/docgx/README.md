@@ -2,8 +2,9 @@
 
 **Inspect a page / slide for overflowing, overlapping or unreadable text.**
 Declare a title and positioned text blocks; `docgx inspect` wraps and measures
-them exactly as it renders them, then reports text that runs off the page,
-covers other text, is too small to read, or breaks the page's word budget.
+them exactly as it renders them, then reports text that runs off the page or out
+of its card, covers other text, is too small to read, or breaks the page's word
+budget.
 
 One of the [`gxkit`](../../README.md) tools, built on [`gxcore`](../gxcore)
 (reusing its `layout` checks).
@@ -33,6 +34,33 @@ page = d.Page(
 `x`/`y` are fractions of the page (0..1, top-left origin). Or module-level
 `TITLE` / `BLOCKS` / `WIDTH` / `HEIGHT` / `MAX_WORDS`.
 
+### Two columns, and a card
+
+A slide is not always one column. `width` and `height` (also fractions of the
+page) declare the column, or the card, a block lives in: a block with a `width`
+wraps inside it, and a block with a `height` is reported as `text-overflow` when
+the text it measured is taller than that box. Both are optional, and a block that
+declares neither is measured exactly as before.
+
+```python
+page = d.Page(
+    width=1280,
+    height=720,
+    title="Where the water goes",
+    blocks=[
+        d.Block("What we found", x=0.05, y=0.22, font_size=30, width=0.42),
+        d.Block(
+            "Crops are the sixth largest in the country", x=0.05, y=0.34, font_size=22, width=0.42
+        ),
+        d.Block("References", x=0.53, y=0.22, font_size=14, width=0.42, height=0.40),
+    ],
+)
+```
+
+`examples/two_column_page.py` is a page like this that passes;
+`examples/overflowing_card_page.py` is the same shape with a card too short for
+its text.
+
 ## The contract
 
 ```
@@ -57,6 +85,7 @@ inspect: 6 problems (2 errors)
 | code | severity | what it means |
 | --- | --- | --- |
 | `clipped-text` | error | a block runs off the page |
+| `text-overflow` | error | a block runs out of the box it declares (`width`/`height`) |
 | `text-overlap` | error | two blocks cover each other |
 | `no-title` | warn | the page has no title |
 | `too-much-text` | warn | more words than `max_words` allows |

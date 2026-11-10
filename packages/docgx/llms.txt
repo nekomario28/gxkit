@@ -28,9 +28,16 @@ docgx render  page.py -o page.png
 A page file defines `page` (a `Page`) or module-level `TITLE` / `BLOCKS` /
 `WIDTH` / `HEIGHT` / `MAX_WORDS`. `x`/`y` are fractions of the page.
 
+A block may also declare the column, or the card, it lives in: `width` / `height`
+(fractions of the page). A block with a `width` wraps inside it, and one with a
+`height` is reported as `text-overflow` when its measured text is taller than
+that box. Declare them on any page that is not one column — without `width` every
+block wraps at the page width.
+
 ## Checks
 
-error: `clipped-text`, `text-overlap`.
+error: `clipped-text`, `text-overflow` (out of a declared `width`/`height` box),
+  `text-overlap`.
 warn: `no-title`, `too-much-text`.
 info: `small-text`, `reading-order`, `empty-page`.
 

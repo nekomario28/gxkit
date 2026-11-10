@@ -380,6 +380,14 @@ BUILDERS = {
         lambda: __import__("docgx").Page(title="t", width="wide", blocks=[]),
         "width",
     ),
+    "docgx.block-width": (
+        lambda: __import__("docgx").Block("t", width="half"),
+        "width",
+    ),
+    "docgx.block-height": (
+        lambda: __import__("docgx").Block("t", height="tall"),
+        "height",
+    ),
     "shadergx.size": (
         lambda: __import__("shadergx").Shader(fragment="void main(){}", size=("a", "b")),
         "size",

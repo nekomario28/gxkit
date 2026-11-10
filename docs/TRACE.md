@@ -16,7 +16,7 @@ checks (that every check can fail, that the docs agree) live in
 | `authzgx` | permission models | `.py` | `authzgx.tool` | 13 | `escalate_auth.py`, `good_auth.py` |
 | `depsgx` | module dependency graphs | `.py` | `depsgx.tool` | 10 | `broken_modules.py`, `good_modules.py` |
 | `schemagx` | relational schemas | `.py`, `.sql` | `schemagx.tool` | 9 | `broken_schema.py`, `good_schema.py` |
-| `docgx` | pages / slides | `.py` | `docgx.tool` | 7 | `crowded_page.py`, `good_page.py` |
+| `docgx` | pages / slides | `.py` | `docgx.tool` | 8 | `crowded_page.py`, `good_page.py`, `overflowing_card_page.py`, `two_column_page.py` |
 | `checkgx` | check registries | `.py` | `checkgx.tool` | 6 | `broken_registry.py`, `good_registry.py` |
 | `shadergx` | fragment shaders | `.py` | `shadergx.tool` | 7 | `broken_shader.py`, `good_shader.py`, `invalid_shader.py` |
 | `framegx` | rendered animations | `.py` | `framegx.tool` | 12 | `frozen_clip.py`, `good_clip.py` |

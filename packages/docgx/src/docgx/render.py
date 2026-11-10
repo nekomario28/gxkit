@@ -10,7 +10,7 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .model import Page
+from .model import Block, Page
 
 MARGIN = 26
 INK = (24, 24, 28)
@@ -36,6 +36,38 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font: Any, max_width: float) -> 
             current = word
     lines.append(current)
     return lines
+
+
+def _wrap_width(page: Page, block: Block, x: int) -> float:
+    """The width this block's text wraps at: its declared column, or the page.
+
+    Measured on a real two-column deck: wrapping every block at the page width
+    laid the left column out as a handful of full-width lines, so its height was
+    far too small and its box ran across the right column.
+    """
+    available: float = page.width - x - MARGIN
+    if block.width is not None:
+        available = min(available, block.width * page.width)
+    return max(40.0, available)
+
+
+def _declared_box(
+    page: Page, block: Block, x: int, y: int
+) -> tuple[float, float, float, float] | None:
+    """The box a block declares it occupies, or None when it declares none.
+
+    A block with neither ``width`` nor ``height`` is measured and drawn exactly as
+    before, and no overflow is claimed about a box that was never declared. A
+    declared dimension that is missing falls back to the page's own edge, so
+    ``width`` alone still says "this text must stay inside this column".
+    """
+    if block.width is None and block.height is None:
+        return None
+    right = x + (block.width * page.width if block.width is not None else page.width - MARGIN - x)
+    bottom = y + (
+        block.height * page.height if block.height is not None else page.height - MARGIN - y
+    )
+    return (float(x), float(y), float(right), float(bottom))
 
 
 def _measure(
@@ -76,16 +108,18 @@ def block_boxes(page: Page) -> list[dict[str, Any]]:
     if page.title:
         font = _font(page.title_size)
         lines = _wrap(draw, page.title, font, page.width - 2 * MARGIN)
-        items.append(
-            _measure(draw, "title", page.title, lines, font, MARGIN, MARGIN, page.title_size)
-        )
+        title = _measure(draw, "title", page.title, lines, font, MARGIN, MARGIN, page.title_size)
+        title["box"] = None
+        items.append(title)
 
     for block in page.blocks:
         font = _font(block.font_size)
         x = int(block.x * page.width)
         y = int(block.y * page.height)
-        lines = _wrap(draw, block.text, font, max(40, page.width - x - MARGIN))
-        items.append(_measure(draw, "block", block.text, lines, font, x, y, block.font_size))
+        lines = _wrap(draw, block.text, font, _wrap_width(page, block, x))
+        item = _measure(draw, "block", block.text, lines, font, x, y, block.font_size)
+        item["box"] = _declared_box(page, block, x, y)
+        items.append(item)
 
     return items
 
