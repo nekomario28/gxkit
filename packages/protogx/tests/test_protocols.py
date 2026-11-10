@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 from gxcore import ERROR, INFO, WARN
@@ -117,6 +118,25 @@ def test_no_terminal_state():
 
 def test_good_protocol_reports_a_cycle_as_a_note():
     assert_fires(inspect_protocol(GOOD), "cycle", INFO)
+
+
+def test_the_mpris_player_example_loads_and_is_clean():
+    """A real application's protocol, kept where the faults would show.
+
+    Melba's gate model caught a bus method declared without a transition the
+    moment it was written; the example stays here so the corpus holds a
+    realistic, deliberately fault-free protocol beside the toy ones.
+    """
+    examples = Path(__file__).resolve().parents[1] / "examples"
+    mpris, _ = load_protocol(examples / "mpris_player.py")
+    report = inspect_protocol(mpris)
+    assert report.errors == 0, [problem.code for problem in report.problems]
+    # And the fault this model exists to catch is really caught.
+    without = replace(
+        mpris,
+        transitions=[t for t in mpris.transitions if t[2] != "MelbaQueueEmpty"],
+    )
+    assert_fires(inspect_protocol(without), "unhandled-message", ERROR)
 
 
 def test_examples_load_and_are_diagnosed():
